@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS "nfts";
+
+DROP TABLE IF EXISTS "listings";
