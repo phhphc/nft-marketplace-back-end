@@ -1,8 +1,9 @@
-include .env
+-include .env
 export
 
 GO=go
 GORUN=$(GO) run
+GOBUILD=$(GO) build
 
 http:
 	$(GORUN) ./cmd/marketplace
@@ -10,4 +11,7 @@ http:
 generate:
 	$(GO) generate ./...
 
-.PHONY: http generate
+build:
+	$(GOBUILD) -o ./bin/ ./cmd/marketplace
+
+.PHONY: http generate build 
