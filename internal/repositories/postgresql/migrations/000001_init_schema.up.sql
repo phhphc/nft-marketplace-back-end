@@ -3,6 +3,7 @@ CREATE TABLE "nfts" (
     "contract_addr" char(42) NOT NULL,
     "owner" char(42) NOT NULL,
     "is_burned" boolean NOT NULL,
+    "metadata" jsonb,
 
     "block_number" numeric(19,0) NOT NULL,
     "tx_index" bigint NOT NULL,

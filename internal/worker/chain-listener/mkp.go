@@ -23,7 +23,7 @@ func (w *worker) listenMkpEvent(ctx context.Context, wg *sync.WaitGroup) {
 
 	sub, err := w.ethClient.SubscribeFilterLogs(ctx, query, logCh)
 	if err != nil {
-		w.lg.Fatal().Caller().Err(err).Msg("cannot subcribe logs")
+		w.lg.Fatal().Caller().Err(err).Msg("cannot subscribe logs")
 	}
 	defer sub.Unsubscribe()
 
@@ -34,7 +34,7 @@ func (w *worker) listenMkpEvent(ctx context.Context, wg *sync.WaitGroup) {
 		case <-ctx.Done():
 			return
 		case err := <-sub.Err():
-			w.lg.Error().Caller().Err(err).Msg("error subcribe logs")
+			w.lg.Error().Caller().Err(err).Msg("error subscribe logs")
 			return
 		}
 	}

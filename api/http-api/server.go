@@ -31,7 +31,8 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 
 	nftController := controllers.NewNftController(postgreClient.Database)
 
-	nftRoute := e.Group("/nfts")
+	nftRoute := e.Group("/api/v0.1/nft")
+	nftRoute.GET("/:contract_addr/:token_id", nftController.GetNft)
 	nftRoute.GET("", nftController.GetNftsOfCollection)
 
 	return &httpServer{

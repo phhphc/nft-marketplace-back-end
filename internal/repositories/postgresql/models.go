@@ -4,7 +4,9 @@
 
 package postgresql
 
-import ()
+import (
+	"github.com/tabbed/pqtype"
+)
 
 type Listing struct {
 	ListingID    string `json:"listing_id"`
@@ -18,10 +20,11 @@ type Listing struct {
 }
 
 type Nft struct {
-	TokenID      string `json:"token_id"`
-	ContractAddr string `json:"contract_addr"`
-	Owner        string `json:"owner"`
-	IsBurned     bool   `json:"is_burned"`
-	BlockNumber  string `json:"block_number"`
-	TxIndex      int64  `json:"tx_index"`
+	TokenID      string                `json:"token_id"`
+	ContractAddr string                `json:"contract_addr"`
+	Owner        string                `json:"owner"`
+	IsBurned     bool                  `json:"is_burned"`
+	Metadata     pqtype.NullRawMessage `json:"metadata"`
+	BlockNumber  string                `json:"block_number"`
+	TxIndex      int64                 `json:"tx_index"`
 }
