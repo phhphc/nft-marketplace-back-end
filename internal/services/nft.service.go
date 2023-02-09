@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"github.com/tabbed/pqtype"
 	"math/big"
 	"strconv"
+
+	"github.com/tabbed/pqtype"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
@@ -15,8 +16,8 @@ import (
 )
 
 type NftService interface {
-	GetNftsByCollection(ctx context.Context, contractAddr string, owner string, offset int32) (ls []models.Nft, err error)
-	SaveTransferNft(ctx context.Context, transfer models.NftTransfer, metadata []byte, blockNumber uint64, txIndex uint) error
+	GetListNft(ctx context.Context, contractAddr string, owner string, offset int32, limit int32) (ls []models.Nft, err error)
+	TransferNft(ctx context.Context, transfer models.NftTransfer, metadata []byte, blockNumber uint64, txIndex uint) error
 	GetNft(ctx context.Context, contractAddr string, tokenId string) (token models.Nft, err error)
 }
 
@@ -32,9 +33,9 @@ func NewNftService(db *sql.DB) NftService {
 	}
 }
 
-func (s *nftService) GetNftsByCollection(ctx context.Context, contractAddr string, owner string, offset int32) (tks []models.Nft, err error) {
+func (s *nftService) GetListNft(ctx context.Context, contractAddr string, owner string, offset int32, limit int32) (tks []models.Nft, err error) {
 	tks = make([]models.Nft, 0)
-	arg := postgresql.SearchValidListingNftParams{
+	arg := postgresql.GetListNftParams{
 		ContractAddr: sql.NullString{
 			String: contractAddr,
 			Valid:  contractAddr != "",
@@ -44,10 +45,9 @@ func (s *nftService) GetNftsByCollection(ctx context.Context, contractAddr strin
 			Valid:  owner != "",
 		},
 		Offset: offset,
-		// TODO - use constant
-		Limit: 20,
+		Limit:  limit,
 	}
-	res, err := s.repo.SearchValidListingNft(ctx, arg)
+	res, err := s.repo.GetListNft(ctx, arg)
 	s.lg.Info().Caller().Err(err).Int("len", len(res)).Msg("x")
 	for _, tk := range res {
 		tokenId, _ := new(big.Int).SetString(tk.TokenID, 10)
@@ -80,7 +80,7 @@ func (s *nftService) GetNftsByCollection(ctx context.Context, contractAddr strin
 	return
 }
 
-func (s *nftService) SaveTransferNft(ctx context.Context, transfer models.NftTransfer, metadata []byte, blockNumber uint64, txIndex uint) error {
+func (s *nftService) TransferNft(ctx context.Context, transfer models.NftTransfer, metadata []byte, blockNumber uint64, txIndex uint) error {
 
 	// transfer metadata from json to
 
@@ -88,10 +88,12 @@ func (s *nftService) SaveTransferNft(ctx context.Context, transfer models.NftTra
 		TokenID:      transfer.TokenId.String(),
 		ContractAddr: transfer.ContractAddr.String(),
 		Owner:        transfer.To.String(),
-		Metadata:     pqtype.NullRawMessage{RawMessage: metadata, Valid: true},
 
 		BlockNumber: strconv.FormatUint(blockNumber, 10),
 		TxIndex:     int64(txIndex),
+	}
+	if metadata != nil {
+		arg.Metadata = pqtype.NullRawMessage{RawMessage: metadata, Valid: true}
 	}
 	if transfer.To == (common.Address{}) {
 		arg.IsBurned = true
@@ -106,7 +108,7 @@ func (s *nftService) SaveTransferNft(ctx context.Context, transfer models.NftTra
 
 func (s *nftService) GetNft(ctx context.Context, contractAddr string, tokenId string) (token models.Nft, err error) {
 
-	arg := postgresql.GetNftParams{
+	arg := postgresql.GetNftDetailParams{
 		ContractAddr: sql.NullString{
 			String: contractAddr,
 			Valid:  contractAddr != "",
@@ -117,7 +119,7 @@ func (s *nftService) GetNft(ctx context.Context, contractAddr string, tokenId st
 		},
 	}
 
-	res, err := s.repo.GetNft(ctx, arg)
+	res, err := s.repo.GetNftDetail(ctx, arg)
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("error find nft")
 	}

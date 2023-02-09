@@ -34,7 +34,7 @@ func (w *worker) listenMkpEvent(ctx context.Context, wg *sync.WaitGroup) {
 		case <-ctx.Done():
 			return
 		case err := <-sub.Err():
-			w.lg.Error().Caller().Err(err).Msg("error subscribe logs")
+			w.lg.Fatal().Caller().Err(err).Msg("error subscribe logs")
 			return
 		}
 	}

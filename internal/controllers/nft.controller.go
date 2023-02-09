@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"database/sql"
+
 	"github.com/labstack/echo/v4"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
 	"github.com/phhphc/nft-marketplace-back-end/internal/services"
@@ -34,14 +35,20 @@ func (ctl *nftController) GetNftsOfCollection(c echo.Context) error {
 		return models.NewHTTPError(400, err)
 	}
 
-	nfts, err := ctl.tokenService.GetNftsByCollection(c.Request().Context(), req.ContractAddr, req.Owner, req.Offset)
+	// TODO - use const
+	limit := int32(20)
+	nfts, err := ctl.tokenService.GetListNft(c.Request().Context(), req.ContractAddr, req.Owner, req.Offset, limit)
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("err")
 		return err
 	}
 
 	return c.JSON(200, models.Response{
-		Data:      nfts,
+		Data: models.GetNftsRes{
+			Nfts:   nfts,
+			Offset: req.Offset,
+			Limit:  limit,
+		},
 		IsSuccess: true,
 	})
 }

@@ -9,22 +9,22 @@ import (
 )
 
 type Listing struct {
-	ListingID    string `json:"listing_id"`
-	ContractAddr string `json:"contract_addr"`
-	TokenID      string `json:"token_id"`
-	Seller       string `json:"seller"`
-	Price        string `json:"price"`
-	Status       string `json:"status"`
-	BlockNumber  string `json:"block_number"`
-	TxIndex      int64  `json:"tx_index"`
+	ListingID    string
+	ContractAddr string
+	TokenID      string
+	Seller       string
+	Price        string
+	Status       string
+	BlockNumber  string
+	TxIndex      int64
 }
 
 type Nft struct {
-	TokenID      string                `json:"token_id"`
-	ContractAddr string                `json:"contract_addr"`
-	Owner        string                `json:"owner"`
-	IsBurned     bool                  `json:"is_burned"`
-	Metadata     pqtype.NullRawMessage `json:"metadata"`
-	BlockNumber  string                `json:"block_number"`
-	TxIndex      int64                 `json:"tx_index"`
+	TokenID      string
+	ContractAddr string
+	Owner        string
+	IsBurned     bool
+	Metadata     pqtype.NullRawMessage
+	BlockNumber  string
+	TxIndex      int64
 }

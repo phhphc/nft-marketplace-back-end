@@ -3,17 +3,19 @@ package chainListener
 import (
 	"context"
 	"encoding/json"
-	"github.com/phhphc/nft-marketplace-back-end/internal/contracts"
 	"io"
 	"math/big"
 	"net/http"
 	"os"
 	"sync"
+	"time"
+
+	"github.com/phhphc/nft-marketplace-back-end/internal/contracts"
+	"github.com/phhphc/nft-marketplace-back-end/internal/models"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/phhphc/nft-marketplace-back-end/internal/models"
 )
 
 func (w *worker) listenErc721Event(ctx context.Context, wg *sync.WaitGroup) {
@@ -40,7 +42,7 @@ func (w *worker) listenErc721Event(ctx context.Context, wg *sync.WaitGroup) {
 		case <-ctx.Done():
 			return
 		case err := <-sub.Err():
-			w.lg.Error().Caller().Err(err).Msg("error subcribe logs")
+			w.lg.Fatal().Caller().Err(err).Msg("error subcribe logs")
 			return
 		}
 	}
@@ -84,11 +86,24 @@ func (w *worker) handleErc721Event(vLog types.Log) {
 			return
 		}
 
+		var nftMetadata []byte
 		tokenURI, err := w.fetchTokenURI(vLog.Address, transfer.TokenId)
+		if err != nil {
+			w.lg.Debug().Caller().Err(err).Msg("error")
+		}
+		w.lg.Debug().Caller().Interface("url", tokenURI).Msg("url")
+		for i := 0; i < 5; i++ {
+			nftMetadata, err = w.getRawJsonFromURI(*tokenURI)
+			if err == nil {
+				break
+			}
+			time.Sleep(20 * time.Second)
+		}
+		if err != nil {
+			w.lg.Debug().Caller().Err(err).Msg("error")
+		}
 
-		nftMetadata, err := w.getRawJsonFromURI(*tokenURI)
-
-		w.nftService.SaveTransferNft(context.TODO(), models.NftTransfer{
+		w.nftService.TransferNft(context.TODO(), models.NftTransfer{
 			ContractAddr: vLog.Address,
 			TokenId:      transfer.TokenId,
 			From:         transfer.From,
@@ -122,19 +137,20 @@ func (w *worker) fetchTokenURI(contractAddress common.Address, tokenId *big.Int)
 }
 
 func (w *worker) getRawJsonFromURI(tokenURI string) ([]byte, error) {
+	// TODO - update: reduce network rate to pinata (due to free plan)
 	res, err := http.Get(tokenURI)
 	if err != nil {
-		w.lg.Error().Caller().Err(err).Msg("cannot handle HTTP Request")
+		w.lg.Debug().Caller().Err(err).Msg("cannot handle HTTP Request")
 		return nil, err
 	}
-	body, err := io.ReadAll(res.Body)
+	body, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
+	w.lg.Debug().Caller().Interface("body", body).Msg("log")
 
 	var raw json.RawMessage
-
 	err = json.Unmarshal(body, &raw)
 	if err != nil {
-		w.lg.Error().Caller().Err(err).Msg("Cannot parsing json from request body")
+		w.lg.Debug().Caller().Err(err).Msg("Cannot parsing json from request body")
 		return nil, err
 	}
 
