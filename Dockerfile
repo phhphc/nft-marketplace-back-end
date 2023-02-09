@@ -9,8 +9,13 @@ COPY . .
 RUN make build
 
 # Image
-FROM ubuntu:20.04
+FROM ubuntu:20.04 as runner
 WORKDIR /app
+
+# install root CA certificates
+RUN apt-get update \
+    && apt-get install -y ca-certificates \
+    && rm -rf /var/cache/apt/archives /var/lib/apt/lists
 
 ENV PORT=9090 ENV=Production
 EXPOSE 9090
