@@ -15,7 +15,6 @@ generate:
 	$(GO) generate ./...
 
 build:
-	$(GOBUILD) -o ./bin/ ./cmd/marketplace
-	$(GOBUILD) -o ./bin/ ./cmd/chain-watcher
+	$(GOBUILD) -o ./bin/ ./cmd/*
 
 .PHONY: http generate build 
