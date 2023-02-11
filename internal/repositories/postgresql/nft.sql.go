@@ -8,38 +8,41 @@ package postgresql
 import (
 	"context"
 	"database/sql"
+
+	"github.com/tabbed/pqtype"
 )
 
-const getNft = `-- name: GetNft :many
-SELECT n.token_id, n.contract_addr, n.owner, n.is_burned, l.listing_id, l.seller, l.price
+const getListNft = `-- name: GetListNft :many
+SELECT n.token_id, n.contract_addr, n.owner, n.is_burned, n.metadata, l.listing_id, l.seller, l.price
 FROM "nfts" n
-LEFT JOIN "listings" l ON n.token_id = l.token_id AND n.contract_addr = l.contract_addr
-WHERE (l.status = 'Open' OR l.listing_id IS NULL)
-AND (n.contract_addr ILIKE $1 OR $1 IS NULL)
+LEFT JOIN (SELECT listing_id, contract_addr, token_id, seller, price, status, block_number, tx_index FROM "listings" WHERE status = 'Open') AS l USING (token_id, contract_addr)
+WHERE (n.contract_addr ILIKE $1 OR $1 IS NULL)
 AND (n.owner ILIKE $2 OR l.seller ILIKE $2 OR $2 IS NULL)
+ORDER BY n.contract_addr ASC, n.token_id ASC
 OFFSET $3
 LIMIT $4
 `
 
-type GetNftParams struct {
-	ContractAddr sql.NullString `json:"contract_addr"`
-	Owner        sql.NullString `json:"owner"`
-	Offset       int32          `json:"offset"`
-	Limit        int32          `json:"limit"`
+type GetListNftParams struct {
+	ContractAddr sql.NullString
+	Owner        sql.NullString
+	Offset       int32
+	Limit        int32
 }
 
-type GetNftRow struct {
-	TokenID      string         `json:"token_id"`
-	ContractAddr string         `json:"contract_addr"`
-	Owner        string         `json:"owner"`
-	IsBurned     bool           `json:"is_burned"`
-	ListingID    sql.NullString `json:"listing_id"`
-	Seller       sql.NullString `json:"seller"`
-	Price        sql.NullString `json:"price"`
+type GetListNftRow struct {
+	TokenID      string
+	ContractAddr string
+	Owner        string
+	IsBurned     bool
+	Metadata     pqtype.NullRawMessage
+	ListingID    sql.NullString
+	Seller       sql.NullString
+	Price        sql.NullString
 }
 
-func (q *Queries) GetNft(ctx context.Context, arg GetNftParams) ([]GetNftRow, error) {
-	rows, err := q.db.QueryContext(ctx, getNft,
+func (q *Queries) GetListNft(ctx context.Context, arg GetListNftParams) ([]GetListNftRow, error) {
+	rows, err := q.db.QueryContext(ctx, getListNft,
 		arg.ContractAddr,
 		arg.Owner,
 		arg.Offset,
@@ -49,14 +52,15 @@ func (q *Queries) GetNft(ctx context.Context, arg GetNftParams) ([]GetNftRow, er
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetNftRow{}
+	items := []GetListNftRow{}
 	for rows.Next() {
-		var i GetNftRow
+		var i GetListNftRow
 		if err := rows.Scan(
 			&i.TokenID,
 			&i.ContractAddr,
 			&i.Owner,
 			&i.IsBurned,
+			&i.Metadata,
 			&i.ListingID,
 			&i.Seller,
 			&i.Price,
@@ -74,21 +78,61 @@ func (q *Queries) GetNft(ctx context.Context, arg GetNftParams) ([]GetNftRow, er
 	return items, nil
 }
 
+const getNftDetail = `-- name: GetNftDetail :one
+SELECT n.token_id, n.contract_addr, n.owner, n.is_burned, n.metadata, l.listing_id, l.seller, l.price
+FROM "nfts" n
+LEFT JOIN "listings" l ON n.token_id = l.token_id AND n.contract_addr = l.contract_addr
+WHERE n.contract_addr ILIKE $1 AND n.token_id = $2
+`
+
+type GetNftDetailParams struct {
+	ContractAddr sql.NullString
+	TokenID      sql.NullString
+}
+
+type GetNftDetailRow struct {
+	TokenID      string
+	ContractAddr string
+	Owner        string
+	IsBurned     bool
+	Metadata     pqtype.NullRawMessage
+	ListingID    sql.NullString
+	Seller       sql.NullString
+	Price        sql.NullString
+}
+
+func (q *Queries) GetNftDetail(ctx context.Context, arg GetNftDetailParams) (GetNftDetailRow, error) {
+	row := q.db.QueryRowContext(ctx, getNftDetail, arg.ContractAddr, arg.TokenID)
+	var i GetNftDetailRow
+	err := row.Scan(
+		&i.TokenID,
+		&i.ContractAddr,
+		&i.Owner,
+		&i.IsBurned,
+		&i.Metadata,
+		&i.ListingID,
+		&i.Seller,
+		&i.Price,
+	)
+	return i, err
+}
+
 const upsertNft = `-- name: UpsertNft :exec
-INSERT INTO "nfts" (token_id, contract_addr, owner, is_burned, block_number, tx_index)
-VALUES ($1,$2,$3,$4, $5, $6)
+INSERT INTO "nfts" (token_id, contract_addr, owner, is_burned, metadata, block_number, tx_index)
+VALUES ($1,$2,$3,$4,$5,$6,$7)
 ON CONFLICT (token_id, contract_addr) DO UPDATE
-SET owner=$3,is_burned=$4,block_number=$5, tx_index=$6
-WHERE $5 > nfts.block_number OR ($5 = nfts.block_number AND $6 > nfts.tx_index)
+SET owner=$3, is_burned=$4, metadata=$5, block_number=$6, tx_index=$7
+WHERE $6 > nfts.block_number OR ($6 = nfts.block_number AND $7 > nfts.tx_index)
 `
 
 type UpsertNftParams struct {
-	TokenID      string `json:"token_id"`
-	ContractAddr string `json:"contract_addr"`
-	Owner        string `json:"owner"`
-	IsBurned     bool   `json:"is_burned"`
-	BlockNumber  string `json:"block_number"`
-	TxIndex      int64  `json:"tx_index"`
+	TokenID      string
+	ContractAddr string
+	Owner        string
+	IsBurned     bool
+	Metadata     pqtype.NullRawMessage
+	BlockNumber  string
+	TxIndex      int64
 }
 
 func (q *Queries) UpsertNft(ctx context.Context, arg UpsertNftParams) error {
@@ -97,6 +141,7 @@ func (q *Queries) UpsertNft(ctx context.Context, arg UpsertNftParams) error {
 		arg.ContractAddr,
 		arg.Owner,
 		arg.IsBurned,
+		arg.Metadata,
 		arg.BlockNumber,
 		arg.TxIndex,
 	)

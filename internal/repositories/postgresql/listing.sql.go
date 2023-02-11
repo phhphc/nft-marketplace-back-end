@@ -18,14 +18,14 @@ WHERE $7 > listings.block_number or ($7 = listings.block_number and $8 > listing
 `
 
 type UpsertListingParams struct {
-	ListingID    string `json:"listing_id"`
-	ContractAddr string `json:"contract_addr"`
-	TokenID      string `json:"token_id"`
-	Seller       string `json:"seller"`
-	Price        string `json:"price"`
-	Status       string `json:"status"`
-	BlockNumber  string `json:"block_number"`
-	TxIndex      int64  `json:"tx_index"`
+	ListingID    string
+	ContractAddr string
+	TokenID      string
+	Seller       string
+	Price        string
+	Status       string
+	BlockNumber  string
+	TxIndex      int64
 }
 
 func (q *Queries) UpsertListing(ctx context.Context, arg UpsertListingParams) error {

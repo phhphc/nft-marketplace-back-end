@@ -9,7 +9,8 @@ import (
 )
 
 type Querier interface {
-	GetNft(ctx context.Context, arg GetNftParams) ([]GetNftRow, error)
+	GetListNft(ctx context.Context, arg GetListNftParams) ([]GetListNftRow, error)
+	GetNftDetail(ctx context.Context, arg GetNftDetailParams) (GetNftDetailRow, error)
 	UpsertListing(ctx context.Context, arg UpsertListingParams) error
 	UpsertNft(ctx context.Context, arg UpsertNftParams) error
 }

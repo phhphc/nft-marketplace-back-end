@@ -11,6 +11,7 @@ import (
 
 type NftController interface {
 	GetNftsOfCollection(c echo.Context) error
+	GetNft(c echo.Context) error
 }
 
 type nftController struct {
@@ -34,14 +35,37 @@ func (ctl *nftController) GetNftsOfCollection(c echo.Context) error {
 		return models.NewHTTPError(400, err)
 	}
 
-	nfts, err := ctl.tokenService.GetNftsByCollection(c.Request().Context(), req.ContractAddr, req.Owner, req.Offset)
+	// TODO - use const
+	limit := int32(20)
+	nfts, err := ctl.tokenService.GetListNft(c.Request().Context(), req.ContractAddr, req.Owner, req.Offset, limit)
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("err")
 		return err
 	}
 
 	return c.JSON(200, models.Response{
-		Data:      nfts,
+		Data: models.GetNftsRes{
+			Nfts:   nfts,
+			Offset: req.Offset,
+			Limit:  limit,
+		},
+		IsSuccess: true,
+	})
+}
+
+func (ctl *nftController) GetNft(c echo.Context) error {
+	contractAddr := c.Param("contract_addr")
+	tokenId := c.Param("token_id")
+
+	nft, err := ctl.tokenService.GetNft(c.Request().Context(), contractAddr, tokenId)
+
+	if err != nil {
+		ctl.lg.Error().Caller().Err(err).Msg("err")
+		return err
+	}
+
+	return c.JSON(200, models.Response{
+		Data:      nft,
 		IsSuccess: true,
 	})
 }
