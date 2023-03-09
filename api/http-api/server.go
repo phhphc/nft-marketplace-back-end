@@ -2,6 +2,9 @@ package httpApi
 
 import (
 	"context"
+	orderControllers "github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/interfaces/controllers"
+	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/interfaces/repository"
+	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/services"
 	"net/http"
 	"time"
 
@@ -34,6 +37,11 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 	nftRoute := e.Group("/api/v0.1/nft")
 	nftRoute.GET("/:contract_addr/:token_id", nftController.GetNft)
 	nftRoute.GET("", nftController.GetNftsOfCollection)
+
+	ver1group := e.Group("/api/v0.1")
+	orderRepository := repository.NewRepository(postgreClient.Database)
+	orderService := services.NewOrderService(orderRepository)
+	orderControllers.NewOrderController(ver1group, orderService)
 
 	return &httpServer{
 		lg:   log.GetLogger(),
