@@ -3,4 +3,4 @@ port: 9090
 host:
 postgre_uri: postgresql://root:secret@localhost:5432/app?sslmode=disable
 chain_url: ws://127.0.0.1:7545
-mkp_addr:
+mkp_addr: 0x2384AB4cE9A7f8c4d2D421b991F8184e38882F52
