@@ -1,13 +1,14 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/labstack/echo/v4"
 	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/services"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
-	"math/big"
 	"net/http"
-	"strconv"
 )
 
 type (
@@ -32,10 +33,11 @@ func NewOrderController(group *echo.Group, orderService services.OrderService) *
 		lg:           log.GetLogger(),
 		orderService: orderService,
 	}
-	group.GET("/orders/:order_hash", controller.GetOrder)
+	group.GET("/orders/offer", controller.GetOrderByOfferItem)
 	// dummy controller for pseudo Get Listing, need rework
-	group.GET("/orders/offer/", controller.GetOrderByOfferItem)
-	group.GET("/orders/consideration/", controller.GetOrderByConsiderationItem)
+	group.GET("/orders/consideration", controller.GetOrderByConsiderationItem)
+	group.GET("/orders/:order_hash", controller.GetOrder)
+
 	group.POST("/orders", controller.CreateOrder)
 
 	return controller
@@ -49,8 +51,16 @@ func (ctl *orderController) GetOrder(c echo.Context) error {
 		return err
 	}
 
+	orderJson, err := json.Marshal(order)
+	if err != nil {
+		return c.JSON(400, Response{
+			Error:     err,
+			IsSuccess: false,
+		})
+	}
+
 	return c.JSON(http.StatusOK, Response{
-		Data:      order,
+		Data:      orderJson,
 		IsSuccess: true,
 	})
 }
@@ -58,7 +68,12 @@ func (ctl *orderController) GetOrder(c echo.Context) error {
 func (ctl *orderController) GetOrderByOfferItem(c echo.Context) error {
 	tokenAddress := c.QueryParam("token_address")
 	tokenId := c.QueryParam("token_id")
-	tkId, err := strconv.ParseInt(tokenId, 10, 64)
+
+	fmt.Println("tokenAddress: ", tokenAddress)
+	tkId, err := hexutil.DecodeBig(tokenId)
+
+	fmt.Println("tokenId: ", tkId)
+
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("err")
 		return err
@@ -67,7 +82,7 @@ func (ctl *orderController) GetOrderByOfferItem(c echo.Context) error {
 	orders, err := ctl.orderService.GetAllOrderByOfferItem(
 		c.Request().Context(),
 		common.HexToAddress(tokenAddress),
-		big.NewInt(tkId),
+		tkId,
 	)
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("err")
@@ -83,7 +98,7 @@ func (ctl *orderController) GetOrderByOfferItem(c echo.Context) error {
 func (ctl *orderController) GetOrderByConsiderationItem(c echo.Context) error {
 	tokenAddress := c.QueryParam("token_address")
 	tokenId := c.QueryParam("token_id")
-	tkId, err := strconv.ParseInt(tokenId, 10, 64)
+	tkId, err := hexutil.DecodeBig(tokenId)
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("err")
 		return err
@@ -92,7 +107,7 @@ func (ctl *orderController) GetOrderByConsiderationItem(c echo.Context) error {
 	orders, err := ctl.orderService.GetAllOrderByConsiderationItem(
 		c.Request().Context(),
 		common.HexToAddress(tokenAddress),
-		big.NewInt(tkId),
+		tkId,
 	)
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("err")
@@ -112,7 +127,6 @@ func (ctl *orderController) CreateOrder(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, Response{
 			Error:     err,
-			Data:      orderForm,
 			IsSuccess: false,
 		})
 	}
@@ -123,7 +137,7 @@ func (ctl *orderController) CreateOrder(c echo.Context) error {
 
 	if err != nil {
 		return c.JSON(400, Response{
-			Data:      order,
+			Data:      orderForm,
 			Error:     err,
 			IsSuccess: false,
 		})
