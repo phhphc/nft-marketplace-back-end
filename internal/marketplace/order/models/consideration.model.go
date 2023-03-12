@@ -6,10 +6,10 @@ import (
 )
 
 type ConsiderationItem struct {
-	TypeNumber   *big.Int
-	TokenId      *big.Int
-	TokenAddress common.Address
-	StartAmount  *big.Int
-	EndAmount    *big.Int
-	Recipient    common.Address
+	TypeNumber   *big.Int       `json:"type_number"`
+	TokenId      *big.Int       `json:"token_id"`
+	TokenAddress common.Address `json:"token_address"`
+	StartAmount  *big.Int       `json:"start_amount"`
+	EndAmount    *big.Int       `json:"end_amount"`
+	Recipient    common.Address `json:"recipient"`
 }

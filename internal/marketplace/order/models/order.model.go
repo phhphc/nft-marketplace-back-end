@@ -6,22 +6,22 @@ import (
 )
 
 type Order struct {
-	Offer         []OfferItem
-	Consideration []ConsiderationItem
-	OrderHash     string
+	Offer         []OfferItem         `json:"offer"`
+	Consideration []ConsiderationItem `json:"consideration"`
+	OrderHash     string              `json:"order_hash"`
 
-	Offerer     common.Address
-	Signature   string
-	OrderType   *big.Int
-	StartTime   *big.Int
-	EndTime     *big.Int
-	Counter     *big.Int
-	Salt        string
-	IsCancelled bool
-	IsValidated bool
+	Offerer     common.Address `json:"offerer"`
+	Signature   string         `json:"signature,omitempty"`
+	OrderType   *big.Int       `json:"order_type"`
+	StartTime   *big.Int       `json:"start_time"`
+	EndTime     *big.Int       `json:"end_time"`
+	Counter     *big.Int       `json:"counter"`
+	Salt        string         `json:"salt"`
+	IsCancelled bool           `json:"is_cancelled"`
+	IsValidated bool           `json:"is_validated"`
 
-	Zone     common.Address
-	ZoneHash string
+	Zone     common.Address `json:"zone,omitempty"`
+	ZoneHash string         `json:"zone_hash,omitempty"`
 }
 
 func (o *Order) GetOrderHash() string {
