@@ -80,7 +80,7 @@ type GetOrderRow struct {
 	Zone        sql.NullString
 	IsCancelled bool
 	IsValidated bool
-	Signature   string
+	Signature   sql.NullString
 	OrderType   string
 	StartTime   string
 	EndTime     string

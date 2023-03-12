@@ -50,7 +50,7 @@ type InsertOrderParams struct {
 	Offerer     string
 	IsCancelled bool
 	IsValidated bool
-	Signature   string
+	Signature   sql.NullString
 	OrderType   string
 	StartTime   string
 	EndTime     string

@@ -3,12 +3,19 @@ package controllers
 import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/labstack/echo/v4"
-	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/models"
 	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/services"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 	"math/big"
 	"net/http"
 	"strconv"
+)
+
+type (
+	Response struct {
+		Data      interface{} `json:"data,omitempty""`
+		IsSuccess bool        `json:"is_success"`
+		Error     interface{} `json:"error,omitempty"`
+	}
 )
 
 type OrderController interface {
@@ -99,15 +106,18 @@ func (ctl *orderController) GetOrderByConsiderationItem(c echo.Context) error {
 }
 
 func (ctl *orderController) CreateOrder(c echo.Context) error {
-	var order models.Order
-	err := c.Bind(&order)
+	var orderForm OrderForm
+	err := c.Bind(&orderForm)
 
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, Response{
 			Error:     err,
+			Data:      orderForm,
 			IsSuccess: false,
 		})
 	}
+
+	order := orderForm.MapToDomainOrder()
 
 	err = ctl.orderService.CreateOrder(c.Request().Context(), order)
 

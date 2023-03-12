@@ -10,6 +10,7 @@ require (
 	github.com/rs/zerolog v1.29.0
 	github.com/spf13/viper v1.15.0
 	github.com/tabbed/pqtype v0.1.1
+	github.com/ubiq/go-ubiq v3.0.1+incompatible
 	go.mongodb.org/mongo-driver v1.11.1
 )
 
