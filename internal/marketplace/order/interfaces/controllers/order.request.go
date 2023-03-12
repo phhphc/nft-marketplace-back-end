@@ -87,10 +87,16 @@ func (o *OrderForm) MapToDomainOrder() models.Order {
 
 	offerer := common.HexToAddress(o.Offerer)
 	orderType, _ := big.NewInt(0).SetString(o.OrderType, 10)
-	startTime, _ := hexutil.DecodeBig(o.StartTime)
-	endTime, _ := hexutil.DecodeBig(o.EndTime)
 	counter, _ := hexutil.DecodeBig(o.Counter)
 	zone := common.HexToAddress(o.Zone)
+	startTime, err := hexutil.DecodeBig(o.StartTime)
+	if err != nil {
+		startTime, _ = big.NewInt(0).SetString(o.StartTime, 10)
+	}
+	endTime, err := hexutil.DecodeBig(o.EndTime)
+	if err != nil {
+		endTime, _ = big.NewInt(0).SetString(o.EndTime, 10)
+	}
 
 	return models.Order{
 		OrderHash:     o.OrderHash,
