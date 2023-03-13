@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -51,16 +50,8 @@ func (ctl *orderController) GetOrder(c echo.Context) error {
 		return err
 	}
 
-	orderJson, err := json.Marshal(order)
-	if err != nil {
-		return c.JSON(400, Response{
-			Error:     err,
-			IsSuccess: false,
-		})
-	}
-
 	return c.JSON(http.StatusOK, Response{
-		Data:      orderJson,
+		Data:      order,
 		IsSuccess: true,
 	})
 }
