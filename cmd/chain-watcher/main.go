@@ -7,7 +7,9 @@ import (
 	"sync"
 
 	"github.com/phhphc/nft-marketplace-back-end/configs"
-	chainListener "github.com/phhphc/nft-marketplace-back-end/internal/worker/chain-listener"
+	chainListener "github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/interfaces/chain-listener"
+	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/interfaces/repository"
+	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/services"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/clients"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 )
@@ -41,12 +43,15 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
+	orderRepository := repository.NewRepository(postgreClient.Database)
+	orderService := services.NewOrderService(orderRepository)
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
 		lg.Info().Caller().Msg("Start chain watcher")
-		chainListener, err := chainListener.NewChainListener(postgreClient, ethClient, cfg.MarkeplaceAddr)
+		chainListener, err := chainListener.NewChainListener(postgreClient, ethClient, orderService, cfg.MarkeplaceAddr)
 		if err != nil {
 			lg.Fatal().Err(err).Caller().Msg("error create chain listener")
 		}

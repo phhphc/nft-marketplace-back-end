@@ -3,10 +3,11 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/infrastructure/postgresql"
 	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/models"
-	"math/big"
 )
 
 type orderRepository struct {
@@ -201,9 +202,12 @@ func (r *orderRepository) SetOrderCancelled(ctx context.Context, orderHash strin
 
 	qtx := r.queries.WithTx(tx)
 
-	err = qtx.UpdateOrderIsCancelled(ctx, postgresql.UpdateOrderIsCancelledParams{
-		OrderHash:   orderHash,
-		IsCancelled: true,
+	err = qtx.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
+		OrderHash: orderHash,
+		IsCancelled: sql.NullBool{
+			Bool:  true,
+			Valid: true,
+		},
 	})
 
 	if err != nil {
@@ -222,9 +226,12 @@ func (r *orderRepository) SetOrderValidated(ctx context.Context, orderHash strin
 
 	qtx := r.queries.WithTx(tx)
 
-	err = qtx.UpdateOrderIsValidated(ctx, postgresql.UpdateOrderIsValidatedParams{
-		OrderHash:   orderHash,
-		IsValidated: true,
+	err = qtx.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
+		OrderHash: orderHash,
+		IsValidated: sql.NullBool{
+			Bool:  true,
+			Valid: true,
+		},
 	})
 
 	if err != nil {
@@ -252,6 +259,24 @@ func (r *orderRepository) SetAllOrderCancelled(ctx context.Context, offerer stri
 		return err
 	}
 	return tx.Commit()
+}
+
+func (r *orderRepository) SetOrderFulfilled(ctx context.Context, orderHash string) error {
+	return r.queries.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
+		OrderHash: orderHash,
+		IsFulfilled: sql.NullBool{
+			Bool:  true,
+			Valid: true,
+		},
+		IsValidated: sql.NullBool{
+			Bool:  true,
+			Valid: true,
+		},
+		IsCancelled: sql.NullBool{
+			Bool:  false,
+			Valid: true,
+		},
+	})
 }
 
 func string2BigInt(s string) *big.Int {

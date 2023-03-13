@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS marketplace_order (
     offerer char(42) NOT NULL,
     is_cancelled boolean NOT NULL,
     is_validated boolean NOT NULL,
+    is_fulfilled boolean NOT NULL,
     signature varchar NOT NULL,
     order_type numeric(78,0) NOT NULL,
     start_time numeric(78,0) NOT NULL,

@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/models"
-	"math/big"
 )
 
 type OrderService interface {
@@ -16,4 +17,5 @@ type OrderService interface {
 
 	UpdateOrderIsCancelled(ctx context.Context, orderHash string) error
 	UpdateOrderIsValidated(ctx context.Context, orderHash string) error
+	UpdateOrderIsFulfilled(ctx context.Context, orderHash string) error
 }

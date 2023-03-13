@@ -2,11 +2,12 @@ package services
 
 import (
 	"context"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/interfaces/repository"
 	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/models"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
-	"math/big"
 )
 
 type orderService struct {
@@ -77,6 +78,39 @@ func (s *orderService) UpdateOrderIsCancelled(ctx context.Context, orderHash str
 
 func (s *orderService) UpdateOrderIsValidated(ctx context.Context, orderHash string) error {
 	err := s.repo.SetOrderValidated(ctx, orderHash)
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("error update order is validated")
+		return err
+	}
+	return nil
+}
+
+// type ReceivedItem struct {
+// 	ItemType   uint8
+// 	Token      common.Address
+// 	Identifier *big.Int
+// 	Amount     *big.Int
+// 	Recipient  common.Address
+// }
+
+// type SpentItem struct {
+// 	ItemType   uint8
+// 	Token      common.Address
+// 	Identifier *big.Int
+// 	Amount     *big.Int
+// }
+
+// type MarketplaceOrderFulfilled struct {
+// 	OrderHash     [32]byte
+// 	Offerer       common.Address
+// 	Zone          common.Address
+// 	Recipient     common.Address
+// 	Offer         []SpentItem
+// 	Consideration []ReceivedItem
+// }
+
+func (s *orderService) UpdateOrderIsFulfilled(ctx context.Context, orderHash string) error {
+	err := s.repo.SetOrderFulfilled(ctx, orderHash)
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("error update order is validated")
 		return err

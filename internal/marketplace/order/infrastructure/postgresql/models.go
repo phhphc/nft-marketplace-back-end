@@ -13,6 +13,7 @@ type MarketplaceOrder struct {
 	Offerer     string
 	IsCancelled bool
 	IsValidated bool
+	IsFulfilled bool
 	Signature   string
 	OrderType   string
 	StartTime   string

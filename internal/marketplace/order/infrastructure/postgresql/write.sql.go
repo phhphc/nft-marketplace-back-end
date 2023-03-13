@@ -32,6 +32,7 @@ INSERT INTO
                       offerer,
                       is_cancelled,
                       is_validated,
+                      is_fulFilled,
                       signature,
                       order_type,
                       start_time,
@@ -42,7 +43,7 @@ INSERT INTO
                       zone_hash,
                       created_at,
                       modified_at)
-VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, now(), now())
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,$13, now(), now())
 `
 
 type InsertOrderParams struct {
@@ -50,6 +51,7 @@ type InsertOrderParams struct {
 	Offerer     string
 	IsCancelled bool
 	IsValidated bool
+	IsFulfilled bool
 	Signature   string
 	OrderType   string
 	StartTime   string
@@ -66,6 +68,7 @@ func (q *Queries) InsertOrder(ctx context.Context, arg InsertOrderParams) error 
 		arg.Offerer,
 		arg.IsCancelled,
 		arg.IsValidated,
+		arg.IsFulfilled,
 		arg.Signature,
 		arg.OrderType,
 		arg.StartTime,
@@ -132,34 +135,29 @@ func (q *Queries) InsertOrderOffer(ctx context.Context, arg InsertOrderOfferPara
 	return err
 }
 
-const updateOrderIsCancelled = `-- name: UpdateOrderIsCancelled :exec
+const updateOrderStatus = `-- name: UpdateOrderStatus :exec
 UPDATE marketplace_order
-SET is_cancelled = $2 , modified_at = now()
-WHERE order_hash = $1
+SET 
+    is_cancelled = coalesce($1, is_cancelled),
+    is_validated = coalesce($2, is_validated),
+    is_fulfilled = coalesce($3, is_fulfilled),
+    modified_at = now()
+WHERE order_hash = $4
 `
 
-type UpdateOrderIsCancelledParams struct {
+type UpdateOrderStatusParams struct {
+	IsCancelled sql.NullBool
+	IsValidated sql.NullBool
+	IsFulfilled sql.NullBool
 	OrderHash   string
-	IsCancelled bool
 }
 
-func (q *Queries) UpdateOrderIsCancelled(ctx context.Context, arg UpdateOrderIsCancelledParams) error {
-	_, err := q.db.ExecContext(ctx, updateOrderIsCancelled, arg.OrderHash, arg.IsCancelled)
-	return err
-}
-
-const updateOrderIsValidated = `-- name: UpdateOrderIsValidated :exec
-UPDATE marketplace_order
-SET is_validated = $2 , modified_at = now()
-WHERE order_hash = $1
-`
-
-type UpdateOrderIsValidatedParams struct {
-	OrderHash   string
-	IsValidated bool
-}
-
-func (q *Queries) UpdateOrderIsValidated(ctx context.Context, arg UpdateOrderIsValidatedParams) error {
-	_, err := q.db.ExecContext(ctx, updateOrderIsValidated, arg.OrderHash, arg.IsValidated)
+func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateOrderStatus,
+		arg.IsCancelled,
+		arg.IsValidated,
+		arg.IsFulfilled,
+		arg.OrderHash,
+	)
 	return err
 }

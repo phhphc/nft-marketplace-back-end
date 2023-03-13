@@ -20,8 +20,7 @@ type Querier interface {
 	InsertOrder(ctx context.Context, arg InsertOrderParams) error
 	InsertOrderConsideration(ctx context.Context, arg InsertOrderConsiderationParams) error
 	InsertOrderOffer(ctx context.Context, arg InsertOrderOfferParams) error
-	UpdateOrderIsCancelled(ctx context.Context, arg UpdateOrderIsCancelledParams) error
-	UpdateOrderIsValidated(ctx context.Context, arg UpdateOrderIsValidatedParams) error
+	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) error
 }
 
 var _ Querier = (*Queries)(nil)
