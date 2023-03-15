@@ -10,8 +10,10 @@ import (
 type Reader interface {
 	GetOrder(ctx context.Context, orderHash string) (models.Order, error)
 	GetOrderList(ctx context.Context, offset, limit int) ([]models.Order, error)
-	GetOrderByItemConsideration(ctx context.Context, tokenAddress common.Address, tokenId *big.Int) ([]models.Order, error)
-	GetOrderByItemOffer(ctx context.Context, tokenAddress common.Address, tokenId *big.Int) ([]models.Order, error)
+	GetOrderByConsiderationItem(ctx context.Context, tokenAddress common.Address, tokenId *big.Int) ([]models.Order, error)
+	GetValidOrderByConsiderationItem(ctx context.Context, tokenAddress common.Address, tokenId *big.Int) ([]models.Order, error)
+	GetOrderByOfferItem(ctx context.Context, tokenAddress common.Address, tokenId *big.Int) ([]models.Order, error)
+	GetValidOrderByOfferItem(ctx context.Context, tokenAddress common.Address, tokenId *big.Int) ([]models.Order, error)
 }
 
 type Writer interface {

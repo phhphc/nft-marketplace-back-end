@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/labstack/echo/v4"
@@ -42,6 +41,9 @@ func NewOrderController(group *echo.Group, orderService services.OrderService) *
 	return controller
 }
 
+// GetOrder GET order by order hash
+// Return the Order information tracing by orderhash
+// Only return the order that has valid status
 func (ctl *orderController) GetOrder(c echo.Context) error {
 	orderHash := c.Param("order_hash")
 	order, err := ctl.orderService.GetOrder(c.Request().Context(), orderHash)
@@ -50,8 +52,10 @@ func (ctl *orderController) GetOrder(c echo.Context) error {
 		return err
 	}
 
+	response := NewOrderResponse(order)
+
 	return c.JSON(http.StatusOK, Response{
-		Data:      order,
+		Data:      response,
 		IsSuccess: true,
 	})
 }
@@ -60,17 +64,14 @@ func (ctl *orderController) GetOrderByOfferItem(c echo.Context) error {
 	tokenAddress := c.QueryParam("token_address")
 	tokenId := c.QueryParam("token_id")
 
-	fmt.Println("tokenAddress: ", tokenAddress)
 	tkId, err := hexutil.DecodeBig(tokenId)
-
-	fmt.Println("tokenId: ", tkId)
 
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("err")
 		return err
 	}
 
-	orders, err := ctl.orderService.GetAllOrderByOfferItem(
+	orders, err := ctl.orderService.GetValidOrderByOfferItem(
 		c.Request().Context(),
 		common.HexToAddress(tokenAddress),
 		tkId,
@@ -80,8 +81,13 @@ func (ctl *orderController) GetOrderByOfferItem(c echo.Context) error {
 		return err
 	}
 
+	response := make([]GetOrderResponse, 0)
+	for _, order := range orders {
+		response = append(response, *NewOrderResponse(order))
+	}
+
 	return c.JSON(http.StatusOK, Response{
-		Data:      orders,
+		Data:      response,
 		IsSuccess: true,
 	})
 }
@@ -95,7 +101,7 @@ func (ctl *orderController) GetOrderByConsiderationItem(c echo.Context) error {
 		return err
 	}
 
-	orders, err := ctl.orderService.GetAllOrderByConsiderationItem(
+	orders, err := ctl.orderService.GetValidOrderByConsiderationItem(
 		c.Request().Context(),
 		common.HexToAddress(tokenAddress),
 		tkId,
@@ -105,8 +111,13 @@ func (ctl *orderController) GetOrderByConsiderationItem(c echo.Context) error {
 		return err
 	}
 
+	response := make([]GetOrderResponse, 0)
+	for _, order := range orders {
+		response = append(response, *NewOrderResponse(order))
+	}
+
 	return c.JSON(http.StatusOK, Response{
-		Data:      orders,
+		Data:      response,
 		IsSuccess: true,
 	})
 }
@@ -128,7 +139,7 @@ func (ctl *orderController) CreateOrder(c echo.Context) error {
 
 	if err != nil {
 		return c.JSON(400, Response{
-			Data:      orderForm,
+			Data:      order,
 			Error:     err,
 			IsSuccess: false,
 		})

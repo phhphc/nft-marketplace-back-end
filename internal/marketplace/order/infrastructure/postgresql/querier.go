@@ -6,16 +6,14 @@ package postgresql
 
 import (
 	"context"
-	"encoding/json"
 )
 
 type Querier interface {
 	DestroyOrders(ctx context.Context, arg DestroyOrdersParams) error
-	GetJsonOrder(ctx context.Context, orderHash string) (json.RawMessage, error)
 	GetOrder(ctx context.Context, orderHash string) (GetOrderRow, error)
 	GetOrderConsideration(ctx context.Context, orderHash string) ([]GetOrderConsiderationRow, error)
-	GetOrderHashByItemConsideration(ctx context.Context, arg GetOrderHashByItemConsiderationParams) ([]string, error)
-	GetOrderHashByItemOffer(ctx context.Context, arg GetOrderHashByItemOfferParams) ([]string, error)
+	GetOrderHashByConsiderationItem(ctx context.Context, arg GetOrderHashByConsiderationItemParams) ([]GetOrderHashByConsiderationItemRow, error)
+	GetOrderHashByOfferItem(ctx context.Context, arg GetOrderHashByOfferItemParams) ([]GetOrderHashByOfferItemRow, error)
 	GetOrderOffer(ctx context.Context, orderHash string) ([]GetOrderOfferRow, error)
 	InsertOrder(ctx context.Context, arg InsertOrderParams) error
 	InsertOrderConsideration(ctx context.Context, arg InsertOrderConsiderationParams) error

@@ -1,39 +1,3 @@
--- name: GetJsonOrder :one
-SELECT
-    json_build_object(
-        'order_hash', o.order_hash,
-        'offerer', o.offerer,
-        'zone' ,o.zone,
-        'offer', json_agg(
-            json_build_object(
-                'token', offer.token_address,
-                'identifier', offer.token_id,
-                'start_amount', offer.start_amount,
-                'end_amount', offer.end_amount
-                )
-            ),
-        'consideration', json_agg(
-            json_build_object(
-                'token', cons.token_address,
-                'identifier', cons.token_id,
-                'start_amount', cons.start_amount,
-                'end_amount', cons.end_amount,
-                'recipient', cons.recipient
-                )
-            ),
-        'signature', o.signature,
-        'order_type', o.order_type,
-        'start_time', o.start_time,
-        'end_time', o.end_time,
-        'salt', o.salt,
-        'counter', o.counter
-    )
-FROM marketplace_order o
-JOIN marketplace_order_offer offer ON o.order_hash = offer.order_hash
-JOIN marketplace_order_consideration cons ON o.order_hash = cons.order_hash
-WHERE o.order_hash = $1
-GROUP BY o.order_hash, o.offerer, o.zone, o.order_type, o.start_time, o.end_time, o.salt, o.counter;
-
 -- name: GetOrder :one
 SELECT
     o.order_hash,
@@ -48,7 +12,9 @@ SELECT
     o.salt,
     o.counter,
     o.zone,
-    o.zone_hash
+    o.zone_hash,
+    o.created_at,
+    o.modified_at
 FROM marketplace_order o
 WHERE o.order_hash = $1;
 
@@ -73,14 +39,30 @@ SELECT
 FROM marketplace_order_consideration cons
 WHERE cons.order_hash = $1;
 
--- name: GetOrderHashByItemConsideration :many
+-- name: GetOrderHashByConsiderationItem :many
 SELECT DISTINCT
-    order_hash
-FROM marketplace_order_consideration
-WHERE token_address = $1 AND token_id = $2;
+    c.order_hash,
+    o.created_at
+FROM marketplace_order_consideration c
+LEFT JOIN (
+    SELECT created_at, order_hash, is_cancelled FROM marketplace_order
+    ) o
+ON c.order_hash = o.order_hash
+WHERE c.token_address = sqlc.arg('token_address')
+AND c.token_id = sqlc.arg('token_id')
+AND (is_cancelled = sqlc.narg('is_cancelled') OR is_cancelled IS NULL)
+ORDER BY o.created_at DESC;
 
--- name: GetOrderHashByItemOffer :many
+-- name: GetOrderHashByOfferItem :many
 SELECT DISTINCT
-    order_hash
-FROM marketplace_order_offer
-WHERE token_address = $1 AND token_id = $2;
+    offer.order_hash,
+    o.created_at
+FROM marketplace_order_offer offer
+LEFT JOIN (
+    SELECT created_at, order_hash, is_cancelled FROM marketplace_order
+    ) o
+ON offer.order_hash = o.order_hash
+WHERE offer.token_address = sqlc.arg('token_address')
+AND offer.token_id = sqlc.arg('token_id')
+AND (is_cancelled = sqlc.narg('is_cancelled') OR is_cancelled IS NULL)
+ORDER BY o.created_at DESC;

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/infrastructure/postgresql"
 	"github.com/phhphc/nft-marketplace-back-end/internal/marketplace/order/models"
@@ -42,42 +43,42 @@ func (r *orderRepository) GetOrder(ctx context.Context, orderHash string) (model
 		IsValidated: res.IsValidated,
 		Zone:        string2Address(res.Zone.String),
 		ZoneHash:    res.ZoneHash.String,
+		CreatedAt:   res.CreatedAt.Time,
 	}
 
-	order.Offer = make([]models.OfferItem, 0)
-	order.Consideration = make([]models.ConsiderationItem, 0)
-
 	offerItems, err := r.queries.GetOrderOffer(ctx, orderHash)
-
 	if err != nil {
 		return models.Order{}, err
 	}
 
-	for _, item := range offerItems {
-		order.Offer = append(order.Offer, models.OfferItem{
-			TypeNumber:   string2BigInt(item.TypeNumber),
+	order.Offer = make([]models.OfferItem, len(offerItems))
+
+	for i, item := range offerItems {
+		order.Offer[i] = models.OfferItem{
+			ItemType:     string2BigInt(item.TypeNumber),
 			TokenId:      string2BigInt(item.TokenID),
 			TokenAddress: string2Address(item.TokenAddress),
 			StartAmount:  string2BigInt(item.StartAmount),
 			EndAmount:    string2BigInt(item.EndAmount),
-		})
+		}
 	}
 
 	considerationItems, err := r.queries.GetOrderConsideration(ctx, orderHash)
-
 	if err != nil {
 		return models.Order{}, err
 	}
 
-	for _, item := range considerationItems {
-		order.Consideration = append(order.Consideration, models.ConsiderationItem{
-			TypeNumber:   string2BigInt(item.TypeNumber),
+	order.Consideration = make([]models.ConsiderationItem, len(considerationItems))
+
+	for i, item := range considerationItems {
+		order.Consideration[i] = models.ConsiderationItem{
+			ItemType:     string2BigInt(item.TypeNumber),
 			TokenId:      string2BigInt(item.TokenID),
 			TokenAddress: string2Address(item.TokenAddress),
 			StartAmount:  string2BigInt(item.StartAmount),
 			EndAmount:    string2BigInt(item.EndAmount),
 			Recipient:    string2Address(item.Recipient),
-		})
+		}
 	}
 
 	return order, nil
@@ -87,8 +88,8 @@ func (r *orderRepository) GetOrderList(ctx context.Context, offset, limit int) (
 	panic("implement me")
 }
 
-func (r *orderRepository) GetOrderByItemConsideration(ctx context.Context, tokenAddress common.Address, tokenId *big.Int) ([]models.Order, error) {
-	orderHashes, err := r.queries.GetOrderHashByItemConsideration(ctx, postgresql.GetOrderHashByItemConsiderationParams{
+func (r *orderRepository) GetOrderByConsiderationItem(ctx context.Context, tokenAddress common.Address, tokenId *big.Int) ([]models.Order, error) {
+	orderHashes, err := r.queries.GetOrderHashByConsiderationItem(ctx, postgresql.GetOrderHashByConsiderationItemParams{
 		TokenAddress: tokenAddress.String(),
 		TokenID:      tokenId.String(),
 	})
@@ -96,20 +97,43 @@ func (r *orderRepository) GetOrderByItemConsideration(ctx context.Context, token
 		return nil, err
 	}
 
-	orders := make([]models.Order, 0)
+	orders := make([]models.Order, len(orderHashes))
 
-	for _, hash := range orderHashes {
-		order, err := r.GetOrder(ctx, hash)
+	for i, hash := range orderHashes {
+		order, err := r.GetOrder(ctx, hash.OrderHash)
 		if err != nil {
 			return nil, err
 		}
-		orders = append(orders, order)
+		orders[i] = order
 	}
 	return orders, nil
 }
 
-func (r *orderRepository) GetOrderByItemOffer(ctx context.Context, tokenAddress common.Address, tokenId *big.Int) ([]models.Order, error) {
-	orderHashes, err := r.queries.GetOrderHashByItemOffer(ctx, postgresql.GetOrderHashByItemOfferParams{
+func (r *orderRepository) GetValidOrderByConsiderationItem(ctx context.Context, tokenAddress common.Address, tokenId *big.Int) ([]models.Order, error) {
+	orderHashes, err := r.queries.GetOrderHashByConsiderationItem(ctx, postgresql.GetOrderHashByConsiderationItemParams{
+		TokenAddress: tokenAddress.String(),
+		TokenID:      tokenId.String(),
+		IsCancelled:  sql.NullBool{Bool: false, Valid: true},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	orders := make([]models.Order, len(orderHashes))
+
+	for i, hash := range orderHashes {
+		order, err := r.GetOrder(ctx, hash.OrderHash)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println(order)
+		orders[i] = order
+	}
+	return orders, nil
+}
+
+func (r *orderRepository) GetOrderByOfferItem(ctx context.Context, tokenAddress common.Address, tokenId *big.Int) ([]models.Order, error) {
+	orderHashes, err := r.queries.GetOrderHashByOfferItem(ctx, postgresql.GetOrderHashByOfferItemParams{
 		TokenAddress: tokenAddress.String(),
 		TokenID:      tokenId.String(),
 	})
@@ -117,14 +141,36 @@ func (r *orderRepository) GetOrderByItemOffer(ctx context.Context, tokenAddress 
 		return nil, err
 	}
 
-	orders := make([]models.Order, 0)
+	orders := make([]models.Order, len(orderHashes))
 
-	for _, hash := range orderHashes {
-		order, err := r.GetOrder(ctx, hash)
+	for i, hash := range orderHashes {
+		order, err := r.GetOrder(ctx, hash.OrderHash)
 		if err != nil {
 			return nil, err
 		}
-		orders = append(orders, order)
+		orders[i] = order
+	}
+	return orders, nil
+}
+
+func (r *orderRepository) GetValidOrderByOfferItem(ctx context.Context, tokenAddress common.Address, tokenId *big.Int) ([]models.Order, error) {
+	orderHashes, err := r.queries.GetOrderHashByOfferItem(ctx, postgresql.GetOrderHashByOfferItemParams{
+		TokenAddress: tokenAddress.String(),
+		TokenID:      tokenId.String(),
+		IsCancelled:  sql.NullBool{Bool: false, Valid: true},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	orders := make([]models.Order, len(orderHashes))
+
+	for i, hash := range orderHashes {
+		order, err := r.GetOrder(ctx, hash.OrderHash)
+		if err != nil {
+			return nil, err
+		}
+		orders[i] = order
 	}
 	return orders, nil
 }
@@ -160,7 +206,7 @@ func (r *orderRepository) InsertOrder(ctx context.Context, order models.Order) e
 	for _, item := range order.Offer {
 		err := qtx.InsertOrderOffer(ctx, postgresql.InsertOrderOfferParams{
 			OrderHash:    order.OrderHash,
-			TypeNumber:   item.TypeNumber.String(),
+			TypeNumber:   item.ItemType.String(),
 			TokenID:      item.TokenId.String(),
 			TokenAddress: item.TokenAddress.String(),
 			StartAmount:  item.StartAmount.String(),
@@ -175,7 +221,7 @@ func (r *orderRepository) InsertOrder(ctx context.Context, order models.Order) e
 	for _, item := range order.Consideration {
 		err := qtx.InsertOrderConsideration(ctx, postgresql.InsertOrderConsiderationParams{
 			OrderHash:    order.OrderHash,
-			TypeNumber:   item.TypeNumber.String(),
+			TypeNumber:   item.ItemType.String(),
 			TokenID:      item.TokenId.String(),
 			TokenAddress: item.TokenAddress.String(),
 			StartAmount:  item.StartAmount.String(),

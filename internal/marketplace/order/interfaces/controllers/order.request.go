@@ -24,17 +24,17 @@ type (
 	}
 
 	OfferItemForm struct {
-		TypeNumber   string `json:"type_number"`
-		TokenId      string `json:"token_id"`
-		TokenAddress string `json:"token_address"`
+		ItemType     string `json:"item_type"`
+		TokenId      string `json:"identifier"`
+		TokenAddress string `json:"token"`
 		StartAmount  string `json:"start_amount"`
 		EndAmount    string `json:"end_amount"`
 	}
 
 	ConsiderationItemForm struct {
-		TypeNumber   string `json:"type_number"`
-		TokenId      string `json:"token_id"`
-		TokenAddress string `json:"token_address"`
+		ItemType     string `json:"item_type"`
+		TokenId      string `json:"identifier"`
+		TokenAddress string `json:"token"`
 		StartAmount  string `json:"start_amount"`
 		EndAmount    string `json:"end_amount"`
 		Recipient    string `json:"recipient"`
@@ -42,14 +42,14 @@ type (
 )
 
 func (o *OfferItemForm) MapToDomainOfferItem() models.OfferItem {
-	typeNumber, _ := big.NewInt(0).SetString(o.TypeNumber, 10)
+	typeNumber, _ := big.NewInt(0).SetString(o.ItemType, 10)
 	tokenId, _ := hexutil.DecodeBig(o.TokenId)
 	tokenAddress := common.HexToAddress(o.TokenAddress)
 	startAmount, _ := hexutil.DecodeBig(o.StartAmount)
 	endAmount, _ := hexutil.DecodeBig(o.EndAmount)
 
 	return models.OfferItem{
-		TypeNumber:   typeNumber,
+		ItemType:     typeNumber,
 		TokenId:      tokenId,
 		TokenAddress: tokenAddress,
 		StartAmount:  startAmount,
@@ -58,7 +58,7 @@ func (o *OfferItemForm) MapToDomainOfferItem() models.OfferItem {
 }
 
 func (c *ConsiderationItemForm) MapToDomainConsiderationItem() models.ConsiderationItem {
-	typeNumber, _ := big.NewInt(0).SetString(c.TypeNumber, 10)
+	typeNumber, _ := big.NewInt(0).SetString(c.ItemType, 10)
 	tokenId, _ := hexutil.DecodeBig(c.TokenId)
 	tokenAddress := common.HexToAddress(c.TokenAddress)
 	startAmount, _ := hexutil.DecodeBig(c.StartAmount)
@@ -66,7 +66,7 @@ func (c *ConsiderationItemForm) MapToDomainConsiderationItem() models.Considerat
 	recipient := common.HexToAddress(c.Recipient)
 
 	return models.ConsiderationItem{
-		TypeNumber:   typeNumber,
+		ItemType:     typeNumber,
 		TokenId:      tokenId,
 		TokenAddress: tokenAddress,
 		StartAmount:  startAmount,
