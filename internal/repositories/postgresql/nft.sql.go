@@ -15,7 +15,7 @@ import (
 const getListNft = `-- name: GetListNft :many
 SELECT n.token_id, n.contract_addr, n.owner, n.is_burned, n.metadata, l.listing_id, l.seller, l.price
 FROM "nfts" n
-LEFT JOIN (SELECT listing_id, contract_addr, token_id, seller, price, status, block_number, tx_index FROM "listings" WHERE status = 'Open') AS l USING (token_id, contract_addr)
+LEFT JOIN (SELECT listing_id, seller, price FROM "listings" WHERE status = 'Open') AS l USING (token_id, contract_addr)
 WHERE (n.contract_addr ILIKE $1 OR $1 IS NULL)
 AND (n.owner ILIKE $2 OR l.seller ILIKE $2 OR $2 IS NULL)
 ORDER BY n.contract_addr ASC, n.token_id ASC

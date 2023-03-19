@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/phhphc/nft-marketplace-back-end/internal/controllers/dto"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 )
@@ -45,7 +46,7 @@ func HTTPErrorHandler(err error, c echo.Context) {
 
 	var code int
 	var res models.Response
-	if he, ok := err.(*models.HTTPError); ok {
+	if he, ok := err.(*dto.HTTPError); ok {
 		code = he.Code
 		res.Error = he.Err.Error()
 	} else if he, ok := err.(*echo.HTTPError); ok {

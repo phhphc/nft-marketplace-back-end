@@ -5,8 +5,22 @@
 package postgresql
 
 import (
+	"database/sql"
+
 	"github.com/tabbed/pqtype"
 )
+
+type ConsiderationItem struct {
+	ID          int64
+	OrderHash   string
+	ItemType    int32
+	Token       string
+	Identifier  string
+	Amount      sql.NullString
+	StartAmount sql.NullString
+	EndAmount   sql.NullString
+	Recipient   string
+}
 
 type Listing struct {
 	ListingID    string
@@ -27,4 +41,31 @@ type Nft struct {
 	Metadata     pqtype.NullRawMessage
 	BlockNumber  string
 	TxIndex      int64
+}
+
+type OfferItem struct {
+	ID          int64
+	OrderHash   string
+	ItemType    int32
+	Token       string
+	Identifier  string
+	Amount      sql.NullString
+	StartAmount sql.NullString
+	EndAmount   sql.NullString
+}
+
+type Order struct {
+	OrderHash   string
+	Offerer     string
+	Zone        string
+	Recipient   sql.NullString
+	OrderType   sql.NullInt32
+	ZoneHash    string
+	Salt        sql.NullString
+	StartTime   sql.NullString
+	EndTime     sql.NullString
+	Signature   sql.NullString
+	IsCancelled bool
+	IsValidated bool
+	IsFulfilled bool
 }

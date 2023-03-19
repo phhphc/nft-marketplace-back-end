@@ -8,6 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/phhphc/nft-marketplace-back-end/internal/controllers"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
+	"github.com/phhphc/nft-marketplace-back-end/internal/services"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/clients"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 )
@@ -34,6 +36,13 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 	nftRoute := e.Group("/api/v0.1/nft")
 	nftRoute.GET("/:contract_addr/:token_id", nftController.GetNft)
 	nftRoute.GET("", nftController.GetNftsOfCollection)
+
+	var repository postgresql.Querier = postgresql.New(postgreClient.Database)
+	var service services.Servicer = services.New(repository)
+	var controller controllers.Controller = controllers.New(service)
+
+	orderRoute := e.Group("/api/v0.1/order")
+	orderRoute.POST("", controller.PostOrder)
 
 	return &httpServer{
 		lg:   log.GetLogger(),

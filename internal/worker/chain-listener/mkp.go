@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/phhphc/nft-marketplace-back-end/internal/models"
+	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 )
 
 func (w *worker) listenMkpEvent(ctx context.Context, wg *sync.WaitGroup) {
@@ -68,51 +68,44 @@ func (w *worker) handleMkpEvent(vLog types.Log) {
 	}
 
 	switch eventAbi.Name {
-	case "NewListing":
-		nl, err := w.mkpContract.ParseNewListing(vLog)
+	case "OrderFulfilled":
+		log, err := w.mkpContract.ParseOrderFulfilled(vLog)
 		if err != nil {
 			w.lg.Error().Caller().Err(err).Msg("error parse event")
 			return
 		}
-		w.lg.Debug().Caller().Interface("log", nl).Msg("it work")
+		w.lg.Debug().Caller().Interface("log", log).Msg("it work")
 
-		w.listingService.NewListing(context.TODO(), models.Listing{
-			ListingId:    nl.ListingId,
-			ContractAddr: nl.Collection,
-			TokenId:      nl.TokenId,
-			Seller:       nl.Seller,
-			Price:        nl.Price,
-		}, vLog.BlockNumber, vLog.TxIndex)
-	case "ListingCanceled":
-		lc, err := w.mkpContract.ParseListingCanceled(vLog)
-		if err != nil {
-			w.lg.Error().Caller().Err(err).Msg("error parse event")
-			return
+		var offerItems = make([]entities.OfferItem, len(log.Offer))
+		for i, item := range log.Offer {
+			offerItems[i] = entities.OfferItem{
+				ItemType:   entities.EnumItemType(item.ItemType),
+				Token:      item.Token,
+				Identifier: item.Identifier,
+				Amount:     item.Amount,
+			}
 		}
-		w.lg.Debug().Caller().Interface("log", lc).Msg("it work")
 
-		w.listingService.CancelListing(context.TODO(), models.Listing{
-			ListingId:    lc.ListingId,
-			ContractAddr: lc.Collection,
-			TokenId:      lc.TokenId,
-			Seller:       lc.Seller,
-			Price:        lc.Price,
-		}, vLog.BlockNumber, vLog.TxIndex)
-	case "ListingSale":
-		ls, err := w.mkpContract.ParseListingSale(vLog)
-		if err != nil {
-			w.lg.Error().Caller().Err(err).Msg("error parse event")
-			return
+		var considerationItem = make([]entities.ConsiderationItem, len(log.Consideration))
+		for i, item := range log.Consideration {
+			considerationItem[i] = entities.ConsiderationItem{
+				ItemType:   entities.EnumItemType(item.ItemType),
+				Token:      item.Token,
+				Identifier: item.Identifier,
+				Amount:     item.Amount,
+				Recipient:  item.Recipient,
+			}
 		}
-		w.lg.Debug().Caller().Interface("log", ls).Msg("it work")
 
-		w.listingService.SellListing(context.TODO(), models.Listing{
-			ListingId:    ls.ListingId,
-			ContractAddr: ls.Collection,
-			TokenId:      ls.TokenId,
-			Seller:       ls.From,
-			Price:        ls.Price,
-		}, vLog.BlockNumber, vLog.TxIndex)
+		w.Service.FulFillOrder(context.TODO(), entities.Order{
+			OrderHash: log.OrderHash,
+			Offerer:   log.Offerer,
+			Recipient: &log.Recipient,
+			Zone:      log.Zone,
+
+			Offer:         offerItems,
+			Consideration: considerationItem,
+		})
 	default:
 		w.lg.Error().Caller().Err(err).Str("event", eventAbi.Name).Msg("unhandle contract event")
 	}

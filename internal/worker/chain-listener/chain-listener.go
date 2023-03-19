@@ -28,9 +28,11 @@ type worker struct {
 	erc721Contract *contracts.ERC721Filterer
 	mkpAbi         abi.ABI
 	mkpContract    *contracts.MarketplaceFilterer
+
+	Service services.Servicer
 }
 
-func NewChainListener(postgreClient *clients.PostgreClient, ethClient *clients.EthClient, mkpContractAddr string) (ChainListener, error) {
+func NewChainListener(service services.Servicer, postgreClient *clients.PostgreClient, ethClient *clients.EthClient, mkpContractAddr string) (ChainListener, error) {
 	mkpAddr := common.HexToAddress(mkpContractAddr)
 	mkpAbi, err := abi.JSON(strings.NewReader(contracts.MarketplaceMetaData.ABI))
 	if err != nil {
@@ -61,13 +63,15 @@ func NewChainListener(postgreClient *clients.PostgreClient, ethClient *clients.E
 		erc721Contract: erc721Contract,
 		mkpAbi:         mkpAbi,
 		mkpContract:    mkpContract,
+
+		Service: service,
 	}, nil
 }
 
 func (w *worker) Run(ctx context.Context) error {
 	wg := sync.WaitGroup{}
 
-	wg.Add(2)
+	wg.Add(1)
 	go w.listenMkpEvent(ctx, &wg)
 	go w.listenErc721Event(ctx, &wg)
 
