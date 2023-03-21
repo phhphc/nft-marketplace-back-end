@@ -10,6 +10,21 @@ import (
 	"github.com/tabbed/pqtype"
 )
 
+type Category struct {
+	ID   int32
+	Name string
+}
+
+type Collection struct {
+	Token       string
+	Owner       string
+	Name        string
+	Description string
+	Metadata    pqtype.NullRawMessage
+	Category    int32
+	CreatedAt   sql.NullTime
+}
+
 type ConsiderationItem struct {
 	ID          int64
 	OrderHash   string
@@ -22,25 +37,14 @@ type ConsiderationItem struct {
 	Recipient   string
 }
 
-type Listing struct {
-	ListingID    string
-	ContractAddr string
-	TokenID      string
-	Seller       string
-	Price        string
-	Status       string
-	BlockNumber  string
-	TxIndex      int64
-}
-
 type Nft struct {
-	TokenID      string
-	ContractAddr string
-	Owner        string
-	IsBurned     bool
-	Metadata     pqtype.NullRawMessage
-	BlockNumber  string
-	TxIndex      int64
+	Token       string
+	Identifier  string
+	Owner       string
+	IsBurned    bool
+	Metadata    pqtype.NullRawMessage
+	BlockNumber string
+	TxIndex     int64
 }
 
 type OfferItem struct {

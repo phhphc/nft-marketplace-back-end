@@ -9,6 +9,8 @@ import (
 type Servicer interface {
 	CreateOrder(ctx context.Context, order entities.Order) error
 	FulFillOrder(ctx context.Context, order entities.Order) error
+
+	CreateCollection(ctx context.Context, collection entities.Collection) (entities.Collection, error)
 }
 
 var _ Servicer = (*Services)(nil)

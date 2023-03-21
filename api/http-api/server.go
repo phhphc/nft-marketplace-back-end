@@ -31,11 +31,11 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 	e.HTTPErrorHandler = HTTPErrorHandler
 	e.Validator = NewValidator()
 
-	nftController := controllers.NewNftController(postgreClient.Database)
+	// nftController := controllers.NewNftController(postgreClient.Database)
 
-	nftRoute := e.Group("/api/v0.1/nft")
-	nftRoute.GET("/:contract_addr/:token_id", nftController.GetNft)
-	nftRoute.GET("", nftController.GetNftsOfCollection)
+	// nftRoute := e.Group("/api/v0.1/nft")
+	// nftRoute.GET("/:contract_addr/:token_id", nftController.GetNft)
+	// nftRoute.GET("", nftController.GetNftsOfCollection)
 
 	var repository postgresql.Querier = postgresql.New(postgreClient.Database)
 	var service services.Servicer = services.New(repository)
@@ -43,6 +43,9 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 
 	orderRoute := e.Group("/api/v0.1/order")
 	orderRoute.POST("", controller.PostOrder)
+
+	collectionRoute := e.Group("/api/v0.1/collection")
+	collectionRoute.POST("", controller.PostCollection)
 
 	return &httpServer{
 		lg:   log.GetLogger(),
