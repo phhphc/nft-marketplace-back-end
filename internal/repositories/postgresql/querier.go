@@ -9,14 +9,13 @@ import (
 )
 
 type Querier interface {
-	GetListNft(ctx context.Context, arg GetListNftParams) ([]GetListNftRow, error)
-	GetNftDetail(ctx context.Context, arg GetNftDetailParams) (GetNftDetailRow, error)
+	GetListValidNft(ctx context.Context, arg GetListValidNftParams) ([]GetListValidNftRow, error)
+	GetValidNft(ctx context.Context, arg GetValidNftParams) (GetValidNftRow, error)
 	InsertOrder(ctx context.Context, arg InsertOrderParams) error
 	InsertOrderConsiderationItem(ctx context.Context, arg InsertOrderConsiderationItemParams) error
 	InsertOrderOfferItem(ctx context.Context, arg InsertOrderOfferItemParams) error
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (string, error)
-	UpsertListing(ctx context.Context, arg UpsertListingParams) error
-	UpsertNft(ctx context.Context, arg UpsertNftParams) error
+	UpsertNftV2(ctx context.Context, arg UpsertNftV2Params) error
 }
 
 var _ Querier = (*Queries)(nil)

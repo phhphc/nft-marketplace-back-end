@@ -9,6 +9,7 @@ import (
 type Servicer interface {
 	CreateOrder(ctx context.Context, order entities.Order) error
 	FulFillOrder(ctx context.Context, order entities.Order) error
+	NftNewService
 }
 
 var _ Servicer = (*Services)(nil)

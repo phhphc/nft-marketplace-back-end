@@ -10,12 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/phhphc/nft-marketplace-back-end/internal/contracts"
-	"github.com/phhphc/nft-marketplace-back-end/internal/models"
-
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/phhphc/nft-marketplace-back-end/internal/contracts"
 )
 
 func (w *worker) listenErc721Event(ctx context.Context, wg *sync.WaitGroup) {
@@ -86,14 +84,14 @@ func (w *worker) handleErc721Event(vLog types.Log) {
 			return
 		}
 
-		var nftMetadata []byte
+		//var nftMetadata []byte
 		tokenURI, err := w.fetchTokenURI(vLog.Address, transfer.TokenId)
 		if err != nil {
 			w.lg.Debug().Caller().Err(err).Msg("error")
 		}
 		w.lg.Debug().Caller().Interface("url", tokenURI).Msg("url")
 		for i := 0; i < 5; i++ {
-			nftMetadata, err = w.getRawJsonFromURI(*tokenURI)
+			//nftMetadata, err = w.getRawJsonFromURI(*tokenURI)
 			if err == nil {
 				break
 			}
@@ -103,12 +101,12 @@ func (w *worker) handleErc721Event(vLog types.Log) {
 			w.lg.Debug().Caller().Err(err).Msg("error")
 		}
 
-		w.nftService.TransferNft(context.TODO(), models.NftTransfer{
-			ContractAddr: vLog.Address,
-			TokenId:      transfer.TokenId,
-			From:         transfer.From,
-			To:           transfer.To,
-		}, nftMetadata, vLog.BlockNumber, vLog.TxIndex)
+		//w.nftService.TransferNft(context.TODO(), models.NftTransfer{
+		//	ContractAddr: vLog.Address,
+		//	TokenId:      transfer.TokenId,
+		//	From:         transfer.From,
+		//	To:           transfer.To,
+		//}, nftMetadata, vLog.BlockNumber, vLog.TxIndex)
 	case "Approval":
 		// TODO - handle
 	case "ApprovalForAll":
