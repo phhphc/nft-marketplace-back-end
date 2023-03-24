@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"reflect"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 )
@@ -111,7 +113,6 @@ func (s *Services) FulFillOrder(ctx context.Context, order entities.Order) (err 
 		IsCancelled: sql.NullBool{Bool: false, Valid: true},
 		IsFulfilled: sql.NullBool{Bool: true, Valid: true},
 	})
-	s.lg.Info().Caller().Msg(orderHash)
 	if err == nil {
 		return
 	}
@@ -200,6 +201,58 @@ func (s *Services) FulFillOrder(ctx context.Context, order entities.Order) (err 
 		}
 	}
 
+	return
+}
+
+func (s *Services) GetOrderByHash(ctx context.Context, orderHash common.Hash) (o map[string]any, e error) {
+	m, err := s.repo.GetJsonOrderByHash(ctx, orderHash.Hex())
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Interface("order hash", orderHash).Msg("Err")
+		return
+	}
+
+	// o = string(m)
+	json.Unmarshal(m, &o)
+	return
+}
+
+func (s *Services) GetOrderHash(ctx context.Context, offer entities.OfferItem, consideration entities.ConsiderationItem) (hs []common.Hash, err error) {
+	params := postgresql.GetOrderHashParams{}
+	if (consideration.Token != common.Address{}) {
+		params.ConsiderationToken = sql.NullString{
+			String: consideration.Token.Hex(),
+			Valid:  true,
+		}
+	}
+	if consideration.Identifier != nil {
+		params.ConsiderationIdentifier = sql.NullString{
+			String: consideration.Identifier.String(),
+			Valid:  true,
+		}
+	}
+
+	if (offer.Token != common.Address{}) {
+		params.OfferToken = sql.NullString{
+			String: offer.Token.Hex(),
+			Valid:  true,
+		}
+	}
+	if offer.Identifier != nil {
+		params.OfferIdentifier = sql.NullString{
+			String: offer.Identifier.String(),
+			Valid:  true,
+		}
+	}
+
+	ss, err := s.repo.GetOrderHash(ctx, params)
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Interface("param", params).Msg("Err")
+		return
+	}
+
+	for _, s := range ss {
+		hs = append(hs, common.HexToHash(s))
+	}
 	return
 }
 

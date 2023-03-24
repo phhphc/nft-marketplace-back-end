@@ -42,7 +42,9 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 	var controller controllers.Controller = controllers.New(service)
 
 	orderRoute := e.Group("/api/v0.1/order")
+	orderRoute.GET("", controller.GetOrder)
 	orderRoute.POST("", controller.PostOrder)
+	orderRoute.GET("/hash", controller.GetOrderHash)
 
 	collectionRoute := e.Group("/api/v0.1/collection")
 	collectionRoute.POST("", controller.PostCollection)

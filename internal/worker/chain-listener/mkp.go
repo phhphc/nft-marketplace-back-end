@@ -2,6 +2,7 @@ package chainListener
 
 import (
 	"context"
+	"encoding/hex"
 	"math/big"
 	"sync"
 
@@ -74,7 +75,6 @@ func (w *worker) handleMkpEvent(vLog types.Log) {
 			w.lg.Error().Caller().Err(err).Msg("error parse event")
 			return
 		}
-		w.lg.Debug().Caller().Interface("log", log).Msg("it work")
 
 		var offerItems = make([]entities.OfferItem, len(log.Offer))
 		for i, item := range log.Offer {
@@ -97,6 +97,7 @@ func (w *worker) handleMkpEvent(vLog types.Log) {
 			}
 		}
 
+		w.lg.Info().Caller().Str("OrderHash", "0x"+hex.EncodeToString(log.OrderHash[:])).Msg("OrderFulfilled")
 		w.Service.FulFillOrder(context.TODO(), entities.Order{
 			OrderHash: log.OrderHash,
 			Offerer:   log.Offerer,

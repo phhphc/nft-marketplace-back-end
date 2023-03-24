@@ -11,6 +11,57 @@ import (
 	"github.com/tabbed/pqtype"
 )
 
+const getListCollection = `-- name: GetListCollection :many
+SELECT "token", c."name", "description", "owner",k."name" as "category"
+FROM "collections" c
+JOIN categories k on k.id = c.category
+ORDER BY "created_at" DESC
+OFFSET $1
+LIMIT $2
+`
+
+type GetListCollectionParams struct {
+	Offset int32
+	Limit  int32
+}
+
+type GetListCollectionRow struct {
+	Token       string
+	Name        string
+	Description string
+	Owner       string
+	Category    string
+}
+
+func (q *Queries) GetListCollection(ctx context.Context, arg GetListCollectionParams) ([]GetListCollectionRow, error) {
+	rows, err := q.db.QueryContext(ctx, getListCollection, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetListCollectionRow{}
+	for rows.Next() {
+		var i GetListCollectionRow
+		if err := rows.Scan(
+			&i.Token,
+			&i.Name,
+			&i.Description,
+			&i.Owner,
+			&i.Category,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const insertCollection = `-- name: InsertCollection :one
 INSERT INTO "collections" ("token", "owner", "name", "description","category", "metadata")
 VALUES ($1,$2,$3,$4,$5,$6)

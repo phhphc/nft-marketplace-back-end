@@ -4,8 +4,10 @@ CREATE TABLE "nfts"
     "identifier"   NUMERIC(78, 0) NOT NULL,
 
     "owner"        CHAR(42)       NOT NULL,
-    "is_burned"    BOOLEAN        NOT NULL,
+    
     "metadata"     jsonb,
+
+    "is_burned"    BOOLEAN        NOT NULL,
 
     "block_number" numeric(19, 0) NOT NULL,
     "tx_index"     bigint         NOT NULL,

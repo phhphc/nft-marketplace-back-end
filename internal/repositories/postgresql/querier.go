@@ -6,17 +6,21 @@ package postgresql
 
 import (
 	"context"
+	"encoding/json"
 )
 
 type Querier interface {
 	GetCategoryByName(ctx context.Context, name string) (Category, error)
+	GetJsonOrderByHash(ctx context.Context, orderHash string) (json.RawMessage, error)
+	GetListCollection(ctx context.Context, arg GetListCollectionParams) ([]GetListCollectionRow, error)
+	GetOrderHash(ctx context.Context, arg GetOrderHashParams) ([]string, error)
 	InsertCategory(ctx context.Context, name string) (Category, error)
 	InsertCollection(ctx context.Context, arg InsertCollectionParams) (Collection, error)
 	InsertOrder(ctx context.Context, arg InsertOrderParams) error
 	InsertOrderConsiderationItem(ctx context.Context, arg InsertOrderConsiderationItemParams) error
 	InsertOrderOfferItem(ctx context.Context, arg InsertOrderOfferItemParams) error
+	UpdateNft(ctx context.Context, arg UpdateNftParams) error
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (string, error)
-	UpsertNft(ctx context.Context, arg UpsertNftParams) error
 }
 
 var _ Querier = (*Queries)(nil)

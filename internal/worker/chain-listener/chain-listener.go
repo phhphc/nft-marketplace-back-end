@@ -20,8 +20,7 @@ type ChainListener interface {
 type worker struct {
 	ethClient *clients.EthClient
 	lg        *log.Logger
-	// listingService services.ListingService
-	// nftService     services.NftService
+
 	mkpAddr common.Address
 
 	erc721Abi      abi.ABI
@@ -55,9 +54,7 @@ func NewChainListener(service services.Servicer, postgreClient *clients.PostgreC
 	return &worker{
 		ethClient: ethClient,
 		lg:        log.GetLogger(),
-		// listingService: services.NewListingService(postgreClient.Database),
-		// nftService:     services.NewNftService(postgreClient.Database),
-		mkpAddr: mkpAddr,
+		mkpAddr:   mkpAddr,
 
 		erc721Abi:      erc721Abi,
 		erc721Contract: erc721Contract,
@@ -73,7 +70,9 @@ func (w *worker) Run(ctx context.Context) error {
 
 	wg.Add(1)
 	go w.listenMkpEvent(ctx, &wg)
-	// go w.listenErc721Event(ctx, &wg)
+
+	wg.Add(1)
+	go w.watchTokenEvent(ctx, &wg)
 
 	wg.Wait()
 	return nil

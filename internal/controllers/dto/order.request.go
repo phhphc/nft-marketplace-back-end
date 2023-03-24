@@ -39,3 +39,14 @@ type ConsiderationItemReq struct {
 	EndAmount   string `json:"end_amount" validate:"hexadecimal,startswith=0x"`
 	Recipient   string `json:"recipient" validate:"eth_addr"`
 }
+
+type GetOrderHash struct {
+	ConsiderationToken      string `query:"consideration_token" validate:"omitempty,eth_addr"`
+	ConsiderationIdentifier string `query:"consideration_identifier" validate:"omitempty,hexadecimal,startswith=0x"`
+	OfferToken              string `query:"offer_token" validate:"omitempty,eth_addr"`
+	OfferIdentifier         string `query:"offer_identifier" validate:"omitempty,hexadecimal,startswith=0x"`
+}
+
+type GetOrder struct {
+	OrderHash string `query:"order_hash" validate:"eth_hash"`
+}

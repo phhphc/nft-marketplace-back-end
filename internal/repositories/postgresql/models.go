@@ -41,8 +41,8 @@ type Nft struct {
 	Token       string
 	Identifier  string
 	Owner       string
-	IsBurned    bool
 	Metadata    pqtype.NullRawMessage
+	IsBurned    bool
 	BlockNumber string
 	TxIndex     int64
 }

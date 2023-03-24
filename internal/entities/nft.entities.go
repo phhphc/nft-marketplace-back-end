@@ -1,4 +1,4 @@
-package models
+package entities
 
 import (
 	"math/big"
@@ -6,9 +6,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type NftTransfer struct {
+type Nft struct {
 	Token      common.Address
 	Identifier *big.Int
-	From       common.Address
-	To         common.Address
+	Owner      common.Address
+	TokenUri   string
+	Metadata   string
 }
