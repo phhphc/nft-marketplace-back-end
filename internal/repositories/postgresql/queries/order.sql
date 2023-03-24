@@ -14,7 +14,6 @@ INSERT INTO "consideration_items" ("order_hash", "item_type", "token", "identifi
                                    "recipient")
 VALUES ($1, $2, $3, $4, $5, $6, $7,$8);
 
-
 -- name: UpdateOrderStatus :one
 UPDATE "orders"
 SET

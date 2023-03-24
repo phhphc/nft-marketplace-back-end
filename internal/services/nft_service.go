@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
@@ -11,45 +12,76 @@ import (
 )
 
 type NftNewService interface {
-	GetListNft(ctx context.Context, token common.Address, owner common.Address, offset int32, limit int32) ([]entities.Nft, error)
 	GetNft(ctx context.Context, token common.Address, identifier *big.Int) (entities.Nft, error)
 	TransferNft(ctx context.Context, nft entities.Nft, from common.Address, to common.Address, blockNumber *big.Int, txIndex *big.Int) error
+	GetNFTsWithPrices(ctx context.Context, token common.Address, owner common.Address, offset int32, limit int32) ([]*entities.NftRead, error)
 }
 
-func (s *Services) GetListNft(ctx context.Context, token common.Address, owner common.Address, offset int32, limit int32) ([]entities.Nft, error) {
-	listNft := make([]entities.Nft, 0)
+func ToBigInt(str string) *big.Int {
+	bigInt := big.NewInt(0)
+	bigInt.SetString(str, 10)
+	return bigInt
+}
 
-	res, err := s.repo.GetListValidNft(ctx, postgresql.GetListValidNftParams{
-		Token:  ToNullString(token),
-		Owner:  ToNullString(owner),
+func (s *Services) GetNFTsWithPrices(ctx context.Context, token common.Address, owner common.Address, offset int32, limit int32) ([]*entities.NftRead, error) {
+	tokenValid := true
+	ownerValid := true
+	if bytes.Equal(token.Bytes(), common.Address{}.Bytes()) {
+		tokenValid = false
+	}
+
+	if bytes.Equal(owner.Bytes(), common.Address{}.Bytes()) {
+		ownerValid = false
+	}
+
+	res, err := s.repo.GetNFTsWithPricesPaginated(ctx, postgresql.GetNFTsWithPricesPaginatedParams{
 		Offset: offset,
 		Limit:  limit,
+		Token:  sql.NullString{String: token.Hex(), Valid: tokenValid},
+		Owner:  sql.NullString{String: owner.Hex(), Valid: ownerValid},
 	})
 
 	if err != nil {
-		s.lg.Error().Caller().Err(err).Msg("error in query nft")
-		return listNft, err
+		s.lg.Error().Caller().Err(err).Msg("error in query nfts with prices")
+		return nil, err
 	}
 
-	for _, row := range res {
-		identifier, _ := big.NewInt(0).SetString(row.Identifier, 10)
-		nft := entities.Nft{
-			Token:      common.HexToAddress(row.Token),
-			Identifier: identifier,
-			Owner:      common.HexToAddress(row.Owner),
-			TokenUri:   row.TokenUri.String,
-			IsBurned:   row.IsBurned,
+	nftsMap := make(map[string]*entities.NftRead)
+	for _, nft := range res {
+		if _, ok := nftsMap[nft.Identifier]; !ok {
+			nftsMap[nft.Identifier] = &entities.NftRead{
+				Token:       common.HexToAddress(nft.Token),
+				Identifier:  ToBigInt(nft.Identifier),
+				Owner:       common.HexToAddress(nft.Owner),
+				Image:       fmt.Sprintf("%v", nft.Image),
+				Name:        fmt.Sprintf("%v", nft.Name),
+				Description: fmt.Sprintf("%v", nft.Description),
+				Listings:    make([]*entities.ListingRead, 0),
+			}
 		}
-		listNft = append(listNft, nft)
+
+		if nft.Price.Valid {
+			nftRes := nftsMap[nft.Identifier]
+			nftRes.Listings = append(nftRes.Listings, &entities.ListingRead{
+				OrderHash: common.HexToHash(nft.OrderHash.String),
+				ItemType:  entities.EnumItemType(nft.ItemType.Int32),
+				Price:     ToBigInt(nft.Price.String),
+			})
+		}
 	}
 
-	return listNft, nil
+	nfts := make([]*entities.NftRead, 0)
+	for _, nft := range nftsMap {
+		nfts = append(nfts, nft)
+	}
+
+	return nfts, nil
 }
 
 func (s *Services) GetNft(ctx context.Context, token common.Address, identifier *big.Int) (entities.Nft, error) {
 	nft := entities.Nft{}
 
-	res, err := s.repo.GetValidNft(ctx, postgresql.GetValidNftParams{
+	res, err := s.repo.GetValidNFT(ctx, postgresql.GetValidNFTParams{
 		Token:      token.String(),
 		Identifier: identifier.String(),
 	})
@@ -98,7 +130,7 @@ func (s *Services) TransferNft(ctx context.Context, nft entities.Nft, from commo
 }
 
 func (s *Services) burnNft(ctx context.Context, token common.Address, identifier *big.Int, blockNumber *big.Int, txIndex *big.Int) error {
-	err := s.repo.UpsertNftV2(ctx, postgresql.UpsertNftV2Params{
+	err := s.repo.UpsertNFTV2(ctx, postgresql.UpsertNFTV2Params{
 		Token:       token.String(),
 		Identifier:  identifier.String(),
 		Owner:       common.Address{}.String(),
@@ -116,7 +148,7 @@ func (s *Services) burnNft(ctx context.Context, token common.Address, identifier
 }
 
 func (s *Services) mintNft(ctx context.Context, nft entities.Nft, blockNumber *big.Int, txIndex *big.Int) error {
-	err := s.repo.UpsertNftV2(ctx, postgresql.UpsertNftV2Params{
+	err := s.repo.UpsertNFTV2(ctx, postgresql.UpsertNFTV2Params{
 		Token:       nft.Token.String(),
 		Identifier:  nft.Identifier.String(),
 		Owner:       nft.Owner.String(),
@@ -135,7 +167,7 @@ func (s *Services) mintNft(ctx context.Context, nft entities.Nft, blockNumber *b
 }
 
 func (s *Services) transferNft(ctx context.Context, token common.Address, identifier *big.Int, owner common.Address, blockNumber *big.Int, txIndex *big.Int) error {
-	err := s.repo.UpsertNftV2(ctx, postgresql.UpsertNftV2Params{
+	err := s.repo.UpsertNFTV2(ctx, postgresql.UpsertNFTV2Params{
 		Token:       token.String(),
 		Identifier:  identifier.String(),
 		Owner:       owner.String(),
