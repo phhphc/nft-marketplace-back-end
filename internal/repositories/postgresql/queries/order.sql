@@ -65,7 +65,7 @@ GROUP BY o.order_hash, o.offerer, o.zone, o.order_type, o.start_time, o.end_time
 SELECT DISTINCT o.order_hash
 FROM orders o
          JOIN consideration_items ci on ci.order_hash = o.order_hash
-         JOIN offer_items oi on ci.order_hash = o.order_hash
+         JOIN offer_items oi on oi.order_hash = o.order_hash
 WHERE o.is_cancelled = false
   AND o.is_fulfilled = false
   AND (ci.token ILIKE sqlc.narg('consideration_token') OR sqlc.narg('consideration_token') IS NULL)

@@ -5,6 +5,6 @@ type PostCollectionReq struct {
 	Owner string `json:"owner" validate:"eth_addr"`
 
 	Name        string `json:"name" validate:"required"`
-	Description string `json:"desctiption" validate:"required"`
+	Description string `json:"description" validate:"required"`
 	Category    string `json:"category" validate:"alphanum"`
 }

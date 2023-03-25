@@ -7,7 +7,7 @@ type PostCollectionRes struct {
 	Owner string `json:"owner"`
 
 	Name        string    `json:"name"`
-	Description string    `json:"desctiption"`
+	Description string    `json:"description"`
 	Category    string    `json:"category"`
 	CreatedAt   time.Time `json:"created_at"`
 }

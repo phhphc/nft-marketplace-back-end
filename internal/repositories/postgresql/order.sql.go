@@ -61,7 +61,7 @@ const getOrderHash = `-- name: GetOrderHash :many
 SELECT DISTINCT o.order_hash
 FROM orders o
          JOIN consideration_items ci on ci.order_hash = o.order_hash
-         JOIN offer_items oi on ci.order_hash = o.order_hash
+         JOIN offer_items oi on oi.order_hash = o.order_hash
 WHERE o.is_cancelled = false
   AND o.is_fulfilled = false
   AND (ci.token ILIKE $1 OR $1 IS NULL)
