@@ -17,7 +17,10 @@ type GetNftRes struct {
 }
 
 type GetNftListingRes struct {
-	OrderHash          string `json:"order_hash"`
-	ItemType           string `json:"item_type"`
-	ConsiderationPrice string `json:"price"`
+	OrderHash  string `json:"order_hash"`
+	ItemType   int    `json:"item_type"`
+	StartPrice string `json:"start_price"`
+	EndPrice   string `json:"end_price"`
+	StartTime  string `json:"start_time"`
+	EndTime    string `json:"end_time"`
 }

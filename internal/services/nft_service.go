@@ -61,12 +61,15 @@ func (s *Services) GetNFTsWithPrices(ctx context.Context, token common.Address, 
 			}
 		}
 
-		if nft.Price.Valid {
+		if nft.StartPrice.Valid || nft.EndPrice.Valid {
 			nftRes := nftsMap[nft.Identifier]
 			nftRes.Listings = append(nftRes.Listings, &entities.ListingRead{
-				OrderHash: common.HexToHash(nft.OrderHash.String),
-				ItemType:  entities.EnumItemType(nft.ItemType.Int32),
-				Price:     ToBigInt(nft.Price.String),
+				OrderHash:  common.HexToHash(nft.OrderHash.String),
+				ItemType:   entities.EnumItemType(nft.ItemType.Int32),
+				StartPrice: ToBigInt(nft.StartPrice.String),
+				EndPrice:   ToBigInt(nft.EndPrice.String),
+				StartTime:  ToBigInt(nft.StartTime.String),
+				EndTime:    ToBigInt(nft.EndTime.String),
 			})
 		}
 	}

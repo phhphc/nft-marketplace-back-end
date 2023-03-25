@@ -9,7 +9,7 @@ type Controller interface {
 
 	PostCollection(c echo.Context) error
 
-	GetNftsOfCollection(c echo.Context) error
+	GetNFTsWithPrices(c echo.Context) error
 }
 
 var _ Controller = (*Controls)(nil)

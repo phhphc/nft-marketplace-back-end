@@ -41,7 +41,10 @@ SELECT paged_nfts.token,
        paged_nfts.metadata -> 'description' AS description,
        ci.order_hash,
        ci.item_type,
-       ci.amount AS price
+       ci.start_amount AS start_price,
+       ci.end_amount AS end_price,
+       o.start_time AS start_time,
+       o.end_time AS end_time
 FROM (
         SELECT * FROM nfts
         WHERE nfts.is_burned = FALSE
@@ -51,4 +54,5 @@ FROM (
      ) AS paged_nfts
         LEFT JOIN offer_items oi ON paged_nfts.token = oi.token AND paged_nfts.identifier = oi.identifier
         LEFT JOIN consideration_items ci ON oi.order_hash = ci.order_hash
+        LEFT JOIN orders o ON oi.order_hash = o.order_hash
 ORDER BY paged_nfts.token, paged_nfts.identifier, ci.order_hash;

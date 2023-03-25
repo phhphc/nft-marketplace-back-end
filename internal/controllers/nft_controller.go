@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func (ctl *Controls) GetNftsOfCollection(c echo.Context) error {
+func (ctl *Controls) GetNFTsWithPrices(c echo.Context) error {
 	var req dto.GetListNftReq
 	var err error
 	if err = c.Bind(&req); err != nil {
@@ -40,9 +40,12 @@ func (ctl *Controls) GetNftsOfCollection(c echo.Context) error {
 		}
 		for j, listing := range nft.Listings {
 			nftsResponse[i].Listings[j] = &dto.GetNftListingRes{
-				OrderHash:          listing.OrderHash.String(),
-				ItemType:           string(listing.ItemType),
-				ConsiderationPrice: listing.Price.String(),
+				OrderHash:  listing.OrderHash.String(),
+				ItemType:   listing.ItemType.Int(),
+				StartPrice: listing.StartPrice.String(),
+				EndPrice:   listing.EndPrice.String(),
+				StartTime:  listing.StartTime.String(),
+				EndTime:    listing.EndTime.String(),
 			}
 		}
 	}
