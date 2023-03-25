@@ -13,9 +13,8 @@ import (
 )
 
 type NftNewService interface {
-	GetNft(ctx context.Context, token common.Address, identifier *big.Int) (entities.Nft, error)
-	// TransferNft(ctx context.Context, nft entities.Nft, from common.Address, to common.Address, blockNumber *big.Int, txIndex *big.Int) error
-	GetNFTsWithPrices(ctx context.Context, token common.Address, owner common.Address, offset int32, limit int32) ([]*entities.NftRead, error)
+	GetNFTWithListings(ctx context.Context, token common.Address, identifier *big.Int) (*entities.NftRead, error)
+	GetNFTsWithListings(ctx context.Context, token common.Address, owner common.Address, offset int32, limit int32) ([]*entities.NftRead, error)
 }
 
 func ToBigInt(str string) *big.Int {
@@ -24,7 +23,7 @@ func ToBigInt(str string) *big.Int {
 	return bigInt
 }
 
-func (s *Services) GetNFTsWithPrices(ctx context.Context, token common.Address, owner common.Address, offset int32, limit int32) ([]*entities.NftRead, error) {
+func (s *Services) GetNFTsWithListings(ctx context.Context, token common.Address, owner common.Address, offset int32, limit int32) ([]*entities.NftRead, error) {
 	tokenValid := true
 	ownerValid := true
 	if bytes.Equal(token.Bytes(), common.Address{}.Bytes()) {
@@ -82,103 +81,44 @@ func (s *Services) GetNFTsWithPrices(ctx context.Context, token common.Address, 
 	return nfts, nil
 }
 
-func (s *Services) GetNft(ctx context.Context, token common.Address, identifier *big.Int) (entities.Nft, error) {
-	nft := entities.Nft{}
-
-	res, err := s.repo.GetValidNFT(ctx, postgresql.GetValidNFTParams{
-		Token:      token.String(),
+func (s *Services) GetNFTWithListings(ctx context.Context, token common.Address, identifier *big.Int) (*entities.NftRead, error) {
+	res, err := s.repo.GetNFTValidConsiderations(ctx, postgresql.GetNFTValidConsiderationsParams{
+		Token:      token.Hex(),
 		Identifier: identifier.String(),
 	})
 
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("error in query nft")
-		return nft, err
+		return nil, err
 	}
 
-	nft = entities.Nft{
-		Token:      token,
-		Identifier: identifier,
-		Owner:      common.HexToAddress(res.Owner),
-		IsBurned:   res.IsBurned,
+	// Lay len thong tin cua nft
+	// Lay len danh sach cac order ma nft nay la offer item (order valid)
+	var nft *entities.NftRead
+	for i, order := range res {
+		if i == 0 {
+			nft = &entities.NftRead{
+				Token:       common.HexToAddress(order.Token),
+				Identifier:  ToBigInt(order.Identifier),
+				Owner:       common.HexToAddress(order.Owner),
+				Image:       fmt.Sprintf("%v", order.Image),
+				Name:        fmt.Sprintf("%v", order.Name),
+				Description: fmt.Sprintf("%v", order.Description),
+				Metadata:    order.Metadata.RawMessage,
+				Listings:    make([]*entities.ListingRead, 0),
+			}
+		}
+		if order.OrderHash.Valid {
+			listing := &entities.ListingRead{
+				OrderHash:  common.HexToHash(order.OrderHash.String),
+				ItemType:   entities.EnumItemType(order.ItemType.Int32),
+				StartPrice: ToBigInt(order.StartPrice.String),
+				EndPrice:   ToBigInt(order.EndPrice.String),
+				StartTime:  ToBigInt(order.StartTime.String),
+				EndTime:    ToBigInt(order.EndTime.String),
+			}
+			nft.Listings = append(nft.Listings, listing)
+		}
 	}
-
 	return nft, nil
-}
-
-// func (s *Services) TransferNft(ctx context.Context, nft entities.Nft, from common.Address, to common.Address, blockNumber *big.Int, txIndex *big.Int) error {
-// 	// if from address = 0 -> mint nft
-// 	// if to address = 0 -> burn nft
-// 	// else -> transfer nft
-// 	if bytes.Equal(from.Bytes(), common.Address{}.Bytes()) {
-// 		err := s.mintNft(ctx, nft, blockNumber, txIndex)
-// 		if err != nil {
-// 			s.lg.Error().Caller().Err(err).Msg("error in save mint nft")
-// 			return err
-// 		}
-
-// 	} else if bytes.Equal(to.Bytes(), common.Address{}.Bytes()) {
-// 		err := s.burnNft(ctx, nft.Token, nft.Identifier, blockNumber, txIndex)
-// 		if err != nil {
-// 			s.lg.Error().Caller().Err(err).Msg("error in burn nft")
-// 			return err
-// 		}
-// 	} else {
-// 		err := s.transferNft(ctx, nft.Token, nft.Identifier, to, blockNumber, txIndex)
-// 		if err != nil {
-// 			s.lg.Error().Caller().Err(err).Msg("error in transfer nft")
-// 			return err
-// 		}
-// 	}
-// 	return nil
-// }
-
-func (s *Services) burnNft(ctx context.Context, token common.Address, identifier *big.Int, blockNumber *big.Int, txIndex *big.Int) error {
-	err := s.repo.UpsertNFTV2(ctx, postgresql.UpsertNFTV2Params{
-		Token:       token.String(),
-		Identifier:  identifier.String(),
-		Owner:       common.Address{}.String(),
-		IsBurned:    true,
-		BlockNumber: blockNumber.String(),
-		TxIndex:     txIndex.Int64(),
-	})
-	if err != nil {
-		return err
-	}
-
-	// TODO - update order status to cancel
-	return nil
-}
-
-func (s *Services) mintNft(ctx context.Context, nft entities.Nft, blockNumber *big.Int, txIndex *big.Int) error {
-	err := s.repo.UpsertNFTV2(ctx, postgresql.UpsertNFTV2Params{
-		Token:       nft.Token.String(),
-		Identifier:  nft.Identifier.String(),
-		Owner:       nft.Owner.String(),
-		IsBurned:    false,
-		BlockNumber: blockNumber.String(),
-		TxIndex:     txIndex.Int64(),
-	})
-
-	if err != nil {
-		return err
-	}
-
-	// TODO - update the nft list of user
-	return nil
-}
-
-func (s *Services) transferNft(ctx context.Context, token common.Address, identifier *big.Int, owner common.Address, blockNumber *big.Int, txIndex *big.Int) error {
-	err := s.repo.UpsertNFTV2(ctx, postgresql.UpsertNFTV2Params{
-		Token:       token.String(),
-		Identifier:  identifier.String(),
-		Owner:       owner.String(),
-		BlockNumber: blockNumber.String(),
-		TxIndex:     txIndex.Int64(),
-	})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

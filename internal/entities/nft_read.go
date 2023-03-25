@@ -12,6 +12,7 @@ type NftRead struct {
 	Image       string         `json:"image"`
 	Name        string         `json:"name"`
 	Description string         `json:"description"`
+	Metadata    []byte         `json:"metadata"'`
 
 	BlockNumber *big.Int       `json:"block_number"`
 	TxIndex     *big.Int       `json:"tx_index"`
