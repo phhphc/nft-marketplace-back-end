@@ -6,10 +6,11 @@ type PostCollectionRes struct {
 	Token string `json:"token"`
 	Owner string `json:"owner"`
 
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Category    string    `json:"category"`
-	CreatedAt   time.Time `json:"created_at"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Metadata    map[string]any `json:"metadata,omitempty"`
+	Category    string         `json:"category"`
+	CreatedAt   time.Time      `json:"created_at"`
 }
 
 type GetCollectionRes struct {

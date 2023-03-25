@@ -19,11 +19,16 @@ func (ctl *Controls) PostCollection(c echo.Context) error {
 		return dto.NewHTTPError(400, err)
 	}
 
+	// var metadata map[string]any
+	// if err = json.Unmarshal([]byte(req.Metadata), &metadata); err != nil {
+	// 	return dto.NewHTTPError(400, err)
+	// }
 	collection := entities.Collection{
 		Token:       common.HexToAddress(req.Token),
 		Owner:       common.HexToAddress(req.Owner),
 		Name:        req.Name,
 		Description: req.Description,
+		Metadata:    req.Metadata,
 		Category:    req.Category,
 	}
 	collection, err = ctl.service.CreateCollection(context.TODO(), collection)
@@ -38,6 +43,7 @@ func (ctl *Controls) PostCollection(c echo.Context) error {
 			Owner:       collection.Owner.Hex(),
 			Name:        collection.Name,
 			Description: collection.Description,
+			Metadata:    collection.Metadata,
 			Category:    collection.Category,
 			CreatedAt:   collection.CreatedAt,
 		},
@@ -77,6 +83,7 @@ func (ctl *Controls) GetCollection(c echo.Context) error {
 			Owner:       c.Owner.Hex(),
 			Name:        c.Name,
 			Description: c.Description,
+			Metadata:    c.Metadata,
 			Category:    c.Category,
 			CreatedAt:   c.CreatedAt,
 		})

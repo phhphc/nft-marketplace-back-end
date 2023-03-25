@@ -3,11 +3,13 @@ package services
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
+	"github.com/tabbed/pqtype"
 )
 
 func (s *Services) CreateCollection(ctx context.Context, collection entities.Collection) (ec entities.Collection, err error) {
@@ -19,12 +21,22 @@ func (s *Services) CreateCollection(ctx context.Context, collection entities.Col
 		return
 	}
 
+	metadata, err := json.Marshal(collection.Metadata)
+	if err != nil {
+		s.lg.Panic().Caller().Err(err).Msg("cannot unmashal metadata")
+		return
+	}
+
 	dbCollection, err := s.repo.InsertCollection(ctx, postgresql.InsertCollectionParams{
 		Token:       collection.Token.Hex(),
 		Owner:       collection.Owner.Hex(),
 		Name:        collection.Name,
 		Description: collection.Description,
-		Category:    category.ID,
+		Metadata: pqtype.NullRawMessage{
+			RawMessage: metadata,
+			Valid:      len(metadata) > 0,
+		},
+		Category: category.ID,
 	})
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("cannot create collection")
@@ -43,6 +55,16 @@ func (s *Services) CreateCollection(ctx context.Context, collection entities.Col
 	ec.Description = dbCollection.Description
 	ec.Category = category.Name
 	ec.CreatedAt = dbCollection.CreatedAt.Time
+
+	if dbCollection.Metadata.Valid {
+		var metadata map[string]any
+		if err = json.Unmarshal(dbCollection.Metadata.RawMessage, &metadata); err != nil {
+			if err != nil {
+				s.lg.Panic().Caller().Err(err).Msg("error")
+			}
+		}
+		ec.Metadata = metadata
+	}
 	return
 }
 
@@ -79,14 +101,25 @@ func (s *Services) GetListCollection(ctx context.Context, query entities.Collect
 	}
 
 	for _, c := range cs {
-		ec = append(ec, entities.Collection{
+		e := entities.Collection{
 			Token:       common.HexToAddress(c.Token),
 			Name:        c.Name,
 			Description: c.Description,
 			Owner:       common.HexToAddress(c.Owner),
 			Category:    c.Category,
 			CreatedAt:   c.CreatedAt.Time,
-		})
+		}
+		if c.Metadata.Valid {
+			var metadata map[string]any
+			if err = json.Unmarshal(c.Metadata.RawMessage, &metadata); err != nil {
+				if err != nil {
+					s.lg.Panic().Caller().Err(err).Msg("error")
+				}
+			}
+			e.Metadata = metadata
+		}
+
+		ec = append(ec, e)
 	}
 
 	return
