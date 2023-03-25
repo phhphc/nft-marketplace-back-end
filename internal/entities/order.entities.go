@@ -59,3 +59,11 @@ const (
 	FULL_OPEN EnumOrderType = iota
 	FULL_RESTRICTED
 )
+
+func (e *EnumOrderType) Int() int {
+	return int(*e)
+}
+
+func (e *EnumItemType) Int() int {
+	return int(*e)
+}
