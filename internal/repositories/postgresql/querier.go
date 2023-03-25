@@ -11,8 +11,8 @@ import (
 
 type Querier interface {
 	GetCategoryByName(ctx context.Context, name string) (Category, error)
+	GetCollection(ctx context.Context, arg GetCollectionParams) ([]GetCollectionRow, error)
 	GetJsonOrderByHash(ctx context.Context, orderHash string) (json.RawMessage, error)
-	GetListCollection(ctx context.Context, arg GetListCollectionParams) ([]GetListCollectionRow, error)
 	GetListValidNFT(ctx context.Context, arg GetListValidNFTParams) ([]GetListValidNFTRow, error)
 	GetNFTsWithPricesPaginated(ctx context.Context, arg GetNFTsWithPricesPaginatedParams) ([]GetNFTsWithPricesPaginatedRow, error)
 	GetOrderHash(ctx context.Context, arg GetOrderHashParams) ([]string, error)

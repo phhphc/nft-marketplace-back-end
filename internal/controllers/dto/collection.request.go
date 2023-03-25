@@ -8,3 +8,10 @@ type PostCollectionReq struct {
 	Description string `json:"description" validate:"required"`
 	Category    string `json:"category" validate:"alphanum"`
 }
+
+type GetCollectionReq struct {
+	Token    string `query:"token" validate:"omitempty,eth_addr"`
+	Owner    string `query:"owner" validate:"omitempty,eth_addr"`
+	Name     string `query:"name" validate:"omitempty,required"`
+	Category string `query:"category" validate:"omitempty,alphanum"`
+}

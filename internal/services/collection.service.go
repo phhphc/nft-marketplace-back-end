@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
@@ -45,12 +46,33 @@ func (s *Services) CreateCollection(ctx context.Context, collection entities.Col
 	return
 }
 
-func (s *Services) GetListCollection(ctx context.Context, offset int, limit int) (ec []entities.Collection, err error) {
-
-	cs, err := s.repo.GetListCollection(ctx, postgresql.GetListCollectionParams{
+func (s *Services) GetListCollection(ctx context.Context, query entities.Collection, offset int, limit int) (ec []entities.Collection, err error) {
+	params := postgresql.GetCollectionParams{
 		Offset: int32(offset),
 		Limit:  int32(limit),
-	})
+	}
+
+	if query.Token != (common.Address{}) {
+		params.Token = sql.NullString{
+			String: query.Token.Hex(),
+			Valid:  true,
+		}
+	}
+	if query.Owner != (common.Address{}) {
+		params.Owner = sql.NullString{
+			String: query.Owner.Hex(),
+			Valid:  true,
+		}
+	}
+	if len(query.Name) > 0 {
+		params.Name = sql.NullString{
+			String: query.Name,
+			Valid:  true,
+		}
+	}
+
+	cs, err := s.repo.GetCollection(ctx, params)
+	s.lg.Error().Caller().Interface("params", params).Msg("cannot get list collection")
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("cannot get list collection")
 		return
@@ -63,6 +85,7 @@ func (s *Services) GetListCollection(ctx context.Context, offset int, limit int)
 			Description: c.Description,
 			Owner:       common.HexToAddress(c.Owner),
 			Category:    c.Category,
+			CreatedAt:   c.CreatedAt.Time,
 		})
 	}
 

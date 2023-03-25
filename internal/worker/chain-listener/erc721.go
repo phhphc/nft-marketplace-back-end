@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"sync"
 
+	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
 
 	"github.com/ethereum/go-ethereum"
@@ -19,7 +20,7 @@ func (w *worker) watchTokenEvent(ctx context.Context, wg *sync.WaitGroup) {
 	limit := 100
 	offset := 0
 	for {
-		ec, err := w.Service.GetListCollection(ctx, offset, limit)
+		ec, err := w.Service.GetListCollection(ctx, entities.Collection{}, offset, limit)
 		if err != nil {
 			w.lg.Error().Caller().Err(err).Msg("error")
 		}

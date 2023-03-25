@@ -23,7 +23,7 @@ type Servicer interface {
 	GetOrderByHash(ctx context.Context, orderHash common.Hash) (o map[string]any, e error)
 
 	CreateCollection(ctx context.Context, collection entities.Collection) (entities.Collection, error)
-	GetListCollection(ctx context.Context, offset int, limit int) ([]entities.Collection, error)
+	GetListCollection(ctx context.Context, query entities.Collection, offset int, limit int) ([]entities.Collection, error)
 }
 
 var _ Servicer = (*Services)(nil)

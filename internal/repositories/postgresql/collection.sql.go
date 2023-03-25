@@ -7,47 +7,66 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/tabbed/pqtype"
 )
 
-const getListCollection = `-- name: GetListCollection :many
-SELECT "token", c."name", "description", "owner",k."name" as "category"
-FROM "collections" c
-JOIN categories k on k.id = c.category
-ORDER BY "created_at" DESC
-OFFSET $1
-LIMIT $2
+const getCollection = `-- name: GetCollection :many
+SELECT token, owner, co.name, ca.name as category, description, metadata, created_at
+FROM collections co
+         JOIN categories ca on co.category = ca.id
+WHERE (token ILIKE $1 or $1 IS NULL)
+  AND (owner ILIKE $2 or $2 IS NULL)
+  AND (co.name ILIKE $3 or $3 IS NULL)
+  AND (ca.name ILIKE $4 or $4 IS NULL)
+OFFSET $5
+LIMIT $6
 `
 
-type GetListCollectionParams struct {
-	Offset int32
-	Limit  int32
+type GetCollectionParams struct {
+	Token    sql.NullString
+	Owner    sql.NullString
+	Name     sql.NullString
+	Category sql.NullString
+	Offset   int32
+	Limit    int32
 }
 
-type GetListCollectionRow struct {
+type GetCollectionRow struct {
 	Token       string
-	Name        string
-	Description string
 	Owner       string
+	Name        string
 	Category    string
+	Description string
+	Metadata    pqtype.NullRawMessage
+	CreatedAt   sql.NullTime
 }
 
-func (q *Queries) GetListCollection(ctx context.Context, arg GetListCollectionParams) ([]GetListCollectionRow, error) {
-	rows, err := q.db.QueryContext(ctx, getListCollection, arg.Offset, arg.Limit)
+func (q *Queries) GetCollection(ctx context.Context, arg GetCollectionParams) ([]GetCollectionRow, error) {
+	rows, err := q.db.QueryContext(ctx, getCollection,
+		arg.Token,
+		arg.Owner,
+		arg.Name,
+		arg.Category,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetListCollectionRow{}
+	items := []GetCollectionRow{}
 	for rows.Next() {
-		var i GetListCollectionRow
+		var i GetCollectionRow
 		if err := rows.Scan(
 			&i.Token,
-			&i.Name,
-			&i.Description,
 			&i.Owner,
+			&i.Name,
 			&i.Category,
+			&i.Description,
+			&i.Metadata,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}

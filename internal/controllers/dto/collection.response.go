@@ -11,3 +11,11 @@ type PostCollectionRes struct {
 	Category    string    `json:"category"`
 	CreatedAt   time.Time `json:"created_at"`
 }
+
+type GetCollectionRes struct {
+	Collections []Collection `json:"collections"`
+	PageSize    int          `json:"page_size"`
+	Page        int          `json:"page"`
+}
+
+type Collection PostCollectionRes
