@@ -12,6 +12,11 @@ import (
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 )
 
+type OrderService interface {
+	CreateOrder(ctx context.Context, order entities.Order) error
+	FulFillOrder(ctx context.Context, order entities.Order) error
+}
+
 func (s *Services) CreateOrder(ctx context.Context, order entities.Order) (err error) {
 	// TODO - use transaction
 

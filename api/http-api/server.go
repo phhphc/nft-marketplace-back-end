@@ -41,6 +41,10 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 	var service services.Servicer = services.New(repository)
 	var controller controllers.Controller = controllers.New(service)
 
+	nftRoute := e.Group("/api/v0.1/nft")
+	nftRoute.GET("", controller.GetNftsOfCollection)
+	nftRoute.GET("/collection/:collectionId", controller.GetNftsOfCollection)
+
 	orderRoute := e.Group("/api/v0.1/order")
 	orderRoute.GET("", controller.GetOrder)
 	orderRoute.POST("", controller.PostOrder)

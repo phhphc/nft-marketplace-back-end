@@ -9,6 +9,9 @@ import (
 )
 
 type Servicer interface {
+	OrderService
+	NftNewService
+
 	EmitEvent(ctx context.Context, event models.EnumEvent, value []byte, key []byte) error
 	SubcribeEvent(ctx context.Context, event models.EnumEvent, ch chan<- models.AppEvent) (func(), <-chan error)
 

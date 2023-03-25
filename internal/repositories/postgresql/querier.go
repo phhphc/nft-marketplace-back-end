@@ -13,7 +13,10 @@ type Querier interface {
 	GetCategoryByName(ctx context.Context, name string) (Category, error)
 	GetJsonOrderByHash(ctx context.Context, orderHash string) (json.RawMessage, error)
 	GetListCollection(ctx context.Context, arg GetListCollectionParams) ([]GetListCollectionRow, error)
+	GetListValidNFT(ctx context.Context, arg GetListValidNFTParams) ([]GetListValidNFTRow, error)
+	GetNFTsWithPricesPaginated(ctx context.Context, arg GetNFTsWithPricesPaginatedParams) ([]GetNFTsWithPricesPaginatedRow, error)
 	GetOrderHash(ctx context.Context, arg GetOrderHashParams) ([]string, error)
+	GetValidNFT(ctx context.Context, arg GetValidNFTParams) (GetValidNFTRow, error)
 	InsertCategory(ctx context.Context, name string) (Category, error)
 	InsertCollection(ctx context.Context, arg InsertCollectionParams) (Collection, error)
 	InsertOrder(ctx context.Context, arg InsertOrderParams) error
@@ -21,6 +24,7 @@ type Querier interface {
 	InsertOrderOfferItem(ctx context.Context, arg InsertOrderOfferItemParams) error
 	UpdateNft(ctx context.Context, arg UpdateNftParams) error
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (string, error)
+	UpsertNFTV2(ctx context.Context, arg UpsertNFTV2Params) error
 }
 
 var _ Querier = (*Queries)(nil)

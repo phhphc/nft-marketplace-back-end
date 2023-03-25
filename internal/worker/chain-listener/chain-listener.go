@@ -20,8 +20,7 @@ type ChainListener interface {
 type worker struct {
 	ethClient *clients.EthClient
 	lg        *log.Logger
-
-	mkpAddr common.Address
+	mkpAddr   common.Address
 
 	erc721Abi      abi.ABI
 	erc721Contract *contracts.ERC721Filterer

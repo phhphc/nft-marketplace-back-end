@@ -8,6 +8,8 @@ type Controller interface {
 	GetOrder(c echo.Context) error
 
 	PostCollection(c echo.Context) error
+
+	GetNftsOfCollection(c echo.Context) error
 }
 
 var _ Controller = (*Controls)(nil)
