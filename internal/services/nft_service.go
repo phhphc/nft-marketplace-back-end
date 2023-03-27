@@ -5,11 +5,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
+	"math/big"
+	"strconv"
+	"strings"
 )
 
 type NftNewService interface {
@@ -53,9 +54,9 @@ func (s *Services) GetNFTsWithListings(ctx context.Context, token common.Address
 				Token:       common.HexToAddress(nft.Token),
 				Identifier:  ToBigInt(nft.Identifier),
 				Owner:       common.HexToAddress(nft.Owner),
-				Image:       fmt.Sprintf("%v", nft.Image),
-				Name:        fmt.Sprintf("%v", nft.Name),
-				Description: fmt.Sprintf("%v", nft.Description),
+				Image:       FromInterfaceString2String(nft.Image),
+				Name:        FromInterfaceString2String(nft.Name),
+				Description: FromInterfaceString2String(nft.Description),
 				Listings:    make([]*entities.ListingRead, 0),
 			}
 		}
@@ -101,13 +102,14 @@ func (s *Services) GetNFTWithListings(ctx context.Context, token common.Address,
 				Token:       common.HexToAddress(order.Token),
 				Identifier:  ToBigInt(order.Identifier),
 				Owner:       common.HexToAddress(order.Owner),
-				Image:       fmt.Sprintf("%v", order.Image),
-				Name:        fmt.Sprintf("%v", order.Name),
-				Description: fmt.Sprintf("%v", order.Description),
+				Image:       FromInterfaceString2String(order.Image),
+				Name:        FromInterfaceString2String(order.Name),
+				Description: FromInterfaceString2String(order.Description),
 				Metadata:    order.Metadata.RawMessage,
 				Listings:    make([]*entities.ListingRead, 0),
 			}
 		}
+
 		if order.OrderHash.Valid {
 			listing := &entities.ListingRead{
 				OrderHash:  common.HexToHash(order.OrderHash.String),
@@ -121,4 +123,27 @@ func (s *Services) GetNFTWithListings(ctx context.Context, token common.Address,
 		}
 	}
 	return nft, nil
+}
+
+func FromInterfaceString2String(bstr interface{}) string {
+	if bstr == nil {
+		return ""
+	}
+	byteArrayStr := fmt.Sprint(bstr)
+	fmt.Println(bstr)
+	fmt.Println(fmt.Sprint(bstr))
+
+	byteArrayStrArr := strings.Split(byteArrayStr, " ")
+	subByteArr := byteArrayStrArr[1 : len(byteArrayStrArr)-1]
+	var byteArray []byte
+	for _, val := range subByteArr {
+		b, err := strconv.Atoi(val)
+		if err != nil {
+			panic(err)
+		}
+		byteArray = append(byteArray, byte(b))
+	}
+
+	str := string(byteArray)
+	return str
 }
