@@ -11,6 +11,9 @@ http:
 watcher:
 	$(GORUN) ./cmd/chain-watcher
 
+puller:
+	$(GORUN) ./cmd/data-puller
+
 generate:
 	$(GO) generate ./...
 

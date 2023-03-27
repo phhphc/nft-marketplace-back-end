@@ -46,3 +46,21 @@ func (q *Queries) UpdateNft(ctx context.Context, arg UpdateNftParams) error {
 	)
 	return err
 }
+
+const updateNftMetadata = `-- name: UpdateNftMetadata :exec
+UPDATE "nfts"
+SET "metadata" = $1
+WHERE "token" = $2
+  AND "identifier" = $3
+`
+
+type UpdateNftMetadataParams struct {
+	Metadata   pqtype.NullRawMessage
+	Token      string
+	Identifier string
+}
+
+func (q *Queries) UpdateNftMetadata(ctx context.Context, arg UpdateNftMetadataParams) error {
+	_, err := q.db.ExecContext(ctx, updateNftMetadata, arg.Metadata, arg.Token, arg.Identifier)
+	return err
+}

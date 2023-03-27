@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"encoding/json"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
@@ -16,6 +18,7 @@ type Servicer interface {
 	SubcribeEvent(ctx context.Context, event models.EnumEvent, ch chan<- models.AppEvent) (func(), <-chan error)
 
 	TransferNft(ctx context.Context, transfer models.NftTransfer, blockNumber uint64, txIndex uint) error
+	UpdateNftMetadata(ctx context.Context, token common.Address, identifier *big.Int, metadata json.RawMessage) (err error)
 
 	CreateOrder(ctx context.Context, order entities.Order) error
 	FulFillOrder(ctx context.Context, order entities.Order) error

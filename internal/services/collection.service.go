@@ -94,7 +94,6 @@ func (s *Services) GetListCollection(ctx context.Context, query entities.Collect
 	}
 
 	cs, err := s.repo.GetCollection(ctx, params)
-	s.lg.Error().Caller().Interface("params", params).Msg("cannot get list collection")
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("cannot get list collection")
 		return

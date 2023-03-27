@@ -122,7 +122,11 @@ func (w *worker) handleErc721Event(vLog types.Log) {
 			w.lg.Error().Caller().Err(err).Msg("error parse event")
 			return
 		}
-
+		w.lg.Info().Caller().
+			Str("identifier", transfer.TokenId.String()).
+			Str("from", transfer.From.Hex()).
+			Str("to", transfer.To.Hex()).
+			Msg("transfer")
 		w.Service.TransferNft(context.TODO(), models.NftTransfer{
 			Token:      vLog.Address,
 			Identifier: transfer.TokenId,

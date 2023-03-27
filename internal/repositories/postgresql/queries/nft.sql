@@ -10,7 +10,14 @@ ON CONFLICT ("token", "identifier") DO UPDATE
 WHERE $6 > nfts."block_number"
    OR ($6 = nfts."block_number" AND $7 > nfts."tx_index");
 
-   
+
+-- name: UpdateNftMetadata :exec
+UPDATE "nfts"
+SET "metadata" = sqlc.narg('metadata')
+WHERE "token" = sqlc.arg('token')
+  AND "identifier" = sqlc.arg('identifier');
+
+
 -- -- name: UpsertNft :exec
 -- INSERT INTO "nfts" (token,identifier, owner, is_burned, metadata, block_number, tx_index)
 -- VALUES ($1,$2,$3,$4,$5,$6,$7)

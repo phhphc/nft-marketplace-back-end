@@ -23,6 +23,7 @@ type Querier interface {
 	InsertOrderConsiderationItem(ctx context.Context, arg InsertOrderConsiderationItemParams) error
 	InsertOrderOfferItem(ctx context.Context, arg InsertOrderOfferItemParams) error
 	UpdateNft(ctx context.Context, arg UpdateNftParams) error
+	UpdateNftMetadata(ctx context.Context, arg UpdateNftMetadataParams) error
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (string, error)
 	UpsertNFTV2(ctx context.Context, arg UpsertNFTV2Params) error
 }
