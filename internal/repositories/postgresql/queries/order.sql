@@ -72,3 +72,5 @@ WHERE o.is_cancelled = false
   AND (ci.identifier = sqlc.narg('consideration_identifier') OR sqlc.narg('consideration_identifier') IS NULL)
   AND (oi.token ILIKE sqlc.narg('offer_token') OR sqlc.narg('offer_token') IS NULL)
   AND (oi.identifier = sqlc.narg('offer_identifier') OR sqlc.narg('offer_identifier') IS NULL);
+
+
