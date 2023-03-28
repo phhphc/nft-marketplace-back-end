@@ -37,6 +37,7 @@ func (ctl *Controls) GetNFTsWithListings(c echo.Context) error {
 			Image:       nft.Image,
 			Name:        nft.Name,
 			Description: nft.Description,
+			Metadata:    nft.Metadata,
 			Listings:    make([]*dto.GetNftListingRes, len(nft.Listings)),
 		}
 		for j, listing := range nft.Listings {
