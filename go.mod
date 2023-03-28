@@ -3,6 +3,8 @@ module github.com/phhphc/nft-marketplace-back-end
 go 1.19
 
 require (
+	github.com/elastic/go-elasticsearch/v7 v7.17.7
+	github.com/elastic/go-elasticsearch/v8 v8.6.0
 	github.com/ethereum/go-ethereum v1.11.4
 	github.com/go-playground/validator/v10 v10.11.2
 	github.com/labstack/echo/v4 v4.10.2
@@ -29,6 +31,7 @@ require (
 	github.com/deckarep/golang-set/v2 v2.3.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
+	github.com/elastic/elastic-transport-go/v8 v8.0.0-20211216131617-bbee439d559c // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gballet/go-libpcsclite v0.0.0-20190607065134-2772fd86a8ff // indirect
 	github.com/getsentry/sentry-go v0.18.0 // indirect
