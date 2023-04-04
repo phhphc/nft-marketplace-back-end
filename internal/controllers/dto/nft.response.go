@@ -13,7 +13,7 @@ type GetNftRes struct {
 	Image       string              `json:"image"`
 	Name        string              `json:"name"`
 	Description string              `json:"description"`
-	Metadata    []byte              `json:"metadata"`
+	Metadata    map[string]any      `json:"metadata"`
 	Listings    []*GetNftListingRes `json:"listings"`
 }
 
