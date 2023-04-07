@@ -13,3 +13,11 @@ WHERE (token ILIKE sqlc.narg('token') or sqlc.narg('token') IS NULL)
   AND (ca.name ILIKE sqlc.narg('category') or sqlc.narg('category') IS NULL)
 OFFSET sqlc.arg('offset')
 LIMIT sqlc.arg('limit');
+
+-- name: GetCollectionWithCategory :many
+SELECT token, owner, co.name, ca.name as category, description, metadata, created_at
+FROM collections co
+         JOIN categories ca on co.category = ca.id
+WHERE ca.name ILIKE sqlc.narg('category')
+OFFSET sqlc.arg('offset')
+LIMIT sqlc.arg('limit');

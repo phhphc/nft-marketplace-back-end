@@ -27,6 +27,7 @@ type Servicer interface {
 
 	CreateCollection(ctx context.Context, collection entities.Collection) (entities.Collection, error)
 	GetListCollection(ctx context.Context, query entities.Collection, offset int, limit int) ([]entities.Collection, error)
+	GetListCollectionWithCategory(ctx context.Context, categogy string, offset int, limit int) ([]entities.Collection, error)
 }
 
 var _ Servicer = (*Services)(nil)

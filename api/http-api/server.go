@@ -53,6 +53,7 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 	collectionRoute := e.Group("/api/v0.1/collection")
 	collectionRoute.POST("", controller.PostCollection)
 	collectionRoute.GET("", controller.GetCollection)
+	collectionRoute.GET("/:category", controller.GetCollectionWithCategory)
 
 	return &httpServer{
 		lg:   log.GetLogger(),

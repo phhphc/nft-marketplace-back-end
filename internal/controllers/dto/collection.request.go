@@ -16,3 +16,7 @@ type GetCollectionReq struct {
 	Name     string `query:"name" validate:"omitempty,required"`
 	Category string `query:"category" validate:"omitempty,alphanum"`
 }
+
+type GetCollectionWithCategoryReq struct {
+	Category string `param:"category"`
+}

@@ -94,3 +94,41 @@ func (ctl *Controls) GetCollection(c echo.Context) error {
 		IsSuccess: true,
 	})
 }
+
+func (ctl *Controls) GetCollectionWithCategory(c echo.Context) error {
+	var req dto.GetCollectionWithCategoryReq
+	var err error
+	if err = c.Bind(&req); err != nil {
+		return dto.NewHTTPError(400, err)
+	}
+	if err = c.Validate(&req); err != nil {
+		return dto.NewHTTPError(400, err)
+	}
+
+	cs, err := ctl.service.GetListCollectionWithCategory(c.Request().Context(), req.Category, 0, 9999)
+	if err != nil {
+		return dto.NewHTTPError(400, err)
+	}
+
+	collection := dto.GetCollectionWithCategoryRes{
+		PageSize: 9999,
+		Page:     0,
+	}
+	for _, c := range cs {
+		collection.Collections = append(collection.Collections, dto.Collection{
+			Token:       c.Token.Hex(),
+			Owner:       c.Owner.Hex(),
+			Name:        c.Name,
+			Description: c.Description,
+			Metadata:    c.Metadata,
+			Category:    c.Category,
+			CreatedAt:   c.CreatedAt,
+		})
+	}
+
+	return c.JSON(200, dto.Response{
+		Data:      collection,
+		IsSuccess: true,
+	})
+}
+

@@ -19,4 +19,10 @@ type GetCollectionRes struct {
 	Page        int          `json:"page"`
 }
 
+type GetCollectionWithCategoryRes struct {
+	Collections []Collection `json:"collections"`
+	PageSize    int          `json:"page_size"`
+	Page        int          `json:"page"`
+}
+
 type Collection PostCollectionRes

@@ -81,6 +81,62 @@ func (q *Queries) GetCollection(ctx context.Context, arg GetCollectionParams) ([
 	return items, nil
 }
 
+const getCollectionWithCategory = `-- name: GetCollectionWithCategory :many
+SELECT token, owner, co.name, ca.name as category, description, metadata, created_at
+FROM collections co
+         JOIN categories ca on co.category = ca.id
+WHERE ca.name ILIKE $1
+OFFSET $2
+LIMIT $3
+`
+
+type GetCollectionWithCategoryParams struct {
+	Category sql.NullString
+	Offset   int32
+	Limit    int32
+}
+
+type GetCollectionWithCategoryRow struct {
+	Token       string
+	Owner       string
+	Name        string
+	Category    string
+	Description string
+	Metadata    pqtype.NullRawMessage
+	CreatedAt   sql.NullTime
+}
+
+func (q *Queries) GetCollectionWithCategory(ctx context.Context, arg GetCollectionWithCategoryParams) ([]GetCollectionWithCategoryRow, error) {
+	rows, err := q.db.QueryContext(ctx, getCollectionWithCategory, arg.Category, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetCollectionWithCategoryRow{}
+	for rows.Next() {
+		var i GetCollectionWithCategoryRow
+		if err := rows.Scan(
+			&i.Token,
+			&i.Owner,
+			&i.Name,
+			&i.Category,
+			&i.Description,
+			&i.Metadata,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const insertCollection = `-- name: InsertCollection :one
 INSERT INTO "collections" ("token", "owner", "name", "description","category", "metadata")
 VALUES ($1,$2,$3,$4,$5,$6)

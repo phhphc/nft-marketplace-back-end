@@ -9,6 +9,7 @@ type Controller interface {
 
 	PostCollection(c echo.Context) error
 	GetCollection(c echo.Context) error
+	GetCollectionWithCategory(c echo.Context) error
 
 	GetNFTsWithListings(c echo.Context) error
 	GetNFTWithListings(c echo.Context) error

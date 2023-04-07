@@ -123,3 +123,47 @@ func (s *Services) GetListCollection(ctx context.Context, query entities.Collect
 
 	return
 }
+
+func (s *Services) GetListCollectionWithCategory(ctx context.Context, categogy string, offset int, limit int) (ec []entities.Collection, err error) {
+	params := postgresql.GetCollectionWithCategoryParams{
+		Offset: int32(offset),
+		Limit:  int32(limit),
+	}
+
+	if len(categogy) > 0 {
+		params.Category = sql.NullString{
+			String: categogy,
+			Valid:  true,
+		}
+	}
+
+	cs, err := s.repo.GetCollectionWithCategory(ctx, params)
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("cannot get list collection with category")
+		return
+	}
+
+	for _, c := range cs {
+		e := entities.Collection{
+			Token:       common.HexToAddress(c.Token),
+			Name:        c.Name,
+			Description: c.Description,
+			Owner:       common.HexToAddress(c.Owner),
+			Category:    c.Category,
+			CreatedAt:   c.CreatedAt.Time,
+		}
+		if c.Metadata.Valid {
+			var metadata map[string]any
+			if err = json.Unmarshal(c.Metadata.RawMessage, &metadata); err != nil {
+				if err != nil {
+					s.lg.Panic().Caller().Err(err).Msg("error")
+				}
+			}
+			e.Metadata = metadata
+		}
+
+		ec = append(ec, e)
+	}
+
+	return
+}
