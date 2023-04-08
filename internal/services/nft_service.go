@@ -62,7 +62,7 @@ func (s *Services) GetNFTsWithListings(ctx context.Context, token common.Address
 			}
 		}
 
-		if nft.StartPrice.Valid || nft.EndPrice.Valid {
+		if nft.StartTime.Valid || nft.EndTime.Valid {
 			nftRes := nftsMap[nft.Identifier]
 			nftRes.Listings = append(nftRes.Listings, &entities.ListingRead{
 				OrderHash:  common.HexToHash(nft.OrderHash.String),
