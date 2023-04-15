@@ -36,7 +36,7 @@ func (s *Services) TransferNft(ctx context.Context, transfer models.NftTransfer,
 		return
 	}
 	if (transfer.From == common.Address{}) {
-		s.EmitEvent(context.TODO(), models.EventNewErc721, value, nil)
+		s.EmitEvent(context.TODO(), models.EventNewErc721, value)
 	}
 	return
 }

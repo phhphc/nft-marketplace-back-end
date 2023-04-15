@@ -1,3 +1,4 @@
+// Try to remove EmitEvent() and SubcribeEvent()
 package services
 
 import (
@@ -8,14 +9,15 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
+	"github.com/hibiken/asynq"
 )
 
 type Servicer interface {
 	OrderService
 	NftNewService
 
-	EmitEvent(ctx context.Context, event models.EnumEvent, value []byte, key []byte) error
-	SubcribeEvent(ctx context.Context, event models.EnumEvent, ch chan<- models.AppEvent) (func(), <-chan error)
+	EmitEvent(ctx context.Context, event models.EnumEvent, value []byte) error
+	SubcribeEvent(ctx context.Context, event models.EnumEvent, handler asynq.HandlerFunc) error
 
 	TransferNft(ctx context.Context, transfer models.NftTransfer, blockNumber uint64, txIndex uint) error
 	UpdateNftMetadata(ctx context.Context, token common.Address, identifier *big.Int, metadata json.RawMessage) (err error)

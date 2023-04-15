@@ -6,16 +6,70 @@ import (
 	"io"
 	"net/http"
 	"sync"
-	"time"
+	// "time"
 
 	"github.com/phhphc/nft-marketplace-back-end/internal/contracts"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
+	"github.com/hibiken/asynq"
 )
 
 func (w *worker) pullErc721Metadata(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	w.lg.Info().Caller().Msg("start pull erc721 metadata")
 
+	w.Service.SubcribeEvent(ctx, models.EventNewErc721, w.handleNewErc721Metadata)
+}
+
+func (w *worker) handleNewErc721Metadata(ctx context.Context, task *asynq.Task) error{
+	var event models.NewErc721Event
+	err := json.Unmarshal(task.Payload(), &event)
+	if err != nil {
+		w.lg.Panic().Caller().Err(err).Msg("cannot unmarshal event")
+		return err
+	}
+	w.lg.Info().Caller().Interface("event", event).Msg("new erc721 event")
+
+	contract, err := contracts.NewERC721Caller(event.Token, w.ethClient)
+	if err != nil {
+		w.lg.Panic().Caller().Err(err).Msg("error create new contract caller")
+		return err
+	}
+
+	tokenURI, err := contract.TokenURI(nil, event.Identifier)
+	if err != nil {
+		w.lg.Debug().Caller().Err(err).Msg("error fetch tokenURI")
+		return err
+	}
+
+	var rawMetadata json.RawMessage
+	res, err := http.Get(tokenURI)
+	if err != nil {
+		w.lg.Debug().Caller().Err(err).Msg("cannot handle HTTP Request")
+		return err
+	}
+	body, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+
+	err = json.Unmarshal(body, &rawMetadata)
+	if err != nil {
+		w.lg.Debug().Caller().Err(err).Msg("Cannot parsing json from request body")
+		return err
+	}
+
+	w.lg.Info().Caller().Bytes("json", []byte(rawMetadata)).Msg("new")
+	err = w.Service.UpdateNftMetadata(context.TODO(), event.Token, event.Identifier, rawMetadata)
+	if err != nil {
+		w.lg.Panic().Caller().Err(err).Msg("Cannot update database")
+		return err
+	}
+	return nil
+}
+
+/*
+func (w *worker) pullErc721Metadata(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+	w.lg.Info().Caller().Msg("start pull erc721 metadata")
+////////////////////////////////////////
 	eCh := make(chan models.AppEvent, 10)
 	cancel, errCh := w.Service.SubcribeEvent(ctx, models.EventNewErc721, eCh)
 	defer cancel()
@@ -87,3 +141,4 @@ func (w *worker) handleNewErc721Metadata(ctx context.Context, rawValue []byte) {
 		return
 	}
 }
+*/
