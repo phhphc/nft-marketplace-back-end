@@ -10,7 +10,7 @@ func New(repo postgresql.Querier) *Services {
 	return &Services{
 		lg:     *log.GetLogger(),
 		repo:   repo,
-		asynq: 	asyncQueue.New("165.232.160.106:9093"),
+		asynq: 	asyncQueue.New("165.232.160.106:6379", "12345"),
 	}
 }
 

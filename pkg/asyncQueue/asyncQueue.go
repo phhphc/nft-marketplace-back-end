@@ -13,8 +13,11 @@ type asyncQueue struct {
  	Processor 	asynq.Server
 }
 
-func New(addr string) *asyncQueue {
-	opts := asynq.RedisClientOpt{Addr: addr}
+func New(address string, password string) *asyncQueue {
+	opts := asynq.RedisClientOpt{
+		Addr: address,
+		Password: password,
+	}
 	cfg := asynq.Config{Concurrency: 10}
 	return &asyncQueue{
 		Distributor: *asynq.NewClient(opts),
