@@ -19,22 +19,24 @@ import (
 func (w *worker) watchTokenEvent(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
+	w.lg.Info().Caller().Msg("Start watch token event")
 	limit := 100
 	offset := 0
 	for {
 		ec, err := w.Service.GetListCollection(ctx, entities.Collection{}, offset, limit)
 		if err != nil {
-			w.lg.Error().Caller().Err(err).Msg("error")
+			w.lg.Error().Caller().Err(err).Msg("error get list collection")
 		}
 
 		for _, c := range ec {
-			// wg.Add(1)
 			// go w.listenErc721ContractEvent(ctx, wg, c.Token)
 			payload, _ := json.Marshal(models.NewCollectionEvent{
 				Address: c.Token,
 			})
 			newTask := asynq.NewTask(string(models.EventNewCollection), payload)
-			w.listenErc721ContractEvent(ctx, newTask)
+			w.lg.Info().Caller().Msg("listen to existed contract event")
+			wg.Add(1)
+			go w.listenErc721ContractEvent(ctx, newTask)
 		}
 
 		if len(ec) < limit {
@@ -62,7 +64,9 @@ func (w *worker) watchTokenEvent(ctx context.Context, wg *sync.WaitGroup) {
 		}
 	}
 	*/
-	w.Service.SubcribeEvent(ctx, models.EventNewCollection, w.listenErc721ContractEvent)
+	w.lg.Info().Caller().Msg("listen to new contract event")
+	wg.Add(1)
+	go w.Service.SubcribeEvent(ctx, models.EventNewCollection, w.listenErc721ContractEvent)
 }
 
 /*
@@ -135,6 +139,7 @@ func (w *worker) listenErc721ContractEvent(ctx context.Context, task *asynq.Task
 }
 
 func (w *worker) resyncErc721Event(ctx context.Context, q ethereum.FilterQuery) {
+	w.lg.Info().Caller().Str("Token: ", q.Addresses[0].Hex()).Msg("resync to contract event")
 	lastSyncBlock := uint64(0)
 	currentBlock, err := w.ethClient.BlockNumber(ctx)
 	if err != nil {

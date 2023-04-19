@@ -27,7 +27,7 @@ func (w *worker) handleNewErc721Metadata(ctx context.Context, task *asynq.Task) 
 		w.lg.Panic().Caller().Err(err).Msg("cannot unmarshal event")
 		return err
 	}
-	w.lg.Info().Caller().Interface("event", event).Msg("new erc721 event")
+	w.lg.Info().Caller().Interface("Event: ", event).Msg("new erc721 event")
 
 	contract, err := contracts.NewERC721Caller(event.Token, w.ethClient)
 	if err != nil {
