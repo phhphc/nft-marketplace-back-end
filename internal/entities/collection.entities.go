@@ -12,6 +12,7 @@ type Collection struct {
 
 	Name        string
 	Description string
+	Metadata    map[string]any
 	Category    string
 	CreatedAt   time.Time
 

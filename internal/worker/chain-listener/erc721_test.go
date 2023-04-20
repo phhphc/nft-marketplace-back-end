@@ -2,6 +2,10 @@ package chainListener
 
 import (
 	"fmt"
+	"math/big"
+	"strings"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
@@ -12,9 +16,6 @@ import (
 	"github.com/phhphc/nft-marketplace-back-end/internal/contracts"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 	"github.com/stretchr/testify/suite"
-	"math/big"
-	"strings"
-	"testing"
 )
 
 type NftTestSuite struct {

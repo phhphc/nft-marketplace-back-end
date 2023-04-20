@@ -5,12 +5,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 	"math/big"
 	"strconv"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 )
 
 type NftNewService interface {
@@ -61,7 +62,7 @@ func (s *Services) GetNFTsWithListings(ctx context.Context, token common.Address
 			}
 		}
 
-		if nft.StartPrice.Valid || nft.EndPrice.Valid {
+		if nft.StartTime.Valid || nft.EndTime.Valid {
 			nftRes := nftsMap[nft.Identifier]
 			nftRes.Listings = append(nftRes.Listings, &entities.ListingRead{
 				OrderHash:  common.HexToHash(nft.OrderHash.String),
@@ -98,15 +99,14 @@ func (s *Services) GetNFTWithListings(ctx context.Context, token common.Address,
 	var nft *entities.NftRead
 	for i, order := range res {
 		if i == 0 {
+			s.lg.Debug().Caller().Interface("order", order).Msg("order")
+
 			nft = &entities.NftRead{
-				Token:       common.HexToAddress(order.Token),
-				Identifier:  ToBigInt(order.Identifier),
-				Owner:       common.HexToAddress(order.Owner),
-				Image:       FromInterfaceString2String(order.Image),
-				Name:        FromInterfaceString2String(order.Name),
-				Description: FromInterfaceString2String(order.Description),
-				Metadata:    order.Metadata.RawMessage,
-				Listings:    make([]*entities.ListingRead, 0),
+				Token:      common.HexToAddress(order.Token),
+				Identifier: ToBigInt(order.Identifier),
+				Owner:      common.HexToAddress(order.Owner),
+				Metadata:   order.Metadata.RawMessage,
+				Listings:   make([]*entities.ListingRead, 0),
 			}
 		}
 
@@ -130,8 +130,6 @@ func FromInterfaceString2String(bstr interface{}) string {
 		return ""
 	}
 	byteArrayStr := fmt.Sprint(bstr)
-	fmt.Println(bstr)
-	fmt.Println(fmt.Sprint(bstr))
 
 	byteArrayStrArr := strings.Split(byteArrayStr, " ")
 	subByteArr := byteArrayStrArr[1 : len(byteArrayStrArr)-1]

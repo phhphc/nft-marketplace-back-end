@@ -121,7 +121,7 @@ func (s *Services) FulFillOrder(ctx context.Context, order entities.Order) (err 
 	if err == nil {
 		return
 	}
-	s.lg.Error().Caller().Err(err).Msg(orderHash)
+	s.lg.Warn().Caller().Err(err).Msg(orderHash)
 
 	var orderType sql.NullInt32
 	if order.OrderType != nil {

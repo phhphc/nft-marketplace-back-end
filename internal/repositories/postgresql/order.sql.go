@@ -18,6 +18,7 @@ SELECT json_build_object(
                'zone', o.zone,
                'offer', json_agg(
                        json_build_object(
+                           'item_type', offer.item_type,
                                'token', offer.token,
                                'identifier', offer.identifier::VARCHAR,
                                'start_amount', offer.start_amount::VARCHAR,
@@ -26,6 +27,7 @@ SELECT json_build_object(
                    ),
                'consideration', json_agg(
                        json_build_object(
+                               'item_type', cons.item_type,
                                'token', cons.token,
                                'identifier', cons.identifier::VARCHAR,
                                'start_amount', cons.start_amount::VARCHAR,
@@ -59,7 +61,7 @@ const getOrderHash = `-- name: GetOrderHash :many
 SELECT DISTINCT o.order_hash
 FROM orders o
          JOIN consideration_items ci on ci.order_hash = o.order_hash
-         JOIN offer_items oi on ci.order_hash = o.order_hash
+         JOIN offer_items oi on oi.order_hash = o.order_hash
 WHERE o.is_cancelled = false
   AND o.is_fulfilled = false
   AND (ci.token ILIKE $1 OR $1 IS NULL)
