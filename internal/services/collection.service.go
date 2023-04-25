@@ -44,7 +44,7 @@ func (s *Services) CreateCollection(ctx context.Context, collection entities.Col
 	}
 
 	// TODO: later
-	err = s.EmitEvent(ctx, models.EventNewCollection, collection.Token[:])
+	err = s.EmitTask(ctx, models.TaskNewCollection, collection.Token[:])
 	if err != nil {
 		s.lg.Panic().Caller().Err(err).Msg("error")
 	}

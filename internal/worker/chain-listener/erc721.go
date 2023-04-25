@@ -30,11 +30,11 @@ func (w *worker) watchTokenEvent(ctx context.Context, wg *sync.WaitGroup) {
 
 		for _, c := range ec {
 			// go w.listenErc721ContractEvent(ctx, wg, c.Token)
-			payload, _ := json.Marshal(models.NewCollectionEvent{
+			payload, _ := json.Marshal(models.NewCollectionTask{
 				Address: c.Token,
 			})
-			newTask := asynq.NewTask(string(models.EventNewCollection), payload)
-			w.lg.Info().Caller().Msg("listen to existed contract event")
+			newTask := asynq.NewTask(string(models.TaskNewCollection), payload)
+			w.lg.Info().Caller().Str("Token", c.Token.Hex()).Msg("listen to existed contract")
 			wg.Add(1)
 			go w.listenErc721ContractEvent(ctx, newTask)
 		}
@@ -66,7 +66,7 @@ func (w *worker) watchTokenEvent(ctx context.Context, wg *sync.WaitGroup) {
 	*/
 	w.lg.Info().Caller().Msg("listen to new contract event")
 	wg.Add(1)
-	go w.Service.SubcribeEvent(ctx, models.EventNewCollection, w.listenErc721ContractEvent)
+	go w.Service.SubcribeTask(ctx, models.TaskNewCollection, w.listenErc721ContractEvent)
 }
 
 /*
@@ -102,14 +102,14 @@ func (w *worker) listenErc721ContractEvent(ctx context.Context, wg *sync.WaitGro
 */
 
 func (w *worker) listenErc721ContractEvent(ctx context.Context, task *asynq.Task) error {
-	var payload models.NewCollectionEvent
+	var payload models.NewCollectionTask
 	err := json.Unmarshal(task.Payload(), &payload)
 	if err != nil {
 		return err
 	}
 
 	var addr = payload.Address
-	w.lg.Info().Caller().Str("Token", addr.Hex()).Msg("listen to contract event")
+	w.lg.Info().Caller().Str("Token", addr.Hex()).Msg("listen to contract")
 	logCh := make(chan types.Log, 100)
 	defer close(logCh)
 	query := ethereum.FilterQuery{
@@ -139,7 +139,7 @@ func (w *worker) listenErc721ContractEvent(ctx context.Context, task *asynq.Task
 }
 
 func (w *worker) resyncErc721Event(ctx context.Context, q ethereum.FilterQuery) {
-	w.lg.Info().Caller().Str("Token: ", q.Addresses[0].Hex()).Msg("resync to contract event")
+	w.lg.Info().Caller().Str("Token: ", q.Addresses[0].Hex()).Msg("resync contract")
 	lastSyncBlock := uint64(0)
 	currentBlock, err := w.ethClient.BlockNumber(ctx)
 	if err != nil {

@@ -7,19 +7,19 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-func (s *Services) EmitEvent(ctx context.Context, event models.EnumEvent, value []byte) error {
+func (s *Services) EmitTask(ctx context.Context, event models.EnumTask, value []byte) error {
 	err := s.asynq.DistributeTask(string(event), value)
 	if err != nil {
-		s.lg.Error().Caller().Err(err).Msg("err emit event")
+		s.lg.Error().Caller().Err(err).Msg("err emit task")
 	}
 	return err
 }
 
-func (s *Services) SubcribeEvent(ctx context.Context, event models.EnumEvent, handler asynq.HandlerFunc) error {
+func (s *Services) SubcribeTask(ctx context.Context, event models.EnumTask, handler asynq.HandlerFunc) error {
 	err := s.asynq.ProcessTask(string(event), handler)
 
 	if err != nil {
-		s.lg.Error().Caller().Err(err).Msg("err subcribe event")
+		s.lg.Error().Caller().Err(err).Msg("err subcribe task")
 	}
 	return err
 }

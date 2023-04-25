@@ -16,8 +16,8 @@ type Servicer interface {
 	OrderService
 	NftNewService
 
-	EmitEvent(ctx context.Context, event models.EnumEvent, value []byte) error
-	SubcribeEvent(ctx context.Context, event models.EnumEvent, handler asynq.HandlerFunc) error
+	EmitTask(ctx context.Context, event models.EnumTask, value []byte) error
+	SubcribeTask(ctx context.Context, event models.EnumTask, handler asynq.HandlerFunc) error
 
 	TransferNft(ctx context.Context, transfer models.NftTransfer, blockNumber uint64, txIndex uint) error
 	UpdateNftMetadata(ctx context.Context, token common.Address, identifier *big.Int, metadata json.RawMessage) (err error)
