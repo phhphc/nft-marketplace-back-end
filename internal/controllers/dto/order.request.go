@@ -48,5 +48,19 @@ type GetOrderHash struct {
 }
 
 type GetOrder struct {
-	OrderHash string `query:"order_hash" validate:"eth_hash"`
+	OrderHash string `query:"orderHash" validate:"omitempty,eth_hash"`
+
+	ConsiderationToken      string `query:"considerationToken" validate:"omitempty,eth_addr"`
+	ConsiderationIdentifier string `query:"considerationIdentifier" validate:"omitempty,hexadecimal"`
+
+	OfferToken      string `query:"offerToken" validate:"omitempty,eth_addr"`
+	OfferIdentifier string `query:"offerIdentifier" validate:"omitempty,hexadecimal"`
+
+	IsFulfilled *bool `query:"isFulfilled"`
+	IsCancelled *bool `query:"isCancelled"`
+	IsInvalid   *bool `query:"isInvalid"`
+}
+
+type GetOrderV1 struct {
+	OrderHash string `query:"order_hash" validate:"omitempty,eth_hash"`
 }

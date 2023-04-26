@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"math/big"
 	"reflect"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -15,6 +16,18 @@ import (
 type OrderService interface {
 	CreateOrder(ctx context.Context, order entities.Order) error
 	FulFillOrder(ctx context.Context, order entities.Order) error
+	GetOrder(
+		ctx context.Context,
+		offer entities.OfferItem,
+		consideration entities.ConsiderationItem,
+		orderHash common.Hash,
+		IsFulfilled *bool,
+		IsCancelled *bool,
+		IsInvalid *bool,
+	) ([]map[string]any, error)
+	GetOrderHash(ctx context.Context, offer entities.OfferItem, consideration entities.ConsiderationItem) ([]common.Hash, error)
+	GetOrderByHash(ctx context.Context, orderHash common.Hash) (o map[string]any, e error)
+	RemoveInvalidOrder(ctx context.Context, offerer common.Address, token common.Address, identifier *big.Int) error
 }
 
 func (s *Services) CreateOrder(ctx context.Context, order entities.Order) (err error) {
@@ -209,6 +222,81 @@ func (s *Services) FulFillOrder(ctx context.Context, order entities.Order) (err 
 	return
 }
 
+func (s *Services) GetOrder(
+	ctx context.Context,
+	offer entities.OfferItem,
+	consideration entities.ConsiderationItem,
+	orderHash common.Hash,
+	IsFulfilled *bool,
+	IsCancelled *bool,
+	IsInvalid *bool,
+) ([]map[string]any, error) {
+	params := postgresql.GetOrderParams{}
+	if IsFulfilled != nil {
+		params.IsFulfilled = sql.NullBool{
+			Bool:  *IsFulfilled,
+			Valid: true,
+		}
+	}
+	if IsCancelled != nil {
+		params.IsCancelled = sql.NullBool{
+			Bool:  *IsCancelled,
+			Valid: true,
+		}
+	}
+	if IsInvalid != nil {
+		params.IsInvalid = sql.NullBool{
+			Bool:  *IsInvalid,
+			Valid: true,
+		}
+	}
+
+	if (consideration.Token != common.Address{}) {
+		params.ConsiderationToken = sql.NullString{
+			String: consideration.Token.Hex(),
+			Valid:  true,
+		}
+	}
+	if consideration.Identifier != nil {
+		params.ConsiderationIdentifier = sql.NullString{
+			String: consideration.Identifier.String(),
+			Valid:  true,
+		}
+	}
+
+	if (offer.Token != common.Address{}) {
+		params.OfferToken = sql.NullString{
+			String: offer.Token.Hex(),
+			Valid:  true,
+		}
+	}
+	if offer.Identifier != nil {
+		params.OfferIdentifier = sql.NullString{
+			String: offer.Identifier.String(),
+			Valid:  true,
+		}
+	}
+
+	if orderHash != (common.Hash{}) {
+		params.OrderHash = sql.NullString{
+			String: orderHash.Hex(),
+			Valid:  true,
+		}
+	}
+
+	js, err := s.repo.GetOrder(ctx, params)
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Interface("param", params).Msg("Err")
+		return nil, err
+	}
+
+	rs := make([]map[string]any, len(js))
+	for i, j := range js {
+		json.Unmarshal(j, &rs[i])
+	}
+	return rs, nil
+}
+
 func (s *Services) GetOrderByHash(ctx context.Context, orderHash common.Hash) (o map[string]any, e error) {
 	m, err := s.repo.GetJsonOrderByHash(ctx, orderHash.Hex())
 	if err != nil {
@@ -259,6 +347,19 @@ func (s *Services) GetOrderHash(ctx context.Context, offer entities.OfferItem, c
 		hs = append(hs, common.HexToHash(s))
 	}
 	return
+}
+
+func (s *Services) RemoveInvalidOrder(ctx context.Context, offerer common.Address, token common.Address, identifier *big.Int) error {
+	err := s.repo.MarkOrderInvalid(ctx, postgresql.MarkOrderInvalidParams{
+		Offerer:    offerer.Hex(),
+		Token:      token.Hex(),
+		Identifier: identifier.String(),
+	})
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("update error")
+	}
+
+	return err
 }
 
 type Stringer interface {

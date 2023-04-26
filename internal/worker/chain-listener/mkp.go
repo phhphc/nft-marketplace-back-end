@@ -20,7 +20,12 @@ func (w *worker) listenMkpEvent(ctx context.Context, wg *sync.WaitGroup) {
 		Addresses: []common.Address{w.mkpAddr},
 	}
 
-	go w.resyncMkpEvent(ctx, query)
+	lastSyncBlock, err := w.Service.GetMarketplaceLastSyncBlock(ctx)
+	if err != nil {
+		w.lg.Fatal().Caller().Err(err).Msg("error get last block")
+	}
+
+	go w.resyncMkpEvent(ctx, query, lastSyncBlock)
 
 	sub, err := w.ethClient.SubscribeFilterLogs(ctx, query, logCh)
 	if err != nil {
@@ -41,15 +46,14 @@ func (w *worker) listenMkpEvent(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (w *worker) resyncMkpEvent(ctx context.Context, q ethereum.FilterQuery) {
-	lastSyncBlock := uint64(0)
+func (w *worker) resyncMkpEvent(ctx context.Context, q ethereum.FilterQuery, lastSyncBlock uint64) {
 	currentBlock, err := w.ethClient.BlockNumber(ctx)
 	if err != nil {
 		w.lg.Fatal().Caller().Err(err).Msg("cannot get current block")
 	}
 
 	// TODO - resync with max range
-	q.FromBlock = new(big.Int).SetUint64(lastSyncBlock)
+	q.FromBlock = new(big.Int).SetUint64(lastSyncBlock + 1)
 	q.ToBlock = new(big.Int).SetUint64(currentBlock)
 	logs, err := w.ethClient.FilterLogs(ctx, q)
 	if err != nil {
@@ -62,6 +66,13 @@ func (w *worker) resyncMkpEvent(ctx context.Context, q ethereum.FilterQuery) {
 }
 
 func (w *worker) handleMkpEvent(vLog types.Log) {
+	defer func() {
+		err := w.Service.UpdateMarketplaceLastSyncBlock(context.TODO(), vLog.BlockNumber)
+		if err != nil {
+			w.lg.Fatal().Caller().Err(err).Msg("error update last sync")
+		}
+	}()
+
 	eventAbi, err := w.mkpAbi.EventByID(vLog.Topics[0])
 	if err != nil {
 		w.lg.Error().Caller().Err(err).Msg("error get event abi")

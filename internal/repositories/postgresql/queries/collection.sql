@@ -21,3 +21,13 @@ FROM collections co
 WHERE ca.name ILIKE sqlc.narg('category')
 OFFSET sqlc.arg('offset')
 LIMIT sqlc.arg('limit');
+
+-- name: UpdateCollectionLastSyncBlock :exec
+UPDATE collections
+SET "last_sync_block" = $2
+WHERE token = $1;
+
+-- name: GetCollectionLastSyncBlock :one
+SELECT "last_sync_block"
+FROM collections
+WHERE token = $1;

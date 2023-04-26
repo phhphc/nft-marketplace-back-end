@@ -38,6 +38,11 @@ func (s *Services) TransferNft(ctx context.Context, transfer models.NftTransfer,
 	if (transfer.From == common.Address{}) {
 		s.EmitTask(context.TODO(), models.TaskNewErc721, value)
 	}
+
+	err = s.RemoveInvalidOrder(ctx, transfer.From, transfer.Token, transfer.Identifier)
+	if err != nil {
+		s.lg.Fatal().Caller().Err(err).Msg("remove error")
+	}
 	return
 }
 

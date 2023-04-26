@@ -2,14 +2,15 @@ package chainListener
 
 import (
 	"context"
+	"encoding/json"
+
 	// "encoding/hex"
 	"math/big"
 	"sync"
-	"encoding/json"
 
+	"github.com/hibiken/asynq"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
-	"github.com/hibiken/asynq"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -29,14 +30,8 @@ func (w *worker) watchTokenEvent(ctx context.Context, wg *sync.WaitGroup) {
 		}
 
 		for _, c := range ec {
-			// go w.listenErc721ContractEvent(ctx, wg, c.Token)
-			payload, _ := json.Marshal(models.NewCollectionTask{
-				Address: c.Token,
-			})
-			newTask := asynq.NewTask(string(models.TaskNewCollection), payload)
-			w.lg.Info().Caller().Str("Token", c.Token.Hex()).Msg("listen to existed contract")
 			wg.Add(1)
-			go w.listenErc721ContractEvent(ctx, newTask)
+			go w.listenErc721ContractEvent(ctx, wg, c.Token)
 		}
 
 		if len(ec) < limit {
@@ -46,81 +41,44 @@ func (w *worker) watchTokenEvent(ctx context.Context, wg *sync.WaitGroup) {
 		}
 	}
 
-	/*
-	eCh := make(chan models.AppEvent, 100)
-	cancel, errCh := w.Service.SubcribeEvent(ctx, models.EventNewCollection, eCh)
-	defer cancel()
-
-	for {
-		select {
-		case e := <-eCh:
-			w.lg.Debug().Caller().Str("addr", hex.EncodeToString(e.Value)).Msg("new event")
-			wg.Add(1)
-			go w.listenErc721ContractEvent(ctx, wg, common.BytesToAddress(e.Value))
-		case err := <-errCh:
-			w.lg.Fatal().Caller().Err(err).Msg("err")
-		case <-ctx.Done():
-			return
-		}
-	}
-	*/
-	w.lg.Info().Caller().Msg("listen to new contract event")
 	wg.Add(1)
-	go w.Service.SubcribeTask(ctx, models.TaskNewCollection, w.listenErc721ContractEvent)
+	go func() {
+		w.lg.Info().Caller().Msg("listen to new contract event")
+		w.Service.SubcribeTask(ctx, models.TaskNewCollection, func(ctx context.Context, t *asynq.Task) error {
+			var payload models.NewCollectionTask
+			err := json.Unmarshal(t.Payload(), &payload)
+			if err != nil {
+				return err
+			}
+			token := payload.Address
+
+			wg.Add(1)
+			go w.listenErc721ContractEvent(ctx, wg, token)
+			return nil
+		})
+		wg.Done()
+	}()
 }
 
-/*
-func (w *worker) listenErc721ContractEvent(ctx context.Context, wg *sync.WaitGroup, addr common.Address) {
-	w.lg.Info().Caller().Str("Token", addr.Hex()).Msg("listen to contract event")
+func (w *worker) listenErc721ContractEvent(ctx context.Context, wg *sync.WaitGroup, token common.Address) error {
 	defer wg.Done()
+
+	w.lg.Info().Caller().Str("Token", token.Hex()).Msg("listen to contract")
 	logCh := make(chan types.Log, 100)
 	defer close(logCh)
 	query := ethereum.FilterQuery{
-		Addresses: []common.Address{addr},
+		Addresses: []common.Address{token},
 	}
 
-	go w.resyncErc721Event(ctx, query)
+	lastSyncBlock, err := w.Service.GetCollectionLastSyncBlock(ctx, token)
+	if err != nil {
+		w.lg.Fatal().Caller().Err(err).Msg("cannot get last sync block")
+	}
+	go w.resyncErc721Event(ctx, query, lastSyncBlock)
 
 	sub, err := w.ethClient.SubscribeFilterLogs(ctx, query, logCh)
 	if err != nil {
-		w.lg.Fatal().Caller().Err(err).Msg("cannot subcribe logs")
-	}
-	defer sub.Unsubscribe()
-
-	for {
-		select {
-		case vLog := <-logCh:
-			w.handleErc721Event(vLog)
-		case <-ctx.Done():
-			return
-		case err := <-sub.Err():
-			w.lg.Fatal().Caller().Err(err).Msg("error subcribe logs")
-			return
-		}
-	}
-}
-*/
-
-func (w *worker) listenErc721ContractEvent(ctx context.Context, task *asynq.Task) error {
-	var payload models.NewCollectionTask
-	err := json.Unmarshal(task.Payload(), &payload)
-	if err != nil {
-		return err
-	}
-
-	var addr = payload.Address
-	w.lg.Info().Caller().Str("Token", addr.Hex()).Msg("listen to contract")
-	logCh := make(chan types.Log, 100)
-	defer close(logCh)
-	query := ethereum.FilterQuery{
-		Addresses: []common.Address{addr},
-	}
-
-	go w.resyncErc721Event(ctx, query)
-
-	sub, err := w.ethClient.SubscribeFilterLogs(ctx, query, logCh)
-	if err != nil {
-		w.lg.Fatal().Caller().Err(err).Msg("cannot subcribe logs")
+		w.lg.Panic().Caller().Err(err).Msg("cannot subcribe logs")
 		return err
 	}
 	defer sub.Unsubscribe()
@@ -138,36 +96,41 @@ func (w *worker) listenErc721ContractEvent(ctx context.Context, task *asynq.Task
 	}
 }
 
-func (w *worker) resyncErc721Event(ctx context.Context, q ethereum.FilterQuery) {
+func (w *worker) resyncErc721Event(ctx context.Context, q ethereum.FilterQuery, lastSyncBlock uint64) {
 	w.lg.Info().Caller().Str("Token: ", q.Addresses[0].Hex()).Msg("resync contract")
-	lastSyncBlock := uint64(0)
 	currentBlock, err := w.ethClient.BlockNumber(ctx)
 	if err != nil {
-		w.lg.Fatal().Caller().Err(err).Msg("cannot get current block")
+		w.lg.Panic().Caller().Err(err).Msg("cannot get current block")
 	}
 
 	// TODO - resync with max range
-	q.FromBlock = new(big.Int).SetUint64(lastSyncBlock)
+	q.FromBlock = new(big.Int).SetUint64(lastSyncBlock + 1)
 	q.ToBlock = new(big.Int).SetUint64(currentBlock)
 	logs, err := w.ethClient.FilterLogs(ctx, q)
 	if err != nil {
-		w.lg.Fatal().Caller().Err(err).Msg("cannot filter block logs")
+		w.lg.Panic().Caller().Err(err).Msg("cannot filter block logs")
 	}
 
 	for _, vLog := range logs {
 		w.handleErc721Event(vLog)
 	}
+	w.lg.Info().Caller().Str("Token", q.Addresses[0].Hex()).Msg("finish resync contract")
 }
 
 func (w *worker) handleErc721Event(vLog types.Log) {
+	defer func() {
+		w.lg.Debug().Caller().Msg("update last sync")
+		err := w.Service.UpdateCollectionLastSyncBlock(context.TODO(), vLog.Address, vLog.BlockNumber)
+		if err != nil {
+			w.lg.Fatal().Caller().Err(err).Msg("cannot update last sync block")
+		}
+	}()
+
 	eventAbi, err := w.erc721Abi.EventByID(vLog.Topics[0])
 	if err != nil {
 		w.lg.Debug().Caller().Err(err).Msg("error get event abi")
 		return
 	}
-	//token uri => uri
-	//http uri => json
-	// TODO - add new
 
 	switch eventAbi.Name {
 	case "Transfer":
@@ -192,6 +155,6 @@ func (w *worker) handleErc721Event(vLog types.Log) {
 	case "ApprovalForAll":
 		// TODO - handle
 	default:
-		w.lg.Error().Caller().Err(err).Str("event", eventAbi.Name).Msg("unhandle contract event")
+		w.lg.Info().Caller().Err(err).Str("event", eventAbi.Name).Msg("unhandle contract event")
 	}
 }

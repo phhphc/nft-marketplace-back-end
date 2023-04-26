@@ -16,6 +16,8 @@ CREATE TABLE "collections"
 
     "created_at"  TIMESTAMP DEFAULT current_timestamp,
 
+    "last_sync_block" BIGINT NOT NULL DEFAULT 0,
+
     PRIMARY KEY ("token"),
     FOREIGN KEY ("category") REFERENCES "categories" ("id")
 );

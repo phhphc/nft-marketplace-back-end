@@ -81,6 +81,19 @@ func (q *Queries) GetCollection(ctx context.Context, arg GetCollectionParams) ([
 	return items, nil
 }
 
+const getCollectionLastSyncBlock = `-- name: GetCollectionLastSyncBlock :one
+SELECT "last_sync_block"
+FROM collections
+WHERE token = $1
+`
+
+func (q *Queries) GetCollectionLastSyncBlock(ctx context.Context, token string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getCollectionLastSyncBlock, token)
+	var last_sync_block int64
+	err := row.Scan(&last_sync_block)
+	return last_sync_block, err
+}
+
 const getCollectionWithCategory = `-- name: GetCollectionWithCategory :many
 SELECT token, owner, co.name, ca.name as category, description, metadata, created_at
 FROM collections co
@@ -140,7 +153,7 @@ func (q *Queries) GetCollectionWithCategory(ctx context.Context, arg GetCollecti
 const insertCollection = `-- name: InsertCollection :one
 INSERT INTO "collections" ("token", "owner", "name", "description","category", "metadata")
 VALUES ($1,$2,$3,$4,$5,$6)
-RETURNING token, owner, name, description, metadata, category, created_at
+RETURNING token, owner, name, description, metadata, category, created_at, last_sync_block
 `
 
 type InsertCollectionParams struct {
@@ -170,6 +183,23 @@ func (q *Queries) InsertCollection(ctx context.Context, arg InsertCollectionPara
 		&i.Metadata,
 		&i.Category,
 		&i.CreatedAt,
+		&i.LastSyncBlock,
 	)
 	return i, err
+}
+
+const updateCollectionLastSyncBlock = `-- name: UpdateCollectionLastSyncBlock :exec
+UPDATE collections
+SET "last_sync_block" = $2
+WHERE token = $1
+`
+
+type UpdateCollectionLastSyncBlockParams struct {
+	Token         string
+	LastSyncBlock int64
+}
+
+func (q *Queries) UpdateCollectionLastSyncBlock(ctx context.Context, arg UpdateCollectionLastSyncBlockParams) error {
+	_, err := q.db.ExecContext(ctx, updateCollectionLastSyncBlock, arg.Token, arg.LastSyncBlock)
+	return err
 }

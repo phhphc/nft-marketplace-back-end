@@ -16,13 +16,14 @@ type Category struct {
 }
 
 type Collection struct {
-	Token       string
-	Owner       string
-	Name        string
-	Description string
-	Metadata    pqtype.NullRawMessage
-	Category    int32
-	CreatedAt   sql.NullTime
+	Token         string
+	Owner         string
+	Name          string
+	Description   string
+	Metadata      pqtype.NullRawMessage
+	Category      int32
+	CreatedAt     sql.NullTime
+	LastSyncBlock int64
 }
 
 type ConsiderationItem struct {
@@ -35,6 +36,10 @@ type ConsiderationItem struct {
 	StartAmount sql.NullString
 	EndAmount   sql.NullString
 	Recipient   string
+}
+
+type Marketplace struct {
+	LastSyncBlock int64
 }
 
 type Nft struct {
@@ -72,4 +77,5 @@ type Order struct {
 	IsCancelled bool
 	IsValidated bool
 	IsFulfilled bool
+	IsInvalid   bool
 }

@@ -18,7 +18,7 @@ SELECT json_build_object(
                'zone', o.zone,
                'offer', json_agg(
                        json_build_object(
-                           'item_type', offer.item_type,
+                               'item_type', offer.item_type,
                                'token', offer.token,
                                'identifier', offer.identifier::VARCHAR,
                                'start_amount', offer.start_amount::VARCHAR,
@@ -46,7 +46,9 @@ FROM orders o
          JOIN offer_items offer ON o.order_hash = offer.order_hash
          JOIN consideration_items cons ON o.order_hash = cons.order_hash
 WHERE o.order_hash ILIKE $1
-AND o.is_fulfilled = false and o.is_cancelled = false
+  AND o.is_fulfilled = false
+  AND o.is_cancelled = false
+  AND o.is_invalid = false
 GROUP BY o.order_hash, o.offerer, o.zone, o.order_type, o.start_time, o.end_time
 `
 
@@ -57,6 +59,105 @@ func (q *Queries) GetJsonOrderByHash(ctx context.Context, orderHash string) (jso
 	return json_build_object, err
 }
 
+const getOrder = `-- name: GetOrder :many
+SELECT json_build_object(
+               'orderHash', o.order_hash,
+               'offerer', o.offerer,
+               'zone', o.zone,
+               'offer', json_agg(
+                       json_build_object(
+                               'itemType', offer.item_type,
+                               'token', offer.token,
+                               'identifier', offer.identifier::VARCHAR,
+                               'startAmount', offer.start_amount::VARCHAR,
+                               'endAmount', offer.end_amount::VARCHAR
+                           )
+                   ),
+               'consideration', json_agg(
+                       json_build_object(
+                               'itemType', cons.item_type,
+                               'token', cons.token,
+                               'identifier', cons.identifier::VARCHAR,
+                               'startAmount', cons.start_amount::VARCHAR,
+                               'endAmount', cons.end_amount::VARCHAR,
+                               'recipient', cons.recipient
+                           )
+                   ),
+               'orderType', o.order_type,
+               'zoneHash', o.zone_hash,
+               'signature', o.signature,
+               'startTime', o.start_time::VARCHAR,
+               'endTime', o.end_time::VARCHAR,
+               'salt', o.salt,
+               'status', json_build_object(
+                       'isFulfilled', o.is_fulfilled,
+                       'isCancelled', o.is_cancelled,
+                       'isInvalid', o.is_invalid
+                   )
+           )
+FROM orders o
+    JOIN offer_items offer ON o.order_hash = offer.order_hash
+    JOIN consideration_items cons ON o.order_hash = cons.order_hash
+WHERE o.order_hash in (SELECT DISTINCT o.order_hash
+                       FROM orders o
+                                JOIN consideration_items ci on ci.order_hash = o.order_hash
+                                JOIN offer_items oi on oi.order_hash = o.order_hash
+                       WHERE (o.order_hash ILIKE $1 OR $1 IS NULL)
+                         AND (o.is_cancelled = $2 OR $2 IS NULL)
+                         AND (o.is_fulfilled = $3 OR $3 IS NULL)
+                         AND (o.is_invalid = $4 OR $4 IS NULL)
+                         AND (ci.token ILIKE $5 OR
+                              $5 IS NULL)
+                         AND (ci.identifier = $6 OR
+                              $6 IS NULL)
+                         AND (oi.token ILIKE $7 OR $7 IS NULL)
+                         AND (oi.identifier = $8 OR $8 IS NULL))
+GROUP BY o.order_hash
+`
+
+type GetOrderParams struct {
+	OrderHash               sql.NullString
+	IsCancelled             sql.NullBool
+	IsFulfilled             sql.NullBool
+	IsInvalid               sql.NullBool
+	ConsiderationToken      sql.NullString
+	ConsiderationIdentifier sql.NullString
+	OfferToken              sql.NullString
+	OfferIdentifier         sql.NullString
+}
+
+func (q *Queries) GetOrder(ctx context.Context, arg GetOrderParams) ([]json.RawMessage, error) {
+	rows, err := q.db.QueryContext(ctx, getOrder,
+		arg.OrderHash,
+		arg.IsCancelled,
+		arg.IsFulfilled,
+		arg.IsInvalid,
+		arg.ConsiderationToken,
+		arg.ConsiderationIdentifier,
+		arg.OfferToken,
+		arg.OfferIdentifier,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []json.RawMessage{}
+	for rows.Next() {
+		var json_build_object json.RawMessage
+		if err := rows.Scan(&json_build_object); err != nil {
+			return nil, err
+		}
+		items = append(items, json_build_object)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getOrderHash = `-- name: GetOrderHash :many
 SELECT DISTINCT o.order_hash
 FROM orders o
@@ -64,6 +165,7 @@ FROM orders o
          JOIN offer_items oi on oi.order_hash = o.order_hash
 WHERE o.is_cancelled = false
   AND o.is_fulfilled = false
+  AND o.is_invalid = false
   AND (ci.token ILIKE $1 OR $1 IS NULL)
   AND (ci.identifier = $2 OR $2 IS NULL)
   AND (oi.token ILIKE $3 OR $3 IS NULL)
@@ -106,7 +208,8 @@ func (q *Queries) GetOrderHash(ctx context.Context, arg GetOrderHashParams) ([]s
 }
 
 const insertOrder = `-- name: InsertOrder :exec
-INSERT INTO "orders" ("order_hash", "offerer","recipient", "zone", "order_type", "zone_hash", "salt", "start_time", "end_time",
+INSERT INTO "orders" ("order_hash", "offerer", "recipient", "zone", "order_type", "zone_hash", "salt", "start_time",
+                      "end_time",
                       "signature", "is_validated", "is_cancelled", "is_fulfilled")
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 `
@@ -147,9 +250,10 @@ func (q *Queries) InsertOrder(ctx context.Context, arg InsertOrderParams) error 
 }
 
 const insertOrderConsiderationItem = `-- name: InsertOrderConsiderationItem :exec
-INSERT INTO "consideration_items" ("order_hash", "item_type", "token", "identifier","amount", "start_amount", "end_amount",
+INSERT INTO "consideration_items" ("order_hash", "item_type", "token", "identifier", "amount", "start_amount",
+                                   "end_amount",
                                    "recipient")
-VALUES ($1, $2, $3, $4, $5, $6, $7,$8)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 `
 
 type InsertOrderConsiderationItemParams struct {
@@ -178,8 +282,8 @@ func (q *Queries) InsertOrderConsiderationItem(ctx context.Context, arg InsertOr
 }
 
 const insertOrderOfferItem = `-- name: InsertOrderOfferItem :exec
-INSERT INTO "offer_items" ("order_hash", "item_type", "token", "identifier","amount", "start_amount", "end_amount")
-VALUES ($1, $2, $3, $4, $5, $6,$7)
+INSERT INTO "offer_items" ("order_hash", "item_type", "token", "identifier", "amount", "start_amount", "end_amount")
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 `
 
 type InsertOrderOfferItemParams struct {
@@ -205,10 +309,32 @@ func (q *Queries) InsertOrderOfferItem(ctx context.Context, arg InsertOrderOffer
 	return err
 }
 
+const markOrderInvalid = `-- name: MarkOrderInvalid :exec
+UPDATE orders o
+SET is_invalid = true
+WHERE o.order_hash in (SELECT DISTINCT o.order_hash
+                       FROM orders o
+                                JOIN offer_items oi on o.order_hash = oi.order_hash
+                       WHERE o.is_invalid = false
+                         AND o.offerer = $1
+                         AND oi.token = $2
+                         AND oi.identifier = $3)
+`
+
+type MarkOrderInvalidParams struct {
+	Offerer    string
+	Token      string
+	Identifier string
+}
+
+func (q *Queries) MarkOrderInvalid(ctx context.Context, arg MarkOrderInvalidParams) error {
+	_, err := q.db.ExecContext(ctx, markOrderInvalid, arg.Offerer, arg.Token, arg.Identifier)
+	return err
+}
+
 const updateOrderStatus = `-- name: UpdateOrderStatus :one
 UPDATE "orders"
-SET
-    "is_validated" = COALESCE($1, "is_validated"),
+SET "is_validated" = COALESCE($1, "is_validated"),
     "is_cancelled" = COALESCE($2, "is_cancelled"),
     "is_fulfilled" = COALESCE($3, "is_fulfilled")
 WHERE "order_hash" = $4
