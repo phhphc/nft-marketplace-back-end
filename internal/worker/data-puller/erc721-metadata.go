@@ -17,25 +17,25 @@ func (w *worker) pullErc721Metadata(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	w.lg.Info().Caller().Msg("start pull erc721 metadata")
 
-	w.Service.SubcribeEvent(ctx, models.EventNewErc721, w.handleNewErc721Metadata)
+	w.Service.SubcribeTask(ctx, models.TaskNewErc721, w.handleNewErc721Metadata)
 }
 
 func (w *worker) handleNewErc721Metadata(ctx context.Context, task *asynq.Task) error{
-	var event models.NewErc721Event
-	err := json.Unmarshal(task.Payload(), &event)
+	var value models.NewErc721Task
+	err := json.Unmarshal(task.Payload(), &value)
 	if err != nil {
-		w.lg.Panic().Caller().Err(err).Msg("cannot unmarshal event")
+		w.lg.Panic().Caller().Err(err).Msg("cannot unmarshal task")
 		return err
 	}
-	w.lg.Info().Caller().Interface("Event: ", event).Msg("new erc721 event")
+	w.lg.Info().Caller().Interface("Task", value).Msg("new erc721 task")
 
-	contract, err := contracts.NewERC721Caller(event.Token, w.ethClient)
+	contract, err := contracts.NewERC721Caller(value.Token, w.ethClient)
 	if err != nil {
 		w.lg.Panic().Caller().Err(err).Msg("error create new contract caller")
 		return err
 	}
 
-	tokenURI, err := contract.TokenURI(nil, event.Identifier)
+	tokenURI, err := contract.TokenURI(nil, value.Identifier)
 	if err != nil {
 		w.lg.Debug().Caller().Err(err).Msg("error fetch tokenURI")
 		return err
@@ -57,7 +57,7 @@ func (w *worker) handleNewErc721Metadata(ctx context.Context, task *asynq.Task) 
 	}
 
 	w.lg.Info().Caller().Bytes("json", []byte(rawMetadata)).Msg("new")
-	err = w.Service.UpdateNftMetadata(context.TODO(), event.Token, event.Identifier, rawMetadata)
+	err = w.Service.UpdateNftMetadata(context.TODO(), value.Token, value.Identifier, rawMetadata)
 	if err != nil {
 		w.lg.Panic().Caller().Err(err).Msg("Cannot update database")
 		return err

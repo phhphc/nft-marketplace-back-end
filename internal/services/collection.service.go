@@ -12,6 +12,14 @@ import (
 	"github.com/tabbed/pqtype"
 )
 
+type CollectionService interface {
+	CreateCollection(ctx context.Context, collection entities.Collection) (entities.Collection, error)
+	GetListCollection(ctx context.Context, query entities.Collection, offset int, limit int) ([]entities.Collection, error)
+	GetListCollectionWithCategory(ctx context.Context, categogy string, offset int, limit int) ([]entities.Collection, error)
+	UpdateCollectionLastSyncBlock(ctx context.Context, token common.Address, block uint64) error
+	GetCollectionLastSyncBlock(ctx context.Context, token common.Address) (uint64, error)
+}
+
 func (s *Services) CreateCollection(ctx context.Context, collection entities.Collection) (ec entities.Collection, err error) {
 	//	TODO: use transaction
 
@@ -44,7 +52,7 @@ func (s *Services) CreateCollection(ctx context.Context, collection entities.Col
 	}
 
 	// TODO: later
-	err = s.EmitEvent(ctx, models.EventNewCollection, collection.Token[:])
+	err = s.EmitTask(ctx, models.TaskNewCollection, collection.Token[:])
 	if err != nil {
 		s.lg.Panic().Caller().Err(err).Msg("error")
 	}
@@ -166,4 +174,24 @@ func (s *Services) GetListCollectionWithCategory(ctx context.Context, categogy s
 	}
 
 	return
+}
+
+func (s *Services) UpdateCollectionLastSyncBlock(ctx context.Context, token common.Address, block uint64) error {
+	err := s.repo.UpdateCollectionLastSyncBlock(ctx, postgresql.UpdateCollectionLastSyncBlockParams{
+		Token:         token.Hex(),
+		LastSyncBlock: int64(block),
+	})
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("error update")
+	}
+	return nil
+}
+
+func (s *Services) GetCollectionLastSyncBlock(ctx context.Context, token common.Address) (uint64, error) {
+	block, err := s.repo.GetCollectionLastSyncBlock(ctx, token.Hex())
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("cannot get last sync block")
+	}
+
+	return uint64(block), err
 }

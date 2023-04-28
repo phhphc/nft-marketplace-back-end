@@ -6,16 +6,11 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type AppEvent struct {
-	Key   []byte
-	Value []byte
-}
-
-type NewErc721Event struct {
+type NewErc721Task struct {
 	Token      common.Address `json:"token"`
 	Identifier *big.Int       `json:"idientifier"`
 }
 
-type NewCollectionEvent struct {
+type NewCollectionTask struct {
 	Address      common.Address 	`json:"address"`
 }

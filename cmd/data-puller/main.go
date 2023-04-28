@@ -45,6 +45,12 @@ func main() {
 
 	repo := postgresql.New(postgreClient.Database)
 	service := services.New(repo)
+	defer func() {
+		err := service.Close()
+		if err != nil {
+			lg.Error().Caller().Err(err).Msg("fail to close")
+		}
+	}()
 
 	wg.Add(1)
 	go func() {

@@ -15,7 +15,8 @@ CREATE TABLE "orders"
 
     "is_cancelled" BOOLEAN  NOT NULL,
     "is_validated" BOOLEAN  NOT NULL,
-    "is_fulfilled" BOOLEAN  NOT NULL
+    "is_fulfilled" BOOLEAN  NOT NULL,
+"is_invalid" BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE "offer_items"

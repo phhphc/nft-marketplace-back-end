@@ -130,8 +130,68 @@ func (ctl *Controls) PostOrder(c echo.Context) error {
 	})
 }
 
-func (ctl *Controls) GetOrder(c echo.Context) error {
+func (ctl *Controls) GetOrderV2(c echo.Context) error {
+
 	var req dto.GetOrder
+	var err error
+	if err = c.Bind(&req); err != nil {
+		return dto.NewHTTPError(400, err)
+	}
+	if err = c.Validate(&req); err != nil {
+		return dto.NewHTTPError(400, err)
+	}
+
+	offer := entities.OfferItem{}
+	if len(req.OfferToken) > 0 {
+		offer.Token = common.HexToAddress(req.OfferToken)
+	}
+	if len(req.OfferIdentifier) > 0 {
+		identifier, ok := new(big.Int).SetString(req.OfferIdentifier, 0)
+		if ok {
+			offer.Identifier = identifier
+		}
+	}
+
+	consideration := entities.ConsiderationItem{}
+	if len(req.ConsiderationToken) > 0 {
+		consideration.Token = common.HexToAddress(req.ConsiderationToken)
+	}
+	if len(req.ConsiderationIdentifier) > 0 {
+		identifier, ok := new(big.Int).SetString(req.ConsiderationIdentifier, 0)
+		if ok {
+			consideration.Identifier = identifier
+		}
+	}
+
+	orderHash := common.HexToHash(req.OrderHash)
+
+	os, err := ctl.service.GetOrder(
+		c.Request().Context(),
+		offer,
+		consideration,
+		orderHash,
+		req.IsFulfilled,
+		req.IsCancelled,
+		req.IsInvalid,
+	)
+	if err != nil {
+		ctl.lg.Error().Caller().Err(err).Msg("err")
+		return err
+	}
+
+	return c.JSON(200, dto.Response{
+		Data: dto.PagedRespond[map[string]any]{
+			PageSize:    99999,
+			CurrentPage: 0,
+			Content:     os,
+		},
+		IsSuccess: true,
+	})
+
+}
+
+func (ctl *Controls) GetOrder(c echo.Context) error {
+	var req dto.GetOrderV1
 	var err error
 	if err = c.Bind(&req); err != nil {
 		return dto.NewHTTPError(400, err)
