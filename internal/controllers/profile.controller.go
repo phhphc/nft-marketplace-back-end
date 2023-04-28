@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/labstack/echo/v4"
 	"github.com/phhphc/nft-marketplace-back-end/internal/controllers/dto"
@@ -49,7 +50,9 @@ func (ctl *Controls) GetProfile(c echo.Context) error {
 
 	resp, err := ctl.service.GetProfile(c.Request().Context(), req.Address)
 	if err != nil {
-		return dto.NewHTTPError(400, err)
+		if err.Error() == "not found" {
+			return dto.NewHTTPError(404, err)
+		}
 	}
 
 	profile := GetProfileResp{
@@ -75,14 +78,15 @@ func (ctl *Controls) PostProfile(c echo.Context) error {
 		return dto.NewHTTPError(400, err)
 	}
 
-	resp, err := ctl.service.UpsertProfile(c.Request().Context(), entities.Profile{
+	resp, err := ctl.service.UpsertProfile(context.TODO(), entities.Profile{
 		Address:   common.HexToAddress(req.Address),
 		Username:  req.Username,
 		Metadata:  req.Metadata,
 		Signature: []byte(req.Signature),
 	})
 	if err != nil {
-		return dto.NewHTTPError(400, err)
+		ctl.lg.Error().Caller().Err(err).Msg("cannot create collection")
+		return err
 	}
 
 	profile := PostProfileResp{

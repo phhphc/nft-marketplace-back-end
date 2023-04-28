@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
@@ -20,9 +19,6 @@ type ProfileService interface {
 
 func (s *Services) GetProfile(ctx context.Context, address string) (entities.Profile, error) {
 	addressHex := common.HexToAddress(address)
-	if addressHex.Hex() != address {
-		return entities.Profile{}, errors.New("invalid address")
-	}
 	var res entities.Profile
 	resp, err := s.repo.GetProfile(ctx, addressHex.Hex())
 	if err != nil {

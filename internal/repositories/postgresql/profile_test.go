@@ -15,11 +15,11 @@ import (
 )
 
 func createRandomProfile(t *testing.T) Profile {
-	metadata := entities.ProfileMetadata{
-		Bio:       RandomString(100),
-		ImageUrl:  RandomString(50),
-		BannerUrl: RandomString(50),
-		Email:     RandomString(20),
+	metadata := map[string]any{
+		"bio":        RandomString(100),
+		"image_url":  RandomString(50),
+		"banner_url": RandomString(50),
+		"email":      RandomString(20),
 	}
 	profile := entities.Profile{
 		Address:   common.HexToAddress(RandomAddress()),
@@ -64,6 +64,13 @@ func TestQueries_GetProfile(t *testing.T) {
 		require.Equal(t, expected.Username.String, actual.Username.String)
 		require.JSONEq(t, string(expected.Metadata.RawMessage), string(actual.Metadata.RawMessage))
 		require.Equal(t, expected.Signature, actual.Signature)
+	})
+
+	t.Run("Test get profile with invalid address", func(t *testing.T) {
+		profile := createRandomProfile(t)
+		_, error := testQueries.GetProfile(context.Background(), profile.Address+"1")
+		require.Error(t, error)
+		require.True(t, strings.Contains(error.Error(), "no rows in result set"))
 	})
 }
 
