@@ -10,6 +10,7 @@ import (
 )
 
 type Querier interface {
+	DeleteProfile(ctx context.Context, address string) error
 	GetCategoryByName(ctx context.Context, name string) (Category, error)
 	GetCollection(ctx context.Context, arg GetCollectionParams) ([]GetCollectionRow, error)
 	GetCollectionWithCategory(ctx context.Context, arg GetCollectionWithCategoryParams) ([]GetCollectionWithCategoryRow, error)
@@ -18,6 +19,7 @@ type Querier interface {
 	GetNFTValidConsiderations(ctx context.Context, arg GetNFTValidConsiderationsParams) ([]GetNFTValidConsiderationsRow, error)
 	GetNFTsWithPricesPaginated(ctx context.Context, arg GetNFTsWithPricesPaginatedParams) ([]GetNFTsWithPricesPaginatedRow, error)
 	GetOrderHash(ctx context.Context, arg GetOrderHashParams) ([]string, error)
+	GetProfile(ctx context.Context, address string) (Profile, error)
 	InsertCategory(ctx context.Context, name string) (Category, error)
 	InsertCollection(ctx context.Context, arg InsertCollectionParams) (Collection, error)
 	InsertOrder(ctx context.Context, arg InsertOrderParams) error
@@ -27,6 +29,7 @@ type Querier interface {
 	UpdateNftMetadata(ctx context.Context, arg UpdateNftMetadataParams) error
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (string, error)
 	UpsertNFTV2(ctx context.Context, arg UpsertNFTV2Params) error
+	UpsertProfile(ctx context.Context, arg UpsertProfileParams) (Profile, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -7,14 +7,15 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/hibiken/asynq"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
-	"github.com/hibiken/asynq"
 )
 
 type Servicer interface {
 	OrderService
 	NftNewService
+	ProfileService
 
 	EmitEvent(ctx context.Context, event models.EnumEvent, value []byte) error
 	SubcribeEvent(ctx context.Context, event models.EnumEvent, handler asynq.HandlerFunc) error
