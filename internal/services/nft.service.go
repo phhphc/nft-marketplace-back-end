@@ -47,7 +47,6 @@ func (s *Services) TransferNft(ctx context.Context, transfer models.NftTransfer,
 }
 
 func (s *Services) UpdateNftMetadata(ctx context.Context, token common.Address, identifier *big.Int, metadata json.RawMessage) (err error) {
-
 	err = s.repo.UpdateNftMetadata(ctx, postgresql.UpdateNftMetadataParams{
 		Metadata: pqtype.NullRawMessage{
 			RawMessage: metadata,

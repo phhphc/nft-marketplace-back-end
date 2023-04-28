@@ -58,6 +58,10 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 	collectionRoute.GET("", controller.GetCollection)
 	collectionRoute.GET("/:category", controller.GetCollectionWithCategory)
 
+	profileRoute := e.Group("/api/v0.1/profile")
+	profileRoute.GET("/:address", controller.GetProfile)
+	profileRoute.POST("", controller.PostProfile)
+
 	return &httpServer{
 		lg:   log.GetLogger(),
 		Echo: e,

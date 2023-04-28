@@ -8,12 +8,14 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/hibiken/asynq"
+	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
 )
 
 type Servicer interface {
 	OrderService
 	NftNewService
+	ProfileService
 	CollectionService
 	MarketplaceService
 

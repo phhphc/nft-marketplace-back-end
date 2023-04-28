@@ -79,3 +79,10 @@ type Order struct {
 	IsFulfilled bool
 	IsInvalid   bool
 }
+
+type Profile struct {
+	Address   string
+	Username  sql.NullString
+	Metadata  pqtype.NullRawMessage
+	Signature string
+}
