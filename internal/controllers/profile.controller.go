@@ -79,7 +79,7 @@ func (ctl *Controls) PostProfile(c echo.Context) error {
 		Address:   common.HexToAddress(req.Address),
 		Username:  req.Username,
 		Metadata:  req.Metadata,
-		Signature: []byte(req.Signature)[2:],
+		Signature: []byte(req.Signature),
 	})
 	if err != nil {
 		return dto.NewHTTPError(400, err)

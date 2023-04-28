@@ -64,7 +64,7 @@ func (s *Services) UpsertProfile(ctx context.Context, profile entities.Profile) 
 		Address:   profile.Address.Hex(),
 		Username:  sql.NullString{String: profile.Username, Valid: profile.Username != ""},
 		Metadata:  metadataRaw,
-		Signature: common.Bytes2Hex(profile.Signature),
+		Signature: string(profile.Signature),
 	}
 
 	resp, err := s.repo.UpsertProfile(ctx, p)
