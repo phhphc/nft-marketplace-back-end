@@ -82,25 +82,31 @@ SELECT json_build_object(
                'orderHash', o.order_hash,
                'offerer', o.offerer,
                'zone', o.zone,
-               'offer', json_agg(
-                       json_build_object(
-                               'itemType', offer.item_type,
-                               'token', offer.token,
-                               'identifier', offer.identifier::VARCHAR,
-                               'startAmount', offer.start_amount::VARCHAR,
-                               'endAmount', offer.end_amount::VARCHAR
+               'offer',
+               (SELECT json_agg(
+                               json_build_object(
+                                       'itemType', offer.item_type,
+                                       'token', offer.token,
+                                       'identifier', offer.identifier::VARCHAR,
+                                       'startAmount', offer.start_amount::VARCHAR,
+                                       'endAmount', offer.end_amount::VARCHAR
+                                   )
                            )
-                   ),
-               'consideration', json_agg(
-                       json_build_object(
-                               'itemType', cons.item_type,
-                               'token', cons.token,
-                               'identifier', cons.identifier::VARCHAR,
-                               'startAmount', cons.start_amount::VARCHAR,
-                               'endAmount', cons.end_amount::VARCHAR,
-                               'recipient', cons.recipient
+                FROM offer_items offer
+                WHERE o.order_hash = offer.order_hash),
+               'consideration',
+               (SELECT json_agg(
+                               json_build_object(
+                                       'itemType', cons.item_type,
+                                       'token', cons.token,
+                                       'identifier', cons.identifier::VARCHAR,
+                                       'startAmount', cons.start_amount::VARCHAR,
+                                       'endAmount', cons.end_amount::VARCHAR,
+                                       'recipient', cons.recipient
+                                   )
                            )
-                   ),
+                FROM consideration_items cons
+                WHERE o.order_hash = cons.order_hash),
                'orderType', o.order_type,
                'zoneHash', o.zone_hash,
                'signature', o.signature,
@@ -114,8 +120,6 @@ SELECT json_build_object(
                    )
            )
 FROM orders o
-    JOIN offer_items offer ON o.order_hash = offer.order_hash
-    JOIN consideration_items cons ON o.order_hash = cons.order_hash
 WHERE o.order_hash in (SELECT DISTINCT o.order_hash
                        FROM orders o
                                 JOIN consideration_items ci on ci.order_hash = o.order_hash
