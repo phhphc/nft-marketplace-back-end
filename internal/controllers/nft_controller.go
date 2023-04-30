@@ -25,6 +25,9 @@ func (ctl *Controls) GetNFTsWithListings(c echo.Context) error {
 	owner := common.HexToAddress(req.Owner)
 
 	nfts, err := ctl.service.GetNFTsWithListings(c.Request().Context(), token, owner, req.Offset, req.Limit)
+	if err != nil {
+		ctl.lg.Error().Caller().Err(err).Msg("error")
+	}
 
 	nftsResponse := make([]*dto.GetNftRes, len(nfts))
 

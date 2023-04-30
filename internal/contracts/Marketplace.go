@@ -39,19 +39,6 @@ type ConsiderationItem struct {
 	Recipient   common.Address
 }
 
-// Execution is an auto generated low-level Go binding around an user-defined struct.
-type Execution struct {
-	Item       ReceivedItem
-	Offerer    common.Address
-	ConduitKey [32]byte
-}
-
-// FulfillmentComponent is an auto generated low-level Go binding around an user-defined struct.
-type FulfillmentComponent struct {
-	OrderIndex *big.Int
-	ItemIndex  *big.Int
-}
-
 // OfferItem is an auto generated low-level Go binding around an user-defined struct.
 type OfferItem struct {
 	ItemType    uint8
@@ -70,29 +57,22 @@ type Order struct {
 // OrderComponents is an auto generated low-level Go binding around an user-defined struct.
 type OrderComponents struct {
 	Offerer       common.Address
-	Zone          common.Address
 	Offer         []OfferItem
 	Consideration []ConsiderationItem
-	OrderType     uint8
 	StartTime     *big.Int
 	EndTime       *big.Int
-	ZoneHash      [32]byte
 	Salt          *big.Int
 	Counter       *big.Int
 }
 
 // OrderParameters is an auto generated low-level Go binding around an user-defined struct.
 type OrderParameters struct {
-	Offerer                         common.Address
-	Zone                            common.Address
-	Offer                           []OfferItem
-	Consideration                   []ConsiderationItem
-	OrderType                       uint8
-	StartTime                       *big.Int
-	EndTime                         *big.Int
-	ZoneHash                        [32]byte
-	Salt                            *big.Int
-	TotalOriginalConsiderationItems *big.Int
+	Offerer       common.Address
+	Offer         []OfferItem
+	Consideration []ConsiderationItem
+	StartTime     *big.Int
+	EndTime       *big.Int
+	Salt          *big.Int
 }
 
 // ReceivedItem is an auto generated low-level Go binding around an user-defined struct.
@@ -114,7 +94,7 @@ type SpentItem struct {
 
 // MarketplaceMetaData contains all meta data concerning the Marketplace contract.
 var MarketplaceMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"BadContractSignature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"BadFraction\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"BadReturnValueFromERC20OnTransfer\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"}],\"name\":\"BadSignatureV\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"CannotCancelOrder\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ConsiderationLengthNotEqualToTotalOriginal\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"orderIndex\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"considerationIndex\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"shortfallAmount\",\"type\":\"uint256\"}],\"name\":\"ConsiderationNotMet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256[]\",\"name\":\"identifiers\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"amounts\",\"type\":\"uint256[]\"}],\"name\":\"ERC1155BatchTransferGenericFailure\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InexactFraction\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientNativeTokensSupplied\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"Invalid1155BatchTransferEncoding\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidBasicOrderParameterEncoding\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"conduit\",\"type\":\"address\"}],\"name\":\"InvalidCallToConduit\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"conduitKey\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"conduit\",\"type\":\"address\"}],\"name\":\"InvalidConduit\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"name\":\"InvalidContractOrder\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"InvalidERC721TransferAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidFulfillmentComponentData\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"InvalidMsgValue\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidNativeOfferItem\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"name\":\"InvalidRestrictedOrder\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidSignature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidSigner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"name\":\"InvalidTime\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fulfillmentIndex\",\"type\":\"uint256\"}],\"name\":\"MismatchedFulfillmentOfferAndConsiderationComponents\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"enumSide\",\"name\":\"side\",\"type\":\"uint8\"}],\"name\":\"MissingFulfillmentComponentOnAggregation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MissingItemAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MissingOriginalConsiderationItems\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"NativeTokenTransferGenericFailure\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"NoContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoSpecifiedOrdersAvailable\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OfferAndConsiderationRequiredOnFulfillment\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"name\":\"OrderAlreadyFilled\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"name\":\"OrderIsCancelled\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"name\":\"OrderPartiallyFilled\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"PartialFillsNotEnabledForOrder\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"TokenTransferGenericFailure\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnusedItemParameters\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newCounter\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"}],\"name\":\"CounterIncremented\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"zone\",\"type\":\"address\"}],\"name\":\"OrderCancelled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"zone\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structSpentItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"indexed\":false,\"internalType\":\"structReceivedItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"}],\"name\":\"OrderFulfilled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"zone\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"enumOrderType\",\"name\":\"orderType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"zoneHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalOriginalConsiderationItems\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structOrderParameters\",\"name\":\"orderParameters\",\"type\":\"tuple\"}],\"name\":\"OrderValidated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32[]\",\"name\":\"orderHashes\",\"type\":\"bytes32[]\"}],\"name\":\"OrdersMatched\",\"type\":\"event\"},{\"stateMutability\":\"payable\",\"type\":\"fallback\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"zone\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"enumOrderType\",\"name\":\"orderType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"zoneHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"counter\",\"type\":\"uint256\"}],\"internalType\":\"structOrderComponents[]\",\"name\":\"orders\",\"type\":\"tuple[]\"}],\"name\":\"cancel\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"cancelled\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"zone\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"enumOrderType\",\"name\":\"orderType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"zoneHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalOriginalConsiderationItems\",\"type\":\"uint256\"}],\"internalType\":\"structOrderParameters\",\"name\":\"parameters\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"structOrder[]\",\"name\":\"\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"orderIndex\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"itemIndex\",\"type\":\"uint256\"}],\"internalType\":\"structFulfillmentComponent[][]\",\"name\":\"\",\"type\":\"tuple[][]\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"orderIndex\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"itemIndex\",\"type\":\"uint256\"}],\"internalType\":\"structFulfillmentComponent[][]\",\"name\":\"\",\"type\":\"tuple[][]\"},{\"internalType\":\"uint256\",\"name\":\"maximumFulfilled\",\"type\":\"uint256\"}],\"name\":\"fulfillAvailableOrders\",\"outputs\":[{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\"},{\"components\":[{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structReceivedItem\",\"name\":\"item\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"conduitKey\",\"type\":\"bytes32\"}],\"internalType\":\"structExecution[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"zone\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"enumOrderType\",\"name\":\"orderType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"zoneHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalOriginalConsiderationItems\",\"type\":\"uint256\"}],\"internalType\":\"structOrderParameters\",\"name\":\"parameters\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"structOrder\",\"name\":\"\",\"type\":\"tuple\"}],\"name\":\"fulfillOrder\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"fulfilled\",\"type\":\"bool\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"}],\"name\":\"getCounter\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"counter\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"zone\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"enumOrderType\",\"name\":\"orderType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"zoneHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"counter\",\"type\":\"uint256\"}],\"internalType\":\"structOrderComponents\",\"name\":\"\",\"type\":\"tuple\"}],\"name\":\"getOrderHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"name\":\"getOrderStatus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isValidated\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isCancelled\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isFulFilled\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"incrementCounter\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"newCounter\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"information\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"version\",\"type\":\"string\"},{\"internalType\":\"bytes32\",\"name\":\"domainSeparator\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"conduitController\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"zone\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"enumOrderType\",\"name\":\"orderType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"zoneHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalOriginalConsiderationItems\",\"type\":\"uint256\"}],\"internalType\":\"structOrderParameters\",\"name\":\"parameters\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"structOrder[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"name\":\"validate\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"CannotCancelOrder\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientNativeTokensSupplied\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"InvalidERC721TransferAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidNativeOfferItem\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidSigner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"name\":\"InvalidTime\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MissingItemAmount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"name\":\"OrderAlreadyFilled\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"name\":\"OrderIsCancelled\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"TokenTransferGenericFailure\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnusedItemParameters\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newCounter\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"}],\"name\":\"CounterIncremented\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"}],\"name\":\"OrderCancelled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structSpentItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"indexed\":false,\"internalType\":\"structReceivedItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"}],\"name\":\"OrderFulfilled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structOrderParameters\",\"name\":\"orderParameters\",\"type\":\"tuple\"}],\"name\":\"OrderValidated\",\"type\":\"event\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"counter\",\"type\":\"uint256\"}],\"internalType\":\"structOrderComponents[]\",\"name\":\"orders\",\"type\":\"tuple[]\"}],\"name\":\"cancel\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"cancelled\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"}],\"internalType\":\"structOrderParameters\",\"name\":\"parameters\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"structOrder\",\"name\":\"order\",\"type\":\"tuple\"}],\"name\":\"fulfillOrder\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"fulfilled\",\"type\":\"bool\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"}],\"internalType\":\"structOrderParameters\",\"name\":\"parameters\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"structOrder[]\",\"name\":\"orders\",\"type\":\"tuple[]\"}],\"name\":\"fulfillOrderBatch\",\"outputs\":[{\"internalType\":\"bool[]\",\"name\":\"fulfilled\",\"type\":\"bool[]\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"}],\"name\":\"getCounter\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"counter\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"counter\",\"type\":\"uint256\"}],\"internalType\":\"structOrderComponents\",\"name\":\"orderComponents\",\"type\":\"tuple\"}],\"name\":\"getOrderHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"name\":\"getOrderStatus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isValidated\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isCancelled\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isFulFilled\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"incrementCounter\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"newCounter\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"information\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"version\",\"type\":\"string\"},{\"internalType\":\"bytes32\",\"name\":\"domainSeparator\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"}],\"internalType\":\"structOrderParameters\",\"name\":\"parameters\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"structOrder[]\",\"name\":\"order\",\"type\":\"tuple[]\"}],\"name\":\"validate\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // MarketplaceABI is the input ABI used to generate the binding from.
@@ -294,12 +274,12 @@ func (_Marketplace *MarketplaceCallerSession) GetCounter(offerer common.Address)
 	return _Marketplace.Contract.GetCounter(&_Marketplace.CallOpts, offerer)
 }
 
-// GetOrderHash is a free data retrieval call binding the contract method 0x0b0511a8.
+// GetOrderHash is a free data retrieval call binding the contract method 0x8149edc1.
 //
-// Solidity: function getOrderHash((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256) ) view returns(bytes32 orderHash)
-func (_Marketplace *MarketplaceCaller) GetOrderHash(opts *bind.CallOpts, arg0 OrderComponents) ([32]byte, error) {
+// Solidity: function getOrderHash((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256,uint256) orderComponents) view returns(bytes32 orderHash)
+func (_Marketplace *MarketplaceCaller) GetOrderHash(opts *bind.CallOpts, orderComponents OrderComponents) ([32]byte, error) {
 	var out []interface{}
-	err := _Marketplace.contract.Call(opts, &out, "getOrderHash", arg0)
+	err := _Marketplace.contract.Call(opts, &out, "getOrderHash", orderComponents)
 
 	if err != nil {
 		return *new([32]byte), err
@@ -311,18 +291,18 @@ func (_Marketplace *MarketplaceCaller) GetOrderHash(opts *bind.CallOpts, arg0 Or
 
 }
 
-// GetOrderHash is a free data retrieval call binding the contract method 0x0b0511a8.
+// GetOrderHash is a free data retrieval call binding the contract method 0x8149edc1.
 //
-// Solidity: function getOrderHash((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256) ) view returns(bytes32 orderHash)
-func (_Marketplace *MarketplaceSession) GetOrderHash(arg0 OrderComponents) ([32]byte, error) {
-	return _Marketplace.Contract.GetOrderHash(&_Marketplace.CallOpts, arg0)
+// Solidity: function getOrderHash((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256,uint256) orderComponents) view returns(bytes32 orderHash)
+func (_Marketplace *MarketplaceSession) GetOrderHash(orderComponents OrderComponents) ([32]byte, error) {
+	return _Marketplace.Contract.GetOrderHash(&_Marketplace.CallOpts, orderComponents)
 }
 
-// GetOrderHash is a free data retrieval call binding the contract method 0x0b0511a8.
+// GetOrderHash is a free data retrieval call binding the contract method 0x8149edc1.
 //
-// Solidity: function getOrderHash((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256) ) view returns(bytes32 orderHash)
-func (_Marketplace *MarketplaceCallerSession) GetOrderHash(arg0 OrderComponents) ([32]byte, error) {
-	return _Marketplace.Contract.GetOrderHash(&_Marketplace.CallOpts, arg0)
+// Solidity: function getOrderHash((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256,uint256) orderComponents) view returns(bytes32 orderHash)
+func (_Marketplace *MarketplaceCallerSession) GetOrderHash(orderComponents OrderComponents) ([32]byte, error) {
+	return _Marketplace.Contract.GetOrderHash(&_Marketplace.CallOpts, orderComponents)
 }
 
 // GetOrderStatus is a free data retrieval call binding the contract method 0x46423aa7.
@@ -377,19 +357,17 @@ func (_Marketplace *MarketplaceCallerSession) GetOrderStatus(orderHash [32]byte)
 
 // Information is a free data retrieval call binding the contract method 0xf47b7740.
 //
-// Solidity: function information() view returns(string version, bytes32 domainSeparator, address conduitController)
+// Solidity: function information() view returns(string version, bytes32 domainSeparator)
 func (_Marketplace *MarketplaceCaller) Information(opts *bind.CallOpts) (struct {
-	Version           string
-	DomainSeparator   [32]byte
-	ConduitController common.Address
+	Version         string
+	DomainSeparator [32]byte
 }, error) {
 	var out []interface{}
 	err := _Marketplace.contract.Call(opts, &out, "information")
 
 	outstruct := new(struct {
-		Version           string
-		DomainSeparator   [32]byte
-		ConduitController common.Address
+		Version         string
+		DomainSeparator [32]byte
 	})
 	if err != nil {
 		return *outstruct, err
@@ -397,7 +375,6 @@ func (_Marketplace *MarketplaceCaller) Information(opts *bind.CallOpts) (struct 
 
 	outstruct.Version = *abi.ConvertType(out[0], new(string)).(*string)
 	outstruct.DomainSeparator = *abi.ConvertType(out[1], new([32]byte)).(*[32]byte)
-	outstruct.ConduitController = *abi.ConvertType(out[2], new(common.Address)).(*common.Address)
 
 	return *outstruct, err
 
@@ -405,22 +382,20 @@ func (_Marketplace *MarketplaceCaller) Information(opts *bind.CallOpts) (struct 
 
 // Information is a free data retrieval call binding the contract method 0xf47b7740.
 //
-// Solidity: function information() view returns(string version, bytes32 domainSeparator, address conduitController)
+// Solidity: function information() view returns(string version, bytes32 domainSeparator)
 func (_Marketplace *MarketplaceSession) Information() (struct {
-	Version           string
-	DomainSeparator   [32]byte
-	ConduitController common.Address
+	Version         string
+	DomainSeparator [32]byte
 }, error) {
 	return _Marketplace.Contract.Information(&_Marketplace.CallOpts)
 }
 
 // Information is a free data retrieval call binding the contract method 0xf47b7740.
 //
-// Solidity: function information() view returns(string version, bytes32 domainSeparator, address conduitController)
+// Solidity: function information() view returns(string version, bytes32 domainSeparator)
 func (_Marketplace *MarketplaceCallerSession) Information() (struct {
-	Version           string
-	DomainSeparator   [32]byte
-	ConduitController common.Address
+	Version         string
+	DomainSeparator [32]byte
 }, error) {
 	return _Marketplace.Contract.Information(&_Marketplace.CallOpts)
 }
@@ -456,67 +431,67 @@ func (_Marketplace *MarketplaceCallerSession) Name() (string, error) {
 	return _Marketplace.Contract.Name(&_Marketplace.CallOpts)
 }
 
-// Cancel is a paid mutator transaction binding the contract method 0x99bbcb71.
+// Cancel is a paid mutator transaction binding the contract method 0x8ba211f1.
 //
-// Solidity: function cancel((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256)[] orders) returns(bool cancelled)
+// Solidity: function cancel((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256,uint256)[] orders) returns(bool cancelled)
 func (_Marketplace *MarketplaceTransactor) Cancel(opts *bind.TransactOpts, orders []OrderComponents) (*types.Transaction, error) {
 	return _Marketplace.contract.Transact(opts, "cancel", orders)
 }
 
-// Cancel is a paid mutator transaction binding the contract method 0x99bbcb71.
+// Cancel is a paid mutator transaction binding the contract method 0x8ba211f1.
 //
-// Solidity: function cancel((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256)[] orders) returns(bool cancelled)
+// Solidity: function cancel((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256,uint256)[] orders) returns(bool cancelled)
 func (_Marketplace *MarketplaceSession) Cancel(orders []OrderComponents) (*types.Transaction, error) {
 	return _Marketplace.Contract.Cancel(&_Marketplace.TransactOpts, orders)
 }
 
-// Cancel is a paid mutator transaction binding the contract method 0x99bbcb71.
+// Cancel is a paid mutator transaction binding the contract method 0x8ba211f1.
 //
-// Solidity: function cancel((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256)[] orders) returns(bool cancelled)
+// Solidity: function cancel((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256,uint256)[] orders) returns(bool cancelled)
 func (_Marketplace *MarketplaceTransactorSession) Cancel(orders []OrderComponents) (*types.Transaction, error) {
 	return _Marketplace.Contract.Cancel(&_Marketplace.TransactOpts, orders)
 }
 
-// FulfillAvailableOrders is a paid mutator transaction binding the contract method 0x4cd83784.
+// FulfillOrder is a paid mutator transaction binding the contract method 0xbbb4f64c.
 //
-// Solidity: function fulfillAvailableOrders(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256),bytes)[] , (uint256,uint256)[][] , (uint256,uint256)[][] , uint256 maximumFulfilled) payable returns(bool[], ((uint8,address,uint256,uint256,address),address,bytes32)[])
-func (_Marketplace *MarketplaceTransactor) FulfillAvailableOrders(opts *bind.TransactOpts, arg0 []Order, arg1 [][]FulfillmentComponent, arg2 [][]FulfillmentComponent, maximumFulfilled *big.Int) (*types.Transaction, error) {
-	return _Marketplace.contract.Transact(opts, "fulfillAvailableOrders", arg0, arg1, arg2, maximumFulfilled)
+// Solidity: function fulfillOrder(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes) order) payable returns(bool fulfilled)
+func (_Marketplace *MarketplaceTransactor) FulfillOrder(opts *bind.TransactOpts, order Order) (*types.Transaction, error) {
+	return _Marketplace.contract.Transact(opts, "fulfillOrder", order)
 }
 
-// FulfillAvailableOrders is a paid mutator transaction binding the contract method 0x4cd83784.
+// FulfillOrder is a paid mutator transaction binding the contract method 0xbbb4f64c.
 //
-// Solidity: function fulfillAvailableOrders(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256),bytes)[] , (uint256,uint256)[][] , (uint256,uint256)[][] , uint256 maximumFulfilled) payable returns(bool[], ((uint8,address,uint256,uint256,address),address,bytes32)[])
-func (_Marketplace *MarketplaceSession) FulfillAvailableOrders(arg0 []Order, arg1 [][]FulfillmentComponent, arg2 [][]FulfillmentComponent, maximumFulfilled *big.Int) (*types.Transaction, error) {
-	return _Marketplace.Contract.FulfillAvailableOrders(&_Marketplace.TransactOpts, arg0, arg1, arg2, maximumFulfilled)
+// Solidity: function fulfillOrder(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes) order) payable returns(bool fulfilled)
+func (_Marketplace *MarketplaceSession) FulfillOrder(order Order) (*types.Transaction, error) {
+	return _Marketplace.Contract.FulfillOrder(&_Marketplace.TransactOpts, order)
 }
 
-// FulfillAvailableOrders is a paid mutator transaction binding the contract method 0x4cd83784.
+// FulfillOrder is a paid mutator transaction binding the contract method 0xbbb4f64c.
 //
-// Solidity: function fulfillAvailableOrders(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256),bytes)[] , (uint256,uint256)[][] , (uint256,uint256)[][] , uint256 maximumFulfilled) payable returns(bool[], ((uint8,address,uint256,uint256,address),address,bytes32)[])
-func (_Marketplace *MarketplaceTransactorSession) FulfillAvailableOrders(arg0 []Order, arg1 [][]FulfillmentComponent, arg2 [][]FulfillmentComponent, maximumFulfilled *big.Int) (*types.Transaction, error) {
-	return _Marketplace.Contract.FulfillAvailableOrders(&_Marketplace.TransactOpts, arg0, arg1, arg2, maximumFulfilled)
+// Solidity: function fulfillOrder(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes) order) payable returns(bool fulfilled)
+func (_Marketplace *MarketplaceTransactorSession) FulfillOrder(order Order) (*types.Transaction, error) {
+	return _Marketplace.Contract.FulfillOrder(&_Marketplace.TransactOpts, order)
 }
 
-// FulfillOrder is a paid mutator transaction binding the contract method 0xf3c41b9d.
+// FulfillOrderBatch is a paid mutator transaction binding the contract method 0x47bb13a0.
 //
-// Solidity: function fulfillOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256),bytes) ) payable returns(bool fulfilled)
-func (_Marketplace *MarketplaceTransactor) FulfillOrder(opts *bind.TransactOpts, arg0 Order) (*types.Transaction, error) {
-	return _Marketplace.contract.Transact(opts, "fulfillOrder", arg0)
+// Solidity: function fulfillOrderBatch(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes)[] orders) payable returns(bool[] fulfilled)
+func (_Marketplace *MarketplaceTransactor) FulfillOrderBatch(opts *bind.TransactOpts, orders []Order) (*types.Transaction, error) {
+	return _Marketplace.contract.Transact(opts, "fulfillOrderBatch", orders)
 }
 
-// FulfillOrder is a paid mutator transaction binding the contract method 0xf3c41b9d.
+// FulfillOrderBatch is a paid mutator transaction binding the contract method 0x47bb13a0.
 //
-// Solidity: function fulfillOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256),bytes) ) payable returns(bool fulfilled)
-func (_Marketplace *MarketplaceSession) FulfillOrder(arg0 Order) (*types.Transaction, error) {
-	return _Marketplace.Contract.FulfillOrder(&_Marketplace.TransactOpts, arg0)
+// Solidity: function fulfillOrderBatch(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes)[] orders) payable returns(bool[] fulfilled)
+func (_Marketplace *MarketplaceSession) FulfillOrderBatch(orders []Order) (*types.Transaction, error) {
+	return _Marketplace.Contract.FulfillOrderBatch(&_Marketplace.TransactOpts, orders)
 }
 
-// FulfillOrder is a paid mutator transaction binding the contract method 0xf3c41b9d.
+// FulfillOrderBatch is a paid mutator transaction binding the contract method 0x47bb13a0.
 //
-// Solidity: function fulfillOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256),bytes) ) payable returns(bool fulfilled)
-func (_Marketplace *MarketplaceTransactorSession) FulfillOrder(arg0 Order) (*types.Transaction, error) {
-	return _Marketplace.Contract.FulfillOrder(&_Marketplace.TransactOpts, arg0)
+// Solidity: function fulfillOrderBatch(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes)[] orders) payable returns(bool[] fulfilled)
+func (_Marketplace *MarketplaceTransactorSession) FulfillOrderBatch(orders []Order) (*types.Transaction, error) {
+	return _Marketplace.Contract.FulfillOrderBatch(&_Marketplace.TransactOpts, orders)
 }
 
 // IncrementCounter is a paid mutator transaction binding the contract method 0x5b34b966.
@@ -540,46 +515,25 @@ func (_Marketplace *MarketplaceTransactorSession) IncrementCounter() (*types.Tra
 	return _Marketplace.Contract.IncrementCounter(&_Marketplace.TransactOpts)
 }
 
-// Validate is a paid mutator transaction binding the contract method 0x36bc40e8.
+// Validate is a paid mutator transaction binding the contract method 0xf9e17bb2.
 //
-// Solidity: function validate(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256),bytes)[] ) returns(bool)
-func (_Marketplace *MarketplaceTransactor) Validate(opts *bind.TransactOpts, arg0 []Order) (*types.Transaction, error) {
-	return _Marketplace.contract.Transact(opts, "validate", arg0)
+// Solidity: function validate(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes)[] order) returns(bool)
+func (_Marketplace *MarketplaceTransactor) Validate(opts *bind.TransactOpts, order []Order) (*types.Transaction, error) {
+	return _Marketplace.contract.Transact(opts, "validate", order)
 }
 
-// Validate is a paid mutator transaction binding the contract method 0x36bc40e8.
+// Validate is a paid mutator transaction binding the contract method 0xf9e17bb2.
 //
-// Solidity: function validate(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256),bytes)[] ) returns(bool)
-func (_Marketplace *MarketplaceSession) Validate(arg0 []Order) (*types.Transaction, error) {
-	return _Marketplace.Contract.Validate(&_Marketplace.TransactOpts, arg0)
+// Solidity: function validate(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes)[] order) returns(bool)
+func (_Marketplace *MarketplaceSession) Validate(order []Order) (*types.Transaction, error) {
+	return _Marketplace.Contract.Validate(&_Marketplace.TransactOpts, order)
 }
 
-// Validate is a paid mutator transaction binding the contract method 0x36bc40e8.
+// Validate is a paid mutator transaction binding the contract method 0xf9e17bb2.
 //
-// Solidity: function validate(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256),bytes)[] ) returns(bool)
-func (_Marketplace *MarketplaceTransactorSession) Validate(arg0 []Order) (*types.Transaction, error) {
-	return _Marketplace.Contract.Validate(&_Marketplace.TransactOpts, arg0)
-}
-
-// Fallback is a paid mutator transaction binding the contract fallback function.
-//
-// Solidity: fallback() payable returns()
-func (_Marketplace *MarketplaceTransactor) Fallback(opts *bind.TransactOpts, calldata []byte) (*types.Transaction, error) {
-	return _Marketplace.contract.RawTransact(opts, calldata)
-}
-
-// Fallback is a paid mutator transaction binding the contract fallback function.
-//
-// Solidity: fallback() payable returns()
-func (_Marketplace *MarketplaceSession) Fallback(calldata []byte) (*types.Transaction, error) {
-	return _Marketplace.Contract.Fallback(&_Marketplace.TransactOpts, calldata)
-}
-
-// Fallback is a paid mutator transaction binding the contract fallback function.
-//
-// Solidity: fallback() payable returns()
-func (_Marketplace *MarketplaceTransactorSession) Fallback(calldata []byte) (*types.Transaction, error) {
-	return _Marketplace.Contract.Fallback(&_Marketplace.TransactOpts, calldata)
+// Solidity: function validate(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes)[] order) returns(bool)
+func (_Marketplace *MarketplaceTransactorSession) Validate(order []Order) (*types.Transaction, error) {
+	return _Marketplace.Contract.Validate(&_Marketplace.TransactOpts, order)
 }
 
 // MarketplaceCounterIncrementedIterator is returned from FilterCounterIncremented and is used to iterate over the raw logs and unpacked data for CounterIncremented events raised by the Marketplace contract.
@@ -798,46 +752,37 @@ func (it *MarketplaceOrderCancelledIterator) Close() error {
 type MarketplaceOrderCancelled struct {
 	OrderHash [32]byte
 	Offerer   common.Address
-	Zone      common.Address
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterOrderCancelled is a free log retrieval operation binding the contract event 0x6bacc01dbe442496068f7d234edd811f1a5f833243e0aec824f86ab861f3c90d.
+// FilterOrderCancelled is a free log retrieval operation binding the contract event 0xa6eb7cdc219e1518ced964e9a34e61d68a94e4f1569db3e84256ba981ba52753.
 //
-// Solidity: event OrderCancelled(bytes32 orderHash, address indexed offerer, address indexed zone)
-func (_Marketplace *MarketplaceFilterer) FilterOrderCancelled(opts *bind.FilterOpts, offerer []common.Address, zone []common.Address) (*MarketplaceOrderCancelledIterator, error) {
+// Solidity: event OrderCancelled(bytes32 orderHash, address indexed offerer)
+func (_Marketplace *MarketplaceFilterer) FilterOrderCancelled(opts *bind.FilterOpts, offerer []common.Address) (*MarketplaceOrderCancelledIterator, error) {
 
 	var offererRule []interface{}
 	for _, offererItem := range offerer {
 		offererRule = append(offererRule, offererItem)
 	}
-	var zoneRule []interface{}
-	for _, zoneItem := range zone {
-		zoneRule = append(zoneRule, zoneItem)
-	}
 
-	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "OrderCancelled", offererRule, zoneRule)
+	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "OrderCancelled", offererRule)
 	if err != nil {
 		return nil, err
 	}
 	return &MarketplaceOrderCancelledIterator{contract: _Marketplace.contract, event: "OrderCancelled", logs: logs, sub: sub}, nil
 }
 
-// WatchOrderCancelled is a free log subscription operation binding the contract event 0x6bacc01dbe442496068f7d234edd811f1a5f833243e0aec824f86ab861f3c90d.
+// WatchOrderCancelled is a free log subscription operation binding the contract event 0xa6eb7cdc219e1518ced964e9a34e61d68a94e4f1569db3e84256ba981ba52753.
 //
-// Solidity: event OrderCancelled(bytes32 orderHash, address indexed offerer, address indexed zone)
-func (_Marketplace *MarketplaceFilterer) WatchOrderCancelled(opts *bind.WatchOpts, sink chan<- *MarketplaceOrderCancelled, offerer []common.Address, zone []common.Address) (event.Subscription, error) {
+// Solidity: event OrderCancelled(bytes32 orderHash, address indexed offerer)
+func (_Marketplace *MarketplaceFilterer) WatchOrderCancelled(opts *bind.WatchOpts, sink chan<- *MarketplaceOrderCancelled, offerer []common.Address) (event.Subscription, error) {
 
 	var offererRule []interface{}
 	for _, offererItem := range offerer {
 		offererRule = append(offererRule, offererItem)
 	}
-	var zoneRule []interface{}
-	for _, zoneItem := range zone {
-		zoneRule = append(zoneRule, zoneItem)
-	}
 
-	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "OrderCancelled", offererRule, zoneRule)
+	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "OrderCancelled", offererRule)
 	if err != nil {
 		return nil, err
 	}
@@ -869,9 +814,9 @@ func (_Marketplace *MarketplaceFilterer) WatchOrderCancelled(opts *bind.WatchOpt
 	}), nil
 }
 
-// ParseOrderCancelled is a log parse operation binding the contract event 0x6bacc01dbe442496068f7d234edd811f1a5f833243e0aec824f86ab861f3c90d.
+// ParseOrderCancelled is a log parse operation binding the contract event 0xa6eb7cdc219e1518ced964e9a34e61d68a94e4f1569db3e84256ba981ba52753.
 //
-// Solidity: event OrderCancelled(bytes32 orderHash, address indexed offerer, address indexed zone)
+// Solidity: event OrderCancelled(bytes32 orderHash, address indexed offerer)
 func (_Marketplace *MarketplaceFilterer) ParseOrderCancelled(log types.Log) (*MarketplaceOrderCancelled, error) {
 	event := new(MarketplaceOrderCancelled)
 	if err := _Marketplace.contract.UnpackLog(event, "OrderCancelled", log); err != nil {
@@ -952,49 +897,40 @@ func (it *MarketplaceOrderFulfilledIterator) Close() error {
 type MarketplaceOrderFulfilled struct {
 	OrderHash     [32]byte
 	Offerer       common.Address
-	Zone          common.Address
 	Recipient     common.Address
 	Offer         []SpentItem
 	Consideration []ReceivedItem
 	Raw           types.Log // Blockchain specific contextual infos
 }
 
-// FilterOrderFulfilled is a free log retrieval operation binding the contract event 0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31.
+// FilterOrderFulfilled is a free log retrieval operation binding the contract event 0xf4985a8ee1c01f18407eedc2cff3108d4a3065ddfda1220caac817175639729b.
 //
-// Solidity: event OrderFulfilled(bytes32 orderHash, address indexed offerer, address indexed zone, address recipient, (uint8,address,uint256,uint256)[] offer, (uint8,address,uint256,uint256,address)[] consideration)
-func (_Marketplace *MarketplaceFilterer) FilterOrderFulfilled(opts *bind.FilterOpts, offerer []common.Address, zone []common.Address) (*MarketplaceOrderFulfilledIterator, error) {
+// Solidity: event OrderFulfilled(bytes32 orderHash, address indexed offerer, address recipient, (uint8,address,uint256,uint256)[] offer, (uint8,address,uint256,uint256,address)[] consideration)
+func (_Marketplace *MarketplaceFilterer) FilterOrderFulfilled(opts *bind.FilterOpts, offerer []common.Address) (*MarketplaceOrderFulfilledIterator, error) {
 
 	var offererRule []interface{}
 	for _, offererItem := range offerer {
 		offererRule = append(offererRule, offererItem)
 	}
-	var zoneRule []interface{}
-	for _, zoneItem := range zone {
-		zoneRule = append(zoneRule, zoneItem)
-	}
 
-	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "OrderFulfilled", offererRule, zoneRule)
+	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "OrderFulfilled", offererRule)
 	if err != nil {
 		return nil, err
 	}
 	return &MarketplaceOrderFulfilledIterator{contract: _Marketplace.contract, event: "OrderFulfilled", logs: logs, sub: sub}, nil
 }
 
-// WatchOrderFulfilled is a free log subscription operation binding the contract event 0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31.
+// WatchOrderFulfilled is a free log subscription operation binding the contract event 0xf4985a8ee1c01f18407eedc2cff3108d4a3065ddfda1220caac817175639729b.
 //
-// Solidity: event OrderFulfilled(bytes32 orderHash, address indexed offerer, address indexed zone, address recipient, (uint8,address,uint256,uint256)[] offer, (uint8,address,uint256,uint256,address)[] consideration)
-func (_Marketplace *MarketplaceFilterer) WatchOrderFulfilled(opts *bind.WatchOpts, sink chan<- *MarketplaceOrderFulfilled, offerer []common.Address, zone []common.Address) (event.Subscription, error) {
+// Solidity: event OrderFulfilled(bytes32 orderHash, address indexed offerer, address recipient, (uint8,address,uint256,uint256)[] offer, (uint8,address,uint256,uint256,address)[] consideration)
+func (_Marketplace *MarketplaceFilterer) WatchOrderFulfilled(opts *bind.WatchOpts, sink chan<- *MarketplaceOrderFulfilled, offerer []common.Address) (event.Subscription, error) {
 
 	var offererRule []interface{}
 	for _, offererItem := range offerer {
 		offererRule = append(offererRule, offererItem)
 	}
-	var zoneRule []interface{}
-	for _, zoneItem := range zone {
-		zoneRule = append(zoneRule, zoneItem)
-	}
 
-	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "OrderFulfilled", offererRule, zoneRule)
+	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "OrderFulfilled", offererRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1026,9 +962,9 @@ func (_Marketplace *MarketplaceFilterer) WatchOrderFulfilled(opts *bind.WatchOpt
 	}), nil
 }
 
-// ParseOrderFulfilled is a log parse operation binding the contract event 0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31.
+// ParseOrderFulfilled is a log parse operation binding the contract event 0xf4985a8ee1c01f18407eedc2cff3108d4a3065ddfda1220caac817175639729b.
 //
-// Solidity: event OrderFulfilled(bytes32 orderHash, address indexed offerer, address indexed zone, address recipient, (uint8,address,uint256,uint256)[] offer, (uint8,address,uint256,uint256,address)[] consideration)
+// Solidity: event OrderFulfilled(bytes32 orderHash, address indexed offerer, address recipient, (uint8,address,uint256,uint256)[] offer, (uint8,address,uint256,uint256,address)[] consideration)
 func (_Marketplace *MarketplaceFilterer) ParseOrderFulfilled(log types.Log) (*MarketplaceOrderFulfilled, error) {
 	event := new(MarketplaceOrderFulfilled)
 	if err := _Marketplace.contract.UnpackLog(event, "OrderFulfilled", log); err != nil {
@@ -1112,9 +1048,9 @@ type MarketplaceOrderValidated struct {
 	Raw             types.Log // Blockchain specific contextual infos
 }
 
-// FilterOrderValidated is a free log retrieval operation binding the contract event 0x27dfd14c30061935ae5787f9c2f4a149246e56a0670f55eb58111f8aaa76eafa.
+// FilterOrderValidated is a free log retrieval operation binding the contract event 0xffbbabb33c4442c50b58ffcb1586157e793120fa26dee658fbdf27bf13c8c391.
 //
-// Solidity: event OrderValidated(bytes32 orderHash, (address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256) orderParameters)
+// Solidity: event OrderValidated(bytes32 orderHash, (address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256) orderParameters)
 func (_Marketplace *MarketplaceFilterer) FilterOrderValidated(opts *bind.FilterOpts) (*MarketplaceOrderValidatedIterator, error) {
 
 	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "OrderValidated")
@@ -1124,9 +1060,9 @@ func (_Marketplace *MarketplaceFilterer) FilterOrderValidated(opts *bind.FilterO
 	return &MarketplaceOrderValidatedIterator{contract: _Marketplace.contract, event: "OrderValidated", logs: logs, sub: sub}, nil
 }
 
-// WatchOrderValidated is a free log subscription operation binding the contract event 0x27dfd14c30061935ae5787f9c2f4a149246e56a0670f55eb58111f8aaa76eafa.
+// WatchOrderValidated is a free log subscription operation binding the contract event 0xffbbabb33c4442c50b58ffcb1586157e793120fa26dee658fbdf27bf13c8c391.
 //
-// Solidity: event OrderValidated(bytes32 orderHash, (address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256) orderParameters)
+// Solidity: event OrderValidated(bytes32 orderHash, (address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256) orderParameters)
 func (_Marketplace *MarketplaceFilterer) WatchOrderValidated(opts *bind.WatchOpts, sink chan<- *MarketplaceOrderValidated) (event.Subscription, error) {
 
 	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "OrderValidated")
@@ -1161,146 +1097,12 @@ func (_Marketplace *MarketplaceFilterer) WatchOrderValidated(opts *bind.WatchOpt
 	}), nil
 }
 
-// ParseOrderValidated is a log parse operation binding the contract event 0x27dfd14c30061935ae5787f9c2f4a149246e56a0670f55eb58111f8aaa76eafa.
+// ParseOrderValidated is a log parse operation binding the contract event 0xffbbabb33c4442c50b58ffcb1586157e793120fa26dee658fbdf27bf13c8c391.
 //
-// Solidity: event OrderValidated(bytes32 orderHash, (address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,uint256) orderParameters)
+// Solidity: event OrderValidated(bytes32 orderHash, (address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256) orderParameters)
 func (_Marketplace *MarketplaceFilterer) ParseOrderValidated(log types.Log) (*MarketplaceOrderValidated, error) {
 	event := new(MarketplaceOrderValidated)
 	if err := _Marketplace.contract.UnpackLog(event, "OrderValidated", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// MarketplaceOrdersMatchedIterator is returned from FilterOrdersMatched and is used to iterate over the raw logs and unpacked data for OrdersMatched events raised by the Marketplace contract.
-type MarketplaceOrdersMatchedIterator struct {
-	Event *MarketplaceOrdersMatched // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *MarketplaceOrdersMatchedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(MarketplaceOrdersMatched)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(MarketplaceOrdersMatched)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *MarketplaceOrdersMatchedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *MarketplaceOrdersMatchedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// MarketplaceOrdersMatched represents a OrdersMatched event raised by the Marketplace contract.
-type MarketplaceOrdersMatched struct {
-	OrderHashes [][32]byte
-	Raw         types.Log // Blockchain specific contextual infos
-}
-
-// FilterOrdersMatched is a free log retrieval operation binding the contract event 0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7.
-//
-// Solidity: event OrdersMatched(bytes32[] orderHashes)
-func (_Marketplace *MarketplaceFilterer) FilterOrdersMatched(opts *bind.FilterOpts) (*MarketplaceOrdersMatchedIterator, error) {
-
-	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "OrdersMatched")
-	if err != nil {
-		return nil, err
-	}
-	return &MarketplaceOrdersMatchedIterator{contract: _Marketplace.contract, event: "OrdersMatched", logs: logs, sub: sub}, nil
-}
-
-// WatchOrdersMatched is a free log subscription operation binding the contract event 0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7.
-//
-// Solidity: event OrdersMatched(bytes32[] orderHashes)
-func (_Marketplace *MarketplaceFilterer) WatchOrdersMatched(opts *bind.WatchOpts, sink chan<- *MarketplaceOrdersMatched) (event.Subscription, error) {
-
-	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "OrdersMatched")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(MarketplaceOrdersMatched)
-				if err := _Marketplace.contract.UnpackLog(event, "OrdersMatched", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseOrdersMatched is a log parse operation binding the contract event 0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7.
-//
-// Solidity: event OrdersMatched(bytes32[] orderHashes)
-func (_Marketplace *MarketplaceFilterer) ParseOrdersMatched(log types.Log) (*MarketplaceOrdersMatched, error) {
-	event := new(MarketplaceOrdersMatched)
-	if err := _Marketplace.contract.UnpackLog(event, "OrdersMatched", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

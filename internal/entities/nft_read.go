@@ -1,8 +1,9 @@
 package entities
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 type NftRead struct {
@@ -12,7 +13,7 @@ type NftRead struct {
 	Image       string         `json:"image"`
 	Name        string         `json:"name"`
 	Description string         `json:"description"`
-	Metadata    []byte         `json:"metadata"'`
+	Metadata    []byte         `json:"metadata"`
 
 	BlockNumber *big.Int       `json:"block_number"`
 	TxIndex     *big.Int       `json:"tx_index"`

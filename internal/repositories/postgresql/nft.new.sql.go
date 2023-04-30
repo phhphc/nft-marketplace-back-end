@@ -98,7 +98,7 @@ FROM (
          LEFT JOIN "offer_items" oi ON oi.token ILIKE selected_nft.token AND oi.identifier = selected_nft.identifier
          LEFT JOIN "consideration_items" ci ON ci.order_hash ILIKE oi.order_hash
          LEFT JOIN (
-    SELECT order_hash, offerer, zone, recipient, order_type, zone_hash, salt, start_time, end_time, signature, is_cancelled, is_validated, is_fulfilled, is_invalid FROM orders WHERE orders.is_fulfilled = FALSE AND orders.is_cancelled = FALSE
+    SELECT order_hash, offerer, recipient, salt, start_time, end_time, signature, is_cancelled, is_validated, is_fulfilled, is_invalid FROM orders WHERE orders.is_fulfilled = FALSE AND orders.is_cancelled = FALSE
 ) o ON oi.order_hash ILIKE o.order_hash
 `
 
@@ -189,7 +189,7 @@ FROM (
                    ON paged_nfts.token ILIKE oi.token AND paged_nfts.identifier = oi.identifier
          LEFT JOIN consideration_items ci ON oi.order_hash ILIKE ci.order_hash
          LEFT JOIN (
-    SELECT order_hash, offerer, zone, recipient, order_type, zone_hash, salt, start_time, end_time, signature, is_cancelled, is_validated, is_fulfilled, is_invalid FROM orders WHERE orders.is_fulfilled = FALSE AND orders.is_cancelled = FALSE AND orders.is_invalid = FALSE
+    SELECT order_hash, offerer, recipient, salt, start_time, end_time, signature, is_cancelled, is_validated, is_fulfilled, is_invalid FROM orders WHERE orders.is_fulfilled = FALSE AND orders.is_cancelled = FALSE AND orders.is_invalid = FALSE
 ) o ON oi.order_hash ILIKE o.order_hash
 ORDER BY paged_nfts.block_number, paged_nfts.tx_index, ci.id, paged_nfts.token, paged_nfts.identifier
 `

@@ -66,10 +66,7 @@ type OfferItem struct {
 type Order struct {
 	OrderHash   string
 	Offerer     string
-	Zone        string
 	Recipient   sql.NullString
-	OrderType   sql.NullInt32
-	ZoneHash    string
 	Salt        sql.NullString
 	StartTime   sql.NullString
 	EndTime     sql.NullString

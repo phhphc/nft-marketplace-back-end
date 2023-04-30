@@ -113,7 +113,6 @@ func (w *worker) handleMkpEvent(vLog types.Log) {
 			OrderHash: log.OrderHash,
 			Offerer:   log.Offerer,
 			Recipient: &log.Recipient,
-			Zone:      log.Zone,
 
 			Offer:         offerItems,
 			Consideration: considerationItem,

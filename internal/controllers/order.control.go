@@ -103,17 +103,13 @@ func (ctl *Controls) PostOrder(c echo.Context) error {
 	salt := common.HexToHash(req.Salt)
 
 	order := entities.Order{
-		OrderHash:     common.HexToHash(req.OrderHash),
-		Offerer:       common.HexToAddress(req.Offerer),
-		Zone:          common.HexToAddress(req.Zone),
-		Offer:         offerItems,
-		Consideration: considerationItems,
-		OrderType:     &req.OrderType,
-		ZoneHash:      common.HexToHash(req.ZoneHash),
-		Salt:          &salt,
-		StartTime:     startTime,
-		EndTime:       endTime,
-		Signature:     signature,
+		OrderHash: common.HexToHash(req.OrderHash),
+		Offerer:   common.HexToAddress(req.Offerer),
+		Offer:     offerItems,
+		Salt:      &salt,
+		StartTime: startTime,
+		EndTime:   endTime,
+		Signature: signature,
 	}
 
 	err = ctl.service.CreateOrder(context.TODO(), order)
@@ -130,7 +126,7 @@ func (ctl *Controls) PostOrder(c echo.Context) error {
 	})
 }
 
-func (ctl *Controls) GetOrderV2(c echo.Context) error {
+func (ctl *Controls) GetOrder(c echo.Context) error {
 
 	var req dto.GetOrder
 	var err error
@@ -185,82 +181,6 @@ func (ctl *Controls) GetOrderV2(c echo.Context) error {
 			CurrentPage: 0,
 			Content:     os,
 		},
-		IsSuccess: true,
-	})
-
-}
-
-func (ctl *Controls) GetOrder(c echo.Context) error {
-	var req dto.GetOrderV1
-	var err error
-	if err = c.Bind(&req); err != nil {
-		return dto.NewHTTPError(400, err)
-	}
-	if err = c.Validate(&req); err != nil {
-		return dto.NewHTTPError(400, err)
-	}
-
-	o, err := ctl.service.GetOrderByHash(c.Request().Context(), common.HexToHash(req.OrderHash))
-	if err != nil {
-		ctl.lg.Error().Caller().Err(err).Msg("err")
-		return err
-	}
-
-	return c.JSON(200, dto.Response{
-		Data:      o,
-		IsSuccess: true,
-	})
-}
-
-func (ctl *Controls) GetOrderHash(c echo.Context) error {
-	var req dto.GetOrderHash
-	var err error
-	if err = c.Bind(&req); err != nil {
-		return dto.NewHTTPError(400, err)
-	}
-	if err = c.Validate(&req); err != nil {
-		return dto.NewHTTPError(400, err)
-	}
-
-	offer := entities.OfferItem{}
-	if len(req.OfferToken) > 0 {
-		offer.Token = common.HexToAddress(req.OfferToken)
-	}
-	if len(req.OfferIdentifier) > 0 {
-		identifier, ok := new(big.Int).SetString(req.OfferIdentifier, 0)
-		if ok {
-			offer.Identifier = identifier
-		}
-	}
-
-	consideration := entities.ConsiderationItem{}
-	if len(req.ConsiderationToken) > 0 {
-		consideration.Token = common.HexToAddress(req.ConsiderationToken)
-	}
-	if len(req.ConsiderationIdentifier) > 0 {
-		identifier, ok := new(big.Int).SetString(req.ConsiderationIdentifier, 0)
-		if ok {
-			consideration.Identifier = identifier
-		}
-	}
-
-	hs, err := ctl.service.GetOrderHash(c.Request().Context(), offer, consideration)
-	if err != nil {
-		ctl.lg.Error().Caller().Err(err).Msg("err")
-		return err
-	}
-
-	data := dto.GetOrderHashes{
-		OrderHashes: []string{},
-		PageSize:    99999,
-		Page:        0,
-	}
-
-	for _, h := range hs {
-		data.OrderHashes = append(data.OrderHashes, h.Hex())
-	}
-	return c.JSON(200, dto.Response{
-		Data:      data,
 		IsSuccess: true,
 	})
 }

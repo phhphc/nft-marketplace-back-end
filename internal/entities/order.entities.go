@@ -10,11 +10,8 @@ type Order struct {
 	OrderHash common.Hash
 
 	Offerer       common.Address
-	Zone          common.Address
 	Offer         []OfferItem
 	Consideration []ConsiderationItem
-	OrderType     *EnumOrderType
-	ZoneHash      common.Hash
 	Salt          *common.Hash
 	StartTime     *big.Int
 	EndTime       *big.Int
@@ -52,17 +49,6 @@ const (
 	ERC721
 	ERC1155
 )
-
-type EnumOrderType int
-
-const (
-	FULL_OPEN EnumOrderType = iota
-	FULL_RESTRICTED
-)
-
-func (e *EnumOrderType) Int() int {
-	return int(*e)
-}
 
 func (e *EnumItemType) Int() int {
 	return int(*e)
