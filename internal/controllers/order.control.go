@@ -103,13 +103,14 @@ func (ctl *Controls) PostOrder(c echo.Context) error {
 	salt := common.HexToHash(req.Salt)
 
 	order := entities.Order{
-		OrderHash: common.HexToHash(req.OrderHash),
-		Offerer:   common.HexToAddress(req.Offerer),
-		Offer:     offerItems,
-		Salt:      &salt,
-		StartTime: startTime,
-		EndTime:   endTime,
-		Signature: signature,
+		OrderHash:     common.HexToHash(req.OrderHash),
+		Offerer:       common.HexToAddress(req.Offerer),
+		Offer:         offerItems,
+		Consideration: considerationItems,
+		Salt:          &salt,
+		StartTime:     startTime,
+		EndTime:       endTime,
+		Signature:     signature,
 	}
 
 	err = ctl.service.CreateOrder(context.TODO(), order)
