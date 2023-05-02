@@ -9,5 +9,4 @@ FROM "events" e
 WHERE (e.name ILIKE sqlc.narg('name') OR sqlc.narg('name') IS NULL)
 AND (e.token ILIKE sqlc.narg('token') OR sqlc.narg('token') IS NULL)
 AND (e.token_id ILIKE sqlc.narg('token_id') OR sqlc.narg('token_id') IS NULL)
-AND (e.from ILIKE sqlc.narg('from') OR sqlc.narg('from') IS NULL)
-AND (e.to ILIKE sqlc.narg('to') OR sqlc.narg('to') IS NULL);
+AND ((e.from ILIKE sqlc.narg('address') OR sqlc.narg('address') IS NULL) OR (e.to ILIKE sqlc.narg('address') OR sqlc.narg('address') IS NULL));

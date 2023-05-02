@@ -155,7 +155,7 @@ func (w *worker) handleErc721Event(vLog types.Log) {
 			Name:     "transfer",
 			Token:    vLog.Address,
 			TokenId:  transfer.TokenId,
-			Quantity: big.NewInt(1),
+			Quantity: 1,
 			// Price
 			From: transfer.From,
 			To:   transfer.To,

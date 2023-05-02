@@ -14,8 +14,8 @@ import (
 type EventService interface {
 	CreateEvent(ctx context.Context, event entities.Event) (entities.Event, error)
 	CreateEventsByOrder(ctx context.Context, order entities.Order) ([]entities.Event, error)
-	CreateEventsByFulfilledOrder(ctx context.Context, order entities.Order) ([]entities.Event, error)
-	GetListEvent(ctx context.Context, query entities.Event) ([]entities.Event, error)
+	CreateEventsByFulfilledOrder(ctx context.Context, order entities.Order, txHash string) ([]entities.Event, error)
+	GetListEvent(ctx context.Context, query entities.EventRead) ([]entities.Event, error)
 }
 
 // Add event to database
@@ -31,9 +31,9 @@ func (s *Services) CreateEvent(ctx context.Context, event entities.Event) (ee en
 		Name:    event.Name,
 		Token:   event.Token.Hex(),
 		TokenID: event.TokenId.String(),
-		Quantity: sql.NullInt64{
+		Quantity: sql.NullInt32{
 			Valid: true,
-			Int64: event.Quantity.Int64(),
+			Int32: event.Quantity,
 		},
 		Price: sql.NullString{
 			Valid:  true,
@@ -63,7 +63,7 @@ func (s *Services) CreateEvent(ctx context.Context, event entities.Event) (ee en
 	}
 	// quantity
 	if dbEvent.Quantity.Valid {
-		ee.Quantity = big.NewInt(int64(dbEvent.Quantity.Int32))
+		ee.Quantity = dbEvent.Quantity.Int32
 	}
 	// price
 	price, ok := big.NewInt(0).SetString(dbEvent.Price.String, 10)
@@ -109,7 +109,7 @@ func (s *Services) CreateEventsByOrder(ctx context.Context, order entities.Order
 				Name:     eventName,
 				Token:    offerItem.Token,
 				TokenId:  offerItem.Identifier,
-				Quantity: offerItem.StartAmount,
+				Quantity: int32(offerItem.StartAmount.Int64()),
 				Price:    price,
 				From:     order.Offerer,
 			})
@@ -124,7 +124,7 @@ func (s *Services) CreateEventsByOrder(ctx context.Context, order entities.Order
 					Name:     eventName,
 					Token:    item.Token,
 					TokenId:  item.Identifier,
-					Quantity: item.StartAmount,
+					Quantity: int32(item.StartAmount.Int64()),
 					// Price:    order.Consideration[i].StartAmount,
 					From: order.Offerer,
 				})
@@ -151,7 +151,7 @@ func (s *Services) CreateEventsByOrder(ctx context.Context, order entities.Order
 				Name:     eventName,
 				Token:    conItem.Token,
 				TokenId:  conItem.Identifier,
-				Quantity: conItem.StartAmount,
+				Quantity: int32(conItem.StartAmount.Int64()),
 				Price:    price,
 				From:     order.Offerer,
 			})
@@ -166,7 +166,7 @@ func (s *Services) CreateEventsByOrder(ctx context.Context, order entities.Order
 					Name:     eventName,
 					Token:    item.Token,
 					TokenId:  item.Identifier,
-					Quantity: item.StartAmount,
+					Quantity: int32(item.StartAmount.Int64()),
 					// Price:    order.Offer[i].StartAmount,
 					From: order.Offerer,
 				})
@@ -183,7 +183,7 @@ func (s *Services) CreateEventsByOrder(ctx context.Context, order entities.Order
 }
 
 // Add event sale to database
-func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entities.Order) (ees []entities.Event, err error) {
+func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entities.Order, txHash string) (ees []entities.Event, err error) {
 	s.lg.Info().Msg("Create Sale Event By Fulfilled Order")
 	var eventName = "sale"
 
@@ -204,10 +204,11 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 				Name:     eventName,
 				Token:    offerItem.Token,
 				TokenId:  offerItem.Identifier,
-				Quantity: offerItem.Amount,
+				Quantity: int32(offerItem.Amount.Int64()),
 				Price:    price,
 				From:     from,
 				To:       to,
+				Link:     "https://sepolia.etherscan.io/tx/" + txHash,
 			})
 
 			ees = append(ees, e)
@@ -220,10 +221,11 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 					Name:     eventName,
 					Token:    item.Token,
 					TokenId:  item.Identifier,
-					Quantity: item.Amount,
+					Quantity: int32(item.Amount.Int64()),
 					// Price:    order.Consideration[i].Amount,
 					From: from,
 					To:   to,
+					Link: "https://sepolia.etherscan.io/tx/" + txHash,
 				})
 
 				ees = append(ees, e)
@@ -250,10 +252,11 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 				Name:     eventName,
 				Token:    conItem.Token,
 				TokenId:  conItem.Identifier,
-				Quantity: conItem.Amount,
+				Quantity: int32(conItem.Amount.Int64()),
 				Price:    price,
 				From:     from,
 				To:       to,
+				Link:     "https://sepolia.etherscan.io/tx/" + txHash,
 			})
 
 			ees = append(ees, e)
@@ -266,10 +269,11 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 					Name:     eventName,
 					Token:    item.Token,
 					TokenId:  item.Identifier,
-					Quantity: item.Amount,
+					Quantity: int32(item.Amount.Int64()),
 					// Price:    order.Offer[i].Amount,
 					From: from,
 					To:   to,
+					Link: "https://sepolia.etherscan.io/tx/" + txHash, 
 				})
 
 				ees = append(ees, e)
@@ -282,7 +286,7 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 	}
 }
 
-func (s *Services) GetListEvent(ctx context.Context, query entities.Event) (events []entities.Event, err error) {
+func (s *Services) GetListEvent(ctx context.Context, query entities.EventRead) (events []entities.Event, err error) {
 	params := postgresql.GetEventParams{}
 
 	if len(query.Name) > 0 {
@@ -303,15 +307,9 @@ func (s *Services) GetListEvent(ctx context.Context, query entities.Event) (even
 			Valid:  true,
 		}
 	}
-	if query.From != (common.Address{}) {
-		params.From = sql.NullString{
-			String: query.From.Hex(),
-			Valid:  true,
-		}
-	}
-	if query.To != (common.Address{}) {
-		params.To = sql.NullString{
-			String: query.To.Hex(),
+	if query.Address != (common.Address{}) {
+		params.Address = sql.NullString{
+			String: query.Address.Hex(),
 			Valid:  true,
 		}
 	}
@@ -333,7 +331,7 @@ func (s *Services) GetListEvent(ctx context.Context, query entities.Event) (even
 		}
 
 		if event.Quantity.Valid {
-			newEvent.Quantity = big.NewInt(event.Quantity.Int64)
+			newEvent.Quantity = event.Quantity.Int32
 		}
 
 		price, ok := big.NewInt(0).SetString(event.Price.String, 10)

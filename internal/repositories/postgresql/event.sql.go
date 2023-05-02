@@ -16,23 +16,21 @@ FROM "events" e
 WHERE (e.name ILIKE $1 OR $1 IS NULL)
 AND (e.token ILIKE $2 OR $2 IS NULL)
 AND (e.token_id ILIKE $3 OR $3 IS NULL)
-AND (e.from ILIKE $4 OR $4 IS NULL)
-AND (e.to ILIKE $5 OR $5 IS NULL)
+AND ((e.from ILIKE $4 OR $4 IS NULL) OR (e.to ILIKE $4 OR $4 IS NULL))
 `
 
 type GetEventParams struct {
 	Name    sql.NullString
 	Token   sql.NullString
 	TokenID sql.NullString
-	From    sql.NullString
-	To      sql.NullString
+	Address sql.NullString
 }
 
 type GetEventRow struct {
 	Name     string
 	Token    string
 	TokenID  string
-	Quantity sql.NullInt64
+	Quantity sql.NullInt32
 	Price    sql.NullString
 	From     string
 	To       sql.NullString
@@ -45,8 +43,7 @@ func (q *Queries) GetEvent(ctx context.Context, arg GetEventParams) ([]GetEventR
 		arg.Name,
 		arg.Token,
 		arg.TokenID,
-		arg.From,
-		arg.To,
+		arg.Address,
 	)
 	if err != nil {
 		return nil, err
@@ -89,7 +86,7 @@ type InsertEventParams struct {
 	Name     string
 	Token    string
 	TokenID  string
-	Quantity sql.NullInt64
+	Quantity sql.NullInt32
 	Price    sql.NullString
 	From     string
 	To       sql.NullString

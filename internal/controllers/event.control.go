@@ -19,12 +19,11 @@ func (ctl *Controls) GetEvent(c echo.Context) error {
 		return dto.NewHTTPError(400, err)
 	}
 
-	query := entities.Event{
+	query := entities.EventRead{
 		Name:  req.Name,
 		Token: common.HexToAddress(req.Token),
 		// TokenId
-		From: common.HexToAddress(req.From),
-		To:   common.HexToAddress(req.To),
+		Address: common.HexToAddress(req.Address),
 	}
 	tokenId, ok := big.NewInt(0).SetString(req.TokenId, 10)
 	if ok {
@@ -43,7 +42,7 @@ func (ctl *Controls) GetEvent(c echo.Context) error {
 			Name:     e.Name,
 			Token:    e.Token.Hex(),
 			TokenId:  e.TokenId.String(),
-			Quantity: int(e.Quantity.Int64()),
+			Quantity: int(e.Quantity),
 			// price
 			From: e.From.Hex(),
 			// to

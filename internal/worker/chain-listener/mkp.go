@@ -124,7 +124,7 @@ func (w *worker) handleMkpEvent(vLog types.Log) {
 			Consideration: considerationItem,
 			Offerer:       log.Offerer,
 			Recipient:     &log.Recipient,
-		})
+		}, vLog.TxHash.Hex())
 	default:
 		w.lg.Error().Caller().Err(err).Str("event", eventAbi.Name).Msg("unhandle contract event")
 	}
