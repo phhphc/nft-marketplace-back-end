@@ -15,6 +15,7 @@ type Querier interface {
 	GetCollection(ctx context.Context, arg GetCollectionParams) ([]GetCollectionRow, error)
 	GetCollectionLastSyncBlock(ctx context.Context, token string) (int64, error)
 	GetCollectionWithCategory(ctx context.Context, arg GetCollectionWithCategoryParams) ([]GetCollectionWithCategoryRow, error)
+	GetEvent(ctx context.Context, arg GetEventParams) ([]GetEventRow, error)
 	GetListValidNFT(ctx context.Context, arg GetListValidNFTParams) ([]GetListValidNFTRow, error)
 	GetMarketplaceLastSyncBlock(ctx context.Context) (int64, error)
 	GetNFTValidConsiderations(ctx context.Context, arg GetNFTValidConsiderationsParams) ([]GetNFTValidConsiderationsRow, error)
@@ -23,6 +24,7 @@ type Querier interface {
 	GetProfile(ctx context.Context, address string) (Profile, error)
 	InsertCategory(ctx context.Context, name string) (Category, error)
 	InsertCollection(ctx context.Context, arg InsertCollectionParams) (Collection, error)
+	InsertEvent(ctx context.Context, arg InsertEventParams) (Event, error)
 	InsertOrder(ctx context.Context, arg InsertOrderParams) error
 	InsertOrderConsiderationItem(ctx context.Context, arg InsertOrderConsiderationItemParams) error
 	InsertOrderOfferItem(ctx context.Context, arg InsertOrderOfferItemParams) error

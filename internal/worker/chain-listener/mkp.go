@@ -117,6 +117,14 @@ func (w *worker) handleMkpEvent(vLog types.Log) {
 			Offer:         offerItems,
 			Consideration: considerationItem,
 		})
+
+		w.Service.CreateEventsByFulfilledOrder(context.TODO(), entities.Order{
+			OrderHash:     log.OrderHash,
+			Offer:         offerItems,
+			Consideration: considerationItem,
+			Offerer:       log.Offerer,
+			Recipient:     &log.Recipient,
+		})
 	default:
 		w.lg.Error().Caller().Err(err).Str("event", eventAbi.Name).Msg("unhandle contract event")
 	}

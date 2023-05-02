@@ -106,6 +106,9 @@ func (s *Services) CreateOrder(ctx context.Context, order entities.Order) (err e
 		}
 	}
 
+	// TODO - insert event listing or offer
+	s.CreateEventsByOrder(ctx, order)
+
 	return
 }
 
