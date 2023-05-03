@@ -11,6 +11,7 @@ type Event struct {
 	Token    common.Address
 	TokenId  *big.Int
 	Quantity int32
+	Type     string
 	Price    *big.Int
 	From     common.Address
 	To       common.Address
@@ -19,12 +20,9 @@ type Event struct {
 }
 
 type EventRead struct {
-	Name     string
-	Token    common.Address
-	TokenId  *big.Int
-	Quantity *big.Int
-	Price    *big.Int
-	Address  common.Address
-	Date     time.Time
-	Link     string
+	Name    string
+	Token   common.Address
+	TokenId *big.Int
+	Type    string
+	Address common.Address
 }

@@ -5,6 +5,7 @@ CREATE TABLE "events"
     "token"         CHAR(42) NOT NULL,
     "token_id"      VARCHAR NOT NULL,
     "quantity"      INT,
+    "type"          VARCHAR,
     "price"         VARCHAR,
     "from"          CHAR(42) NOT NULL,
     "to"            CHAR(42),

@@ -5,4 +5,5 @@ type GetEventReq struct {
 	TokenId string `query:"token_id" validate:"omitempty,hexadecimal"`
 	Name    string `query:"name" validate:"omitempty"`
 	Address string `query:"address" validate:"omitempty,eth_addr"`
+	Type    string `query:"type" validate:"omitempty"`
 }

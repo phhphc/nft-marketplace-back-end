@@ -24,6 +24,7 @@ func (ctl *Controls) GetEvent(c echo.Context) error {
 		Token: common.HexToAddress(req.Token),
 		// TokenId
 		Address: common.HexToAddress(req.Address),
+		Type:    req.Type,
 	}
 	tokenId, ok := big.NewInt(0).SetString(req.TokenId, 10)
 	if ok {
@@ -43,6 +44,7 @@ func (ctl *Controls) GetEvent(c echo.Context) error {
 			Token:    e.Token.Hex(),
 			TokenId:  e.TokenId.String(),
 			Quantity: int(e.Quantity),
+			Type:     e.Type,
 			// price
 			From: e.From.Hex(),
 			// to

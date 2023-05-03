@@ -11,18 +11,20 @@ import (
 )
 
 const getEvent = `-- name: GetEvent :many
-SELECT e.name, e.token, e.token_id, e.quantity, e.price, e.from, e.to, e.date, e.link
+SELECT e.name, e.token, e.token_id, e.quantity, e.type, e.price, e.from, e.to, e.date, e.link
 FROM "events" e
 WHERE (e.name ILIKE $1 OR $1 IS NULL)
 AND (e.token ILIKE $2 OR $2 IS NULL)
 AND (e.token_id ILIKE $3 OR $3 IS NULL)
-AND ((e.from ILIKE $4 OR $4 IS NULL) OR (e.to ILIKE $4 OR $4 IS NULL))
+AND (e.type ILIKE $4 OR $4 IS NULL)
+AND ((e.from ILIKE $5 OR $5 IS NULL) OR (e.to ILIKE $5 OR $5 IS NULL))
 `
 
 type GetEventParams struct {
 	Name    sql.NullString
 	Token   sql.NullString
 	TokenID sql.NullString
+	Type    sql.NullString
 	Address sql.NullString
 }
 
@@ -31,6 +33,7 @@ type GetEventRow struct {
 	Token    string
 	TokenID  string
 	Quantity sql.NullInt32
+	Type     sql.NullString
 	Price    sql.NullString
 	From     string
 	To       sql.NullString
@@ -43,6 +46,7 @@ func (q *Queries) GetEvent(ctx context.Context, arg GetEventParams) ([]GetEventR
 		arg.Name,
 		arg.Token,
 		arg.TokenID,
+		arg.Type,
 		arg.Address,
 	)
 	if err != nil {
@@ -57,6 +61,7 @@ func (q *Queries) GetEvent(ctx context.Context, arg GetEventParams) ([]GetEventR
 			&i.Token,
 			&i.TokenID,
 			&i.Quantity,
+			&i.Type,
 			&i.Price,
 			&i.From,
 			&i.To,
@@ -77,9 +82,9 @@ func (q *Queries) GetEvent(ctx context.Context, arg GetEventParams) ([]GetEventR
 }
 
 const insertEvent = `-- name: InsertEvent :one
-INSERT INTO "events" ("name", "token", "token_id", "quantity", "price", "from", "to", "link")
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-RETURNING id, name, token, token_id, quantity, price, "from", "to", date, link
+INSERT INTO "events" ("name", "token", "token_id", "quantity", "type", "price", "from", "to", "link")
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+RETURNING id, name, token, token_id, quantity, type, price, "from", "to", date, link
 `
 
 type InsertEventParams struct {
@@ -87,6 +92,7 @@ type InsertEventParams struct {
 	Token    string
 	TokenID  string
 	Quantity sql.NullInt32
+	Type     sql.NullString
 	Price    sql.NullString
 	From     string
 	To       sql.NullString
@@ -99,6 +105,7 @@ func (q *Queries) InsertEvent(ctx context.Context, arg InsertEventParams) (Event
 		arg.Token,
 		arg.TokenID,
 		arg.Quantity,
+		arg.Type,
 		arg.Price,
 		arg.From,
 		arg.To,
@@ -111,6 +118,7 @@ func (q *Queries) InsertEvent(ctx context.Context, arg InsertEventParams) (Event
 		&i.Token,
 		&i.TokenID,
 		&i.Quantity,
+		&i.Type,
 		&i.Price,
 		&i.From,
 		&i.To,

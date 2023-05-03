@@ -44,6 +44,7 @@ type Event struct {
 	Token    string
 	TokenID  string
 	Quantity sql.NullInt32
+	Type     sql.NullString
 	Price    sql.NullString
 	From     string
 	To       sql.NullString

@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -24,6 +23,7 @@ func (s *Services) CreateEvent(ctx context.Context, event entities.Event) (ee en
 		Str("name", event.Name).
 		Str("token", event.Token.Hex()).
 		Str("token_id", event.TokenId.String()).
+		Str("event_type", event.Type).
 		Str("from", event.From.Hex()).
 		Str("to", event.To.Hex()).
 		Msg("create event")
@@ -34,6 +34,10 @@ func (s *Services) CreateEvent(ctx context.Context, event entities.Event) (ee en
 		Quantity: sql.NullInt32{
 			Valid: true,
 			Int32: event.Quantity,
+		},
+		Type: sql.NullString{
+			Valid:  true,
+			String: event.Type,
 		},
 		Price: sql.NullString{
 			Valid:  true,
@@ -65,6 +69,10 @@ func (s *Services) CreateEvent(ctx context.Context, event entities.Event) (ee en
 	if dbEvent.Quantity.Valid {
 		ee.Quantity = dbEvent.Quantity.Int32
 	}
+	// is_bundle
+	if dbEvent.Type.Valid {
+		ee.Type = dbEvent.Type.String
+	}
 	// price
 	price, ok := big.NewInt(0).SetString(dbEvent.Price.String, 10)
 	if dbEvent.Price.Valid && ok {
@@ -86,6 +94,7 @@ func (s *Services) CreateEvent(ctx context.Context, event entities.Event) (ee en
 
 // Add event listing or offer to database
 func (s *Services) CreateEventsByOrder(ctx context.Context, order entities.Order) (ees []entities.Event, err error) {
+	// Check whether event is listing or offer
 	var eventName string
 	if order.Offer[0].ItemType.Int() == 2 || order.Offer[0].ItemType.Int() == 3 {
 		eventName = "listing"
@@ -93,91 +102,71 @@ func (s *Services) CreateEventsByOrder(ctx context.Context, order entities.Order
 		eventName = "offer"
 	}
 
+	// Listing
 	if eventName == "listing" {
 		s.lg.Info().Msg("create event listing by order")
 
+		// Check whether listing on single or bundle
+		var eventType string
 		var itemCount = len(order.Offer)
-		// Listing on single sale
 		if itemCount == 1 {
-			price := big.NewInt(0)
-			for _, conItem := range order.Consideration {
-				price.Add(price, conItem.StartAmount)
-			}
+			eventType = "single"
+		} else if itemCount > 1 {
+			eventType = "bundle"
+		} else {
+		}
 
-			offerItem := order.Offer[0]
+		price := big.NewInt(0)
+		for _, conItem := range order.Consideration {
+			price.Add(price, conItem.StartAmount)
+		}
+		for _, item := range order.Offer {
 			e, _ := s.CreateEvent(ctx, entities.Event{
 				Name:     eventName,
-				Token:    offerItem.Token,
-				TokenId:  offerItem.Identifier,
-				Quantity: int32(offerItem.StartAmount.Int64()),
+				Token:    item.Token,
+				TokenId:  item.Identifier,
+				Quantity: int32(item.StartAmount.Int64()),
+				Type:     eventType,
 				Price:    price,
 				From:     order.Offerer,
 			})
 
 			ees = append(ees, e)
-			return
-
-			// Listing on bundle sale
-		} else if itemCount > 1 {
-			for _, item := range order.Offer {
-				e, _ := s.CreateEvent(ctx, entities.Event{
-					Name:     eventName,
-					Token:    item.Token,
-					TokenId:  item.Identifier,
-					Quantity: int32(item.StartAmount.Int64()),
-					// Price:    order.Consideration[i].StartAmount,
-					From: order.Offerer,
-				})
-
-				ees = append(ees, e)
-			}
-			return
-		} else {
-			err = errors.New("Error Create Listing Event By Order")
-			return
 		}
+		return
+
+		// Offer
 	} else if eventName == "offer" {
 		s.lg.Info().Msg("create event offer by order")
 
+		// Check whether offer on single or bundle
+		var eventType string
 		var itemCount = len(order.Consideration)
-		// Offer on single sale
 		if itemCount == 1 {
-			price := big.NewInt(0)
-			for _, offerItem := range order.Offer {
-				price.Add(price, offerItem.StartAmount)
-			}
-			conItem := order.Consideration[0]
+			eventType = "single"
+		} else if itemCount > 1 {
+			eventType = "bundle"
+		} else {
+		}
+
+		price := big.NewInt(0)
+		for _, offerItem := range order.Offer {
+			price.Add(price, offerItem.StartAmount)
+		}
+		for _, item := range order.Consideration {
 			e, _ := s.CreateEvent(ctx, entities.Event{
 				Name:     eventName,
-				Token:    conItem.Token,
-				TokenId:  conItem.Identifier,
-				Quantity: int32(conItem.StartAmount.Int64()),
+				Token:    item.Token,
+				TokenId:  item.Identifier,
+				Quantity: int32(item.StartAmount.Int64()),
+				Type:     eventType,
 				Price:    price,
 				From:     order.Offerer,
 			})
 
 			ees = append(ees, e)
-			return
-
-			// Offer on bundle sale
-		} else if itemCount > 1 {
-			for _, item := range order.Consideration {
-				e, _ := s.CreateEvent(ctx, entities.Event{
-					Name:     eventName,
-					Token:    item.Token,
-					TokenId:  item.Identifier,
-					Quantity: int32(item.StartAmount.Int64()),
-					// Price:    order.Offer[i].StartAmount,
-					From: order.Offerer,
-				})
-
-				ees = append(ees, e)
-			}
-			return
-		} else {
-			err = errors.New("Error Create Offer Event By Order")
-			return
 		}
+		return
 	}
 	return
 }
@@ -191,20 +180,27 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 	if order.Offer[0].ItemType.Int() == 2 || order.Offer[0].ItemType.Int() == 3 {
 		from := order.Offerer
 		to := *order.Recipient
-		var itemCount = len(order.Offer)
 
-		// Listing on single sale
+		var itemCount = len(order.Offer)
+		var eventType string
 		if itemCount == 1 {
-			price := big.NewInt(0)
-			for _, conItem := range order.Consideration {
-				price.Add(price, conItem.Amount)
-			}
-			offerItem := order.Offer[0]
+			eventType = "single"
+		} else if itemCount > 1 {
+			eventType = "bundle"
+		} else {
+		}
+
+		price := big.NewInt(0)
+		for _, conItem := range order.Consideration {
+			price.Add(price, conItem.Amount)
+		}
+		for _, item := range order.Offer {
 			e, _ := s.CreateEvent(ctx, entities.Event{
 				Name:     eventName,
-				Token:    offerItem.Token,
-				TokenId:  offerItem.Identifier,
-				Quantity: int32(offerItem.Amount.Int64()),
+				Token:    item.Token,
+				TokenId:  item.Identifier,
+				Quantity: int32(item.Amount.Int64()),
+				Type:     eventType,
 				Price:    price,
 				From:     from,
 				To:       to,
@@ -212,47 +208,33 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 			})
 
 			ees = append(ees, e)
-			return
-
-			// Listing on bundle sale
-		} else if itemCount > 1 {
-			for _, item := range order.Offer {
-				e, _ := s.CreateEvent(ctx, entities.Event{
-					Name:     eventName,
-					Token:    item.Token,
-					TokenId:  item.Identifier,
-					Quantity: int32(item.Amount.Int64()),
-					// Price:    order.Consideration[i].Amount,
-					From: from,
-					To:   to,
-					Link: "https://sepolia.etherscan.io/tx/" + txHash,
-				})
-
-				ees = append(ees, e)
-			}
-			return
-		} else {
-			err = errors.New("Error Create Sale Event By Fulfilled Order")
-			return
 		}
-
+		return
 		// Event sale on make offer
 	} else {
 		from := *order.Recipient
 		to := order.Offerer
+
 		var itemCount = len(order.Consideration)
-		// Offer on single sale
+		var eventType string
 		if itemCount == 1 {
-			price := big.NewInt(0)
-			for _, offerItem := range order.Offer {
-				price.Add(price, offerItem.Amount)
-			}
-			conItem := order.Consideration[0]
+			eventType = "single"
+		} else if itemCount > 1 {
+			eventType = "bundle"
+		} else {
+		}
+
+		price := big.NewInt(0)
+		for _, offerItem := range order.Offer {
+			price.Add(price, offerItem.Amount)
+		}
+		for _, item := range order.Consideration {
 			e, _ := s.CreateEvent(ctx, entities.Event{
 				Name:     eventName,
-				Token:    conItem.Token,
-				TokenId:  conItem.Identifier,
-				Quantity: int32(conItem.Amount.Int64()),
+				Token:    item.Token,
+				TokenId:  item.Identifier,
+				Quantity: int32(item.Amount.Int64()),
+				Type:     eventType,
 				Price:    price,
 				From:     from,
 				To:       to,
@@ -260,34 +242,19 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 			})
 
 			ees = append(ees, e)
-			return
-
-			// Offer on bundle sale
-		} else if itemCount > 1 {
-			for _, item := range order.Consideration {
-				e, _ := s.CreateEvent(ctx, entities.Event{
-					Name:     eventName,
-					Token:    item.Token,
-					TokenId:  item.Identifier,
-					Quantity: int32(item.Amount.Int64()),
-					// Price:    order.Offer[i].Amount,
-					From: from,
-					To:   to,
-					Link: "https://sepolia.etherscan.io/tx/" + txHash, 
-				})
-
-				ees = append(ees, e)
-			}
-			return
-		} else {
-			err = errors.New("Error Create Sale Event By Fulfilled Order")
-			return
 		}
+		return
 	}
 }
 
 func (s *Services) GetListEvent(ctx context.Context, query entities.EventRead) (events []entities.Event, err error) {
 	params := postgresql.GetEventParams{}
+	if len(query.Type) > 0 {
+		params.Type = sql.NullString{
+			Valid:  true,
+			String: query.Type,
+		}
+	}
 
 	if len(query.Name) > 0 {
 		params.Name = sql.NullString{
@@ -342,6 +309,10 @@ func (s *Services) GetListEvent(ctx context.Context, query entities.EventRead) (
 
 		if event.To.Valid {
 			newEvent.To = common.HexToAddress(event.To.String)
+		}
+
+		if event.Type.Valid {
+			newEvent.Type = event.Type.String
 		}
 
 		events = append(events, newEvent)

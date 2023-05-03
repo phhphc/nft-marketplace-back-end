@@ -7,6 +7,7 @@ type EventRes struct {
 	Token    string    `json:"token"`
 	TokenId  string    `json:"token_id"`
 	Quantity int       `json:"quantity,omitempty"`
+	Type     string    `json:"type"`
 	Price    string    `json:"price,omitempty"`
 	From     string    `json:"from"`
 	To       string    `json:"to,omitempty"`
