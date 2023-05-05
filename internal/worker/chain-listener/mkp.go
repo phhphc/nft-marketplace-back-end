@@ -2,7 +2,6 @@ package chainListener
 
 import (
 	"context"
-	"encoding/hex"
 	"math/big"
 	"sync"
 
@@ -108,7 +107,7 @@ func (w *worker) handleMkpEvent(vLog types.Log) {
 			}
 		}
 
-		w.lg.Info().Caller().Str("OrderHash", "0x"+hex.EncodeToString(log.OrderHash[:])).Msg("OrderFulfilled")
+		w.lg.Info().Caller().Str("order hash", common.Hash(log.OrderHash).Hex()).Msg("OrderFulfilled")
 		w.Service.FulFillOrder(context.TODO(), entities.Order{
 			OrderHash: log.OrderHash,
 			Offerer:   log.Offerer,
@@ -133,8 +132,20 @@ func (w *worker) handleMkpEvent(vLog types.Log) {
 			return
 		}
 
-		w.lg.Info().Caller().Str("OrderHash", "0x"+hex.EncodeToString(log.OrderHash[:])).Msg("OrderCancelled")
-		err = w.Service.CancelOrder(context.TODO(), log.OrderHash)
+		w.lg.Info().Caller().Str("order hash", common.Hash(log.OrderHash).Hex()).Msg("OrderCancelled")
+		err = w.Service.HandleOrderCancelled(context.TODO(), log.OrderHash)
+		if err != nil {
+			w.lg.Error().Caller().Err(err).Msg("cancel error")
+		}
+	case "CounterIncremented":
+		log, err := w.mkpContract.ParseCounterIncremented(vLog)
+		if err != nil {
+			w.lg.Error().Caller().Err(err).Msg("error parse event")
+			return
+		}
+
+		w.lg.Info().Caller().Str("offerer", log.Offerer.Hex()).Msg("CounterIncremented")
+		err = w.Service.HandleCounterIncremented(context.TODO(), log.Offerer)
 		if err != nil {
 			w.lg.Error().Caller().Err(err).Msg("cancel error")
 		}

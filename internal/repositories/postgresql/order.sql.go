@@ -230,13 +230,14 @@ func (q *Queries) MarkOrderInvalid(ctx context.Context, arg MarkOrderInvalidPara
 	return err
 }
 
-const updateOrderStatus = `-- name: UpdateOrderStatus :one
+const updateOrderStatus = `-- name: UpdateOrderStatus :exec
 UPDATE "orders"
 SET "is_validated" = COALESCE($1, "is_validated"),
     "is_cancelled" = COALESCE($2, "is_cancelled"),
     "is_fulfilled" = COALESCE($3, "is_fulfilled"),
-    "is_invalid" = COALESCE($4, "is_invalid")
-WHERE "order_hash" = $5
+    "is_invalid"   = COALESCE($4, "is_invalid")
+WHERE "order_hash" = COALESCE($5, "order_hash")
+  AND "offerer" = COALESCE($6, "offerer")
 RETURNING "order_hash"
 `
 
@@ -245,18 +246,18 @@ type UpdateOrderStatusParams struct {
 	IsCancelled sql.NullBool
 	IsFulfilled sql.NullBool
 	IsInvalid   sql.NullBool
-	OrderHash   string
+	OrderHash   sql.NullString
+	Offerer     sql.NullString
 }
 
-func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, updateOrderStatus,
+func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateOrderStatus,
 		arg.IsValidated,
 		arg.IsCancelled,
 		arg.IsFulfilled,
 		arg.IsInvalid,
 		arg.OrderHash,
+		arg.Offerer,
 	)
-	var order_hash string
-	err := row.Scan(&order_hash)
-	return order_hash, err
+	return err
 }

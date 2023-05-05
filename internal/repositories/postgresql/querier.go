@@ -33,7 +33,7 @@ type Querier interface {
 	UpdateMarketplaceLastSyncBlock(ctx context.Context, lastSyncBlock int64) error
 	UpdateNft(ctx context.Context, arg UpdateNftParams) error
 	UpdateNftMetadata(ctx context.Context, arg UpdateNftMetadataParams) error
-	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (string, error)
+	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) error
 	UpsertNFTV2(ctx context.Context, arg UpsertNFTV2Params) error
 	UpsertProfile(ctx context.Context, arg UpsertProfileParams) (Profile, error)
 }

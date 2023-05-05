@@ -26,7 +26,8 @@ type OrderService interface {
 		IsInvalid *bool,
 	) ([]map[string]any, error)
 	RemoveInvalidOrder(ctx context.Context, offerer common.Address, token common.Address, identifier *big.Int) error
-	CancelOrder(ctx context.Context, orderHash common.Hash) error
+	HandleOrderCancelled(ctx context.Context, orderHash common.Hash) error
+	HandleCounterIncremented(ctx context.Context, offerer common.Address) error
 }
 
 func (s *Services) CreateOrder(ctx context.Context, order entities.Order) (err error) {
@@ -113,19 +114,18 @@ func (s *Services) CreateOrder(ctx context.Context, order entities.Order) (err e
 	return
 }
 
-func (s *Services) FulFillOrder(ctx context.Context, order entities.Order) (err error) {
+func (s *Services) FulFillOrder(ctx context.Context, order entities.Order) error {
 	// TODO - use tx
 
-	orderHash, err := s.repo.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
-		OrderHash:   order.OrderHash.Hex(),
+	err := s.repo.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
+		OrderHash:   sql.NullString{String: order.OrderHash.Hex(), Valid: true},
 		IsValidated: sql.NullBool{Bool: true, Valid: true},
 		IsCancelled: sql.NullBool{Bool: false, Valid: true},
 		IsFulfilled: sql.NullBool{Bool: true, Valid: true},
 	})
 	if err == nil {
-		return
+		return nil
 	}
-	s.lg.Warn().Caller().Err(err).Msg(orderHash)
 
 	var salt sql.NullString
 	if order.Salt != nil {
@@ -165,7 +165,7 @@ func (s *Services) FulFillOrder(ctx context.Context, order entities.Order) (err 
 	})
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("error create order")
-		return
+		return err
 	}
 
 	for _, offerItem := range order.Offer {
@@ -179,7 +179,7 @@ func (s *Services) FulFillOrder(ctx context.Context, order entities.Order) (err 
 		})
 		if err != nil {
 			s.lg.Error().Caller().Err(err).Msg("error create order")
-			return
+			return err
 		}
 	}
 
@@ -195,11 +195,11 @@ func (s *Services) FulFillOrder(ctx context.Context, order entities.Order) (err 
 		})
 		if err != nil {
 			s.lg.Error().Caller().Err(err).Msg("error create order")
-			return
+			return err
 		}
 	}
 
-	return
+	return nil
 }
 
 func (s *Services) GetOrder(
@@ -290,9 +290,34 @@ func (s *Services) RemoveInvalidOrder(ctx context.Context, offerer common.Addres
 	return err
 }
 
-func (s *Services) CancelOrder(ctx context.Context, orderHash common.Hash) error {
-	_, err := s.repo.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
-		OrderHash: orderHash.Hex(),
+func (s *Services) HandleOrderCancelled(ctx context.Context, orderHash common.Hash) error {
+	err := s.repo.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
+		OrderHash: sql.NullString{
+			String: orderHash.Hex(),
+			Valid:  true,
+		},
+		IsCancelled: sql.NullBool{
+			Bool:  true,
+			Valid: true,
+		},
+		IsInvalid: sql.NullBool{
+			Bool:  true,
+			Valid: true,
+		},
+	})
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("update error")
+	}
+
+	return err
+}
+
+func (s *Services) HandleCounterIncremented(ctx context.Context, offerer common.Address) error {
+	err := s.repo.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
+		Offerer: sql.NullString{
+			String: offerer.Hex(),
+			Valid:  true,
+		},
 		IsCancelled: sql.NullBool{
 			Bool:  true,
 			Valid: true,
