@@ -26,6 +26,7 @@ type OrderService interface {
 		IsInvalid *bool,
 	) ([]map[string]any, error)
 	RemoveInvalidOrder(ctx context.Context, offerer common.Address, token common.Address, identifier *big.Int) error
+	CancelOrder(ctx context.Context, orderHash common.Hash) error
 }
 
 func (s *Services) CreateOrder(ctx context.Context, order entities.Order) (err error) {
@@ -278,6 +279,25 @@ func (s *Services) RemoveInvalidOrder(ctx context.Context, offerer common.Addres
 		Offerer:    offerer.Hex(),
 		Token:      token.Hex(),
 		Identifier: identifier.String(),
+	})
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("update error")
+	}
+
+	return err
+}
+
+func (s *Services) CancelOrder(ctx context.Context, orderHash common.Hash) error {
+	_, err := s.repo.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
+		OrderHash: orderHash.Hex(),
+		IsCancelled: sql.NullBool{
+			Bool:  true,
+			Valid: true,
+		},
+		IsInvalid: sql.NullBool{
+			Bool:  true,
+			Valid: true,
+		},
 	})
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("update error")

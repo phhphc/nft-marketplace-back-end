@@ -117,6 +117,18 @@ func (w *worker) handleMkpEvent(vLog types.Log) {
 			Offer:         offerItems,
 			Consideration: considerationItem,
 		})
+	case "OrderCancelled":
+		log, err := w.mkpContract.ParseOrderCancelled(vLog)
+		if err != nil {
+			w.lg.Error().Caller().Err(err).Msg("error parse event")
+			return
+		}
+
+		w.lg.Info().Caller().Str("OrderHash", "0x"+hex.EncodeToString(log.OrderHash[:])).Msg("OrderCancelled")
+		err = w.Service.CancelOrder(context.TODO(), log.OrderHash)
+		if err != nil {
+			w.lg.Error().Caller().Err(err).Msg("cancel error")
+		}
 	default:
 		w.lg.Error().Caller().Err(err).Str("event", eventAbi.Name).Msg("unhandle contract event")
 	}

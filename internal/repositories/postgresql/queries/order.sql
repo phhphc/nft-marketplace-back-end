@@ -20,7 +20,8 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
 UPDATE "orders"
 SET "is_validated" = COALESCE(sqlc.narg('is_validated'), "is_validated"),
     "is_cancelled" = COALESCE(sqlc.narg('is_cancelled'), "is_cancelled"),
-    "is_fulfilled" = COALESCE(sqlc.narg('is_fulfilled'), "is_fulfilled")
+    "is_fulfilled" = COALESCE(sqlc.narg('is_fulfilled'), "is_fulfilled"),
+    "is_invalid" = COALESCE(sqlc.narg('is_invalid'), "is_invalid")
 WHERE "order_hash" = @order_hash
 RETURNING "order_hash";
 

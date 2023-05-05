@@ -234,8 +234,9 @@ const updateOrderStatus = `-- name: UpdateOrderStatus :one
 UPDATE "orders"
 SET "is_validated" = COALESCE($1, "is_validated"),
     "is_cancelled" = COALESCE($2, "is_cancelled"),
-    "is_fulfilled" = COALESCE($3, "is_fulfilled")
-WHERE "order_hash" = $4
+    "is_fulfilled" = COALESCE($3, "is_fulfilled"),
+    "is_invalid" = COALESCE($4, "is_invalid")
+WHERE "order_hash" = $5
 RETURNING "order_hash"
 `
 
@@ -243,6 +244,7 @@ type UpdateOrderStatusParams struct {
 	IsValidated sql.NullBool
 	IsCancelled sql.NullBool
 	IsFulfilled sql.NullBool
+	IsInvalid   sql.NullBool
 	OrderHash   string
 }
 
@@ -251,6 +253,7 @@ func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusPa
 		arg.IsValidated,
 		arg.IsCancelled,
 		arg.IsFulfilled,
+		arg.IsInvalid,
 		arg.OrderHash,
 	)
 	var order_hash string
