@@ -117,6 +117,15 @@ func (w *worker) handleMkpEvent(vLog types.Log) {
 			Offer:         offerItems,
 			Consideration: considerationItem,
 		})
+
+		w.Service.CreateEventsByFulfilledOrder(context.TODO(), entities.Order{
+			OrderHash:     log.OrderHash,
+			Offer:         offerItems,
+			Consideration: considerationItem,
+			Offerer:       log.Offerer,
+			Recipient:     &log.Recipient,
+		}, vLog.TxHash.Hex())
+
 	case "OrderCancelled":
 		log, err := w.mkpContract.ParseOrderCancelled(vLog)
 		if err != nil {

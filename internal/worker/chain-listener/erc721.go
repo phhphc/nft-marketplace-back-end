@@ -136,7 +136,7 @@ func (w *worker) handleErc721Event(vLog types.Log) {
 	case "Transfer":
 		transfer, err := w.erc721Contract.ParseTransfer(vLog)
 		if err != nil {
-			w.lg.Error().Caller().Err(err).Msg("error parse event")
+			w.lg.Error().Caller().Err(err).Msg("error parse transfer")
 			return
 		}
 		w.lg.Info().Caller().
@@ -150,6 +150,18 @@ func (w *worker) handleErc721Event(vLog types.Log) {
 			From:       transfer.From,
 			To:         transfer.To,
 		}, vLog.BlockNumber, vLog.TxIndex)
+
+		w.Service.CreateEvent(context.TODO(), entities.Event{
+			Name:     "transfer",
+			Token:    vLog.Address,
+			TokenId:  transfer.TokenId,
+			Quantity: 1,
+			Type:     "single",
+			// Price
+			From: transfer.From,
+			To:   transfer.To,
+			Link: "https://sepolia.etherscan.io/tx/" + vLog.TxHash.Hex(),
+		})
 	case "Approval":
 		// TODO - handle
 	case "ApprovalForAll":

@@ -14,6 +14,8 @@ type Controller interface {
 	GetNFTWithListings(c echo.Context) error
 
 	ProfileController
+
+	GetEvent(c echo.Context) error
 }
 
 var _ Controller = (*Controls)(nil)
