@@ -21,6 +21,7 @@ type OrderService interface {
 		offer entities.OfferItem,
 		consideration entities.ConsiderationItem,
 		orderHash common.Hash,
+		offerer common.Address,
 		IsFulfilled *bool,
 		IsCancelled *bool,
 		IsInvalid *bool,
@@ -207,6 +208,7 @@ func (s *Services) GetOrder(
 	offer entities.OfferItem,
 	consideration entities.ConsiderationItem,
 	orderHash common.Hash,
+	offerer common.Address,
 	IsFulfilled *bool,
 	IsCancelled *bool,
 	IsInvalid *bool,
@@ -260,6 +262,12 @@ func (s *Services) GetOrder(
 	if orderHash != (common.Hash{}) {
 		params.OrderHash = sql.NullString{
 			String: orderHash.Hex(),
+			Valid:  true,
+		}
+	}
+	if offerer != (common.Address{}) {
+		params.Offerer = sql.NullString{
+			String: offerer.Hex(),
 			Valid:  true,
 		}
 	}

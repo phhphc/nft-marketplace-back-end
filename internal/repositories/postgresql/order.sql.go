@@ -65,6 +65,7 @@ WHERE o.order_hash in (SELECT DISTINCT o.order_hash
                               $6 IS NULL)
                          AND (oi.token ILIKE $7 OR $7 IS NULL)
                          AND (oi.identifier = $8 OR $8 IS NULL))
+                         AND o.offerer ILIKE COALESCE($9, o.offerer)
 GROUP BY o.order_hash
 `
 
@@ -77,6 +78,7 @@ type GetOrderParams struct {
 	ConsiderationIdentifier sql.NullString
 	OfferToken              sql.NullString
 	OfferIdentifier         sql.NullString
+	Offerer                 sql.NullString
 }
 
 func (q *Queries) GetOrder(ctx context.Context, arg GetOrderParams) ([]json.RawMessage, error) {
@@ -89,6 +91,7 @@ func (q *Queries) GetOrder(ctx context.Context, arg GetOrderParams) ([]json.RawM
 		arg.ConsiderationIdentifier,
 		arg.OfferToken,
 		arg.OfferIdentifier,
+		arg.Offerer,
 	)
 	if err != nil {
 		return nil, err

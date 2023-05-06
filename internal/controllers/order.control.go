@@ -167,6 +167,7 @@ func (ctl *Controls) GetOrder(c echo.Context) error {
 		offer,
 		consideration,
 		orderHash,
+		common.HexToAddress(req.Offerer),
 		req.IsFulfilled,
 		req.IsCancelled,
 		req.IsInvalid,

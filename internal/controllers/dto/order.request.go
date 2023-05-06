@@ -44,8 +44,8 @@ type GetOrderHash struct {
 }
 
 type GetOrder struct {
-	OrderHash string `query:"orderHash" validate:"omitempty,eth_hash"`
-
+	OrderHash               string `query:"orderHash" validate:"omitempty,eth_hash"`
+	Offerer                 string `query:"offerer" validate:"omitempty,eth_addr"`
 	ConsiderationToken      string `query:"considerationToken" validate:"omitempty,eth_addr"`
 	ConsiderationIdentifier string `query:"considerationIdentifier" validate:"omitempty,hexadecimal"`
 
