@@ -44,13 +44,15 @@ func (w *worker) watchTokenEvent(ctx context.Context, wg *sync.WaitGroup) {
 	wg.Add(1)
 	go func() {
 		w.lg.Info().Caller().Msg("listen to new contract event")
-		w.Service.SubcribeTask(ctx, models.TaskNewCollection, func(ctx context.Context, t *asynq.Task) error {
+		w.Service.SubcribeTask(ctx, models.TaskNewCollection, func(_ context.Context, t *asynq.Task) error {
 			var payload models.NewCollectionTask
 			err := json.Unmarshal(t.Payload(), &payload)
 			if err != nil {
+				w.lg.Error().Caller().Err(err).Msg("error parse collection event")
 				return err
 			}
 			token := payload.Address
+			w.lg.Info().Caller().Str("token", token.Hex()).Msg("handle event new collection")
 
 			wg.Add(1)
 			go w.listenErc721ContractEvent(ctx, wg, token)

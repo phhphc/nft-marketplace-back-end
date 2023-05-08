@@ -51,8 +51,15 @@ func (s *Services) CreateCollection(ctx context.Context, collection entities.Col
 		return
 	}
 
-	// TODO: later
-	err = s.EmitTask(ctx, models.TaskNewCollection, collection.Token[:])
+	payload := models.NewCollectionTask{
+		Address: collection.Token,
+	}
+	bs, err := json.Marshal(payload)
+	if err != nil {
+		s.lg.Panic().Caller().Err(err).Msg("error")
+	}
+	err = s.EmitTask(ctx, models.TaskNewCollection, bs)
+	s.lg.Info().Caller().Str("token", collection.Token.Hex()).Msg("emit task new collection")
 	if err != nil {
 		s.lg.Panic().Caller().Err(err).Msg("error")
 	}
