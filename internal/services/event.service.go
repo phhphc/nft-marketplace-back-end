@@ -26,6 +26,7 @@ func (s *Services) CreateEvent(ctx context.Context, event entities.Event) (ee en
 		Str("event_type", event.Type).
 		Str("from", event.From.Hex()).
 		Str("to", event.To.Hex()).
+		Str("order_hash", event.OrderHash.Hex()).
 		Msg("create event")
 	dbEvent, err := s.repo.InsertEvent(ctx, postgresql.InsertEventParams{
 		Name:    event.Name,
@@ -51,6 +52,10 @@ func (s *Services) CreateEvent(ctx context.Context, event entities.Event) (ee en
 		Link: sql.NullString{
 			Valid:  true,
 			String: event.Link,
+		},
+		OrderHash: sql.NullString{
+			Valid:  true,
+			String: event.OrderHash.Hex(),
 		},
 	})
 	if err != nil {
@@ -88,6 +93,10 @@ func (s *Services) CreateEvent(ctx context.Context, event entities.Event) (ee en
 	ee.Date = dbEvent.Date.Time
 	//link
 	ee.Link = dbEvent.Link.String
+	//order hash
+	if dbEvent.OrderHash.Valid {
+		ee.OrderHash = common.HexToHash(dbEvent.OrderHash.String)
+	}
 
 	return
 }
@@ -122,13 +131,14 @@ func (s *Services) CreateEventsByOrder(ctx context.Context, order entities.Order
 		}
 		for _, item := range order.Offer {
 			e, _ := s.CreateEvent(ctx, entities.Event{
-				Name:     eventName,
-				Token:    item.Token,
-				TokenId:  item.Identifier,
-				Quantity: int32(item.StartAmount.Int64()),
-				Type:     eventType,
-				Price:    price,
-				From:     order.Offerer,
+				Name:      eventName,
+				Token:     item.Token,
+				TokenId:   item.Identifier,
+				Quantity:  int32(item.StartAmount.Int64()),
+				Type:      eventType,
+				Price:     price,
+				From:      order.Offerer,
+				OrderHash: order.OrderHash,
 			})
 
 			ees = append(ees, e)
@@ -155,13 +165,14 @@ func (s *Services) CreateEventsByOrder(ctx context.Context, order entities.Order
 		}
 		for _, item := range order.Consideration {
 			e, _ := s.CreateEvent(ctx, entities.Event{
-				Name:     eventName,
-				Token:    item.Token,
-				TokenId:  item.Identifier,
-				Quantity: int32(item.StartAmount.Int64()),
-				Type:     eventType,
-				Price:    price,
-				From:     order.Offerer,
+				Name:      eventName,
+				Token:     item.Token,
+				TokenId:   item.Identifier,
+				Quantity:  int32(item.StartAmount.Int64()),
+				Type:      eventType,
+				Price:     price,
+				From:      order.Offerer,
+				OrderHash: order.OrderHash,
 			})
 
 			ees = append(ees, e)
@@ -196,15 +207,16 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 		}
 		for _, item := range order.Offer {
 			e, _ := s.CreateEvent(ctx, entities.Event{
-				Name:     eventName,
-				Token:    item.Token,
-				TokenId:  item.Identifier,
-				Quantity: int32(item.Amount.Int64()),
-				Type:     eventType,
-				Price:    price,
-				From:     from,
-				To:       to,
-				Link:     "https://sepolia.etherscan.io/tx/" + txHash,
+				Name:      eventName,
+				Token:     item.Token,
+				TokenId:   item.Identifier,
+				Quantity:  int32(item.Amount.Int64()),
+				Type:      eventType,
+				Price:     price,
+				From:      from,
+				To:        to,
+				Link:      "https://sepolia.etherscan.io/tx/" + txHash,
+				OrderHash: order.OrderHash,
 			})
 
 			ees = append(ees, e)
@@ -230,15 +242,16 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 		}
 		for _, item := range order.Consideration {
 			e, _ := s.CreateEvent(ctx, entities.Event{
-				Name:     eventName,
-				Token:    item.Token,
-				TokenId:  item.Identifier,
-				Quantity: int32(item.Amount.Int64()),
-				Type:     eventType,
-				Price:    price,
-				From:     from,
-				To:       to,
-				Link:     "https://sepolia.etherscan.io/tx/" + txHash,
+				Name:      eventName,
+				Token:     item.Token,
+				TokenId:   item.Identifier,
+				Quantity:  int32(item.Amount.Int64()),
+				Type:      eventType,
+				Price:     price,
+				From:      from,
+				To:        to,
+				Link:      "https://sepolia.etherscan.io/tx/" + txHash,
+				OrderHash: order.OrderHash,
 			})
 
 			ees = append(ees, e)
@@ -289,12 +302,14 @@ func (s *Services) GetListEvent(ctx context.Context, query entities.EventRead) (
 
 	for _, event := range eventList {
 		newEvent := entities.Event{
-			Name:    event.Name,
-			Token:   common.HexToAddress(event.Token),
-			TokenId: ToBigInt(event.TokenID),
-			From:    common.HexToAddress(event.From),
-			Date:    event.Date.Time,
-			Link:    event.Link.String,
+			Name:     event.Name,
+			Token:    common.HexToAddress(event.Token),
+			TokenId:  ToBigInt(event.TokenID),
+			From:     common.HexToAddress(event.From),
+			Date:     event.Date.Time,
+			Link:     event.Link.String,
+			NftImage: event.NftImage,
+			NftName:  event.NftName,
 		}
 
 		if event.Quantity.Valid {
@@ -313,6 +328,18 @@ func (s *Services) GetListEvent(ctx context.Context, query entities.EventRead) (
 
 		if event.Type.Valid {
 			newEvent.Type = event.Type.String
+		}
+
+		if event.EndTime.Valid {
+			newEvent.EndTime = ToBigInt(event.EndTime.String)
+		}
+
+		if event.IsCancelled.Valid {
+			newEvent.IsCancelled = event.IsCancelled.Bool
+		}
+
+		if event.IsFulfilled.Valid {
+			newEvent.IsFulfilled = event.IsFulfilled.Bool
 		}
 
 		events = append(events, newEvent)

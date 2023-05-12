@@ -39,17 +39,18 @@ type ConsiderationItem struct {
 }
 
 type Event struct {
-	ID       int32
-	Name     string
-	Token    string
-	TokenID  string
-	Quantity sql.NullInt32
-	Type     sql.NullString
-	Price    sql.NullString
-	From     string
-	To       sql.NullString
-	Date     sql.NullTime
-	Link     sql.NullString
+	ID        int32
+	Name      string
+	Token     string
+	TokenID   string
+	Quantity  sql.NullInt32
+	Type      sql.NullString
+	Price     sql.NullString
+	From      string
+	To        sql.NullString
+	Date      sql.NullTime
+	Link      sql.NullString
+	OrderHash sql.NullString
 }
 
 type Marketplace struct {
