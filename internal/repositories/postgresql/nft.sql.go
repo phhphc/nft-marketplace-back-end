@@ -7,6 +7,7 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/tabbed/pqtype"
 )
@@ -60,4 +61,41 @@ type UpdateNftMetadataParams struct {
 func (q *Queries) UpdateNftMetadata(ctx context.Context, arg UpdateNftMetadataParams) error {
 	_, err := q.db.ExecContext(ctx, updateNftMetadata, arg.Metadata, arg.Token, arg.Identifier)
 	return err
+}
+
+const updateNftStatus = `-- name: UpdateNftStatus :one
+UPDATE "nfts"
+SET "is_burned" = COALESCE($1, "is_burned"),
+    "is_hidden"= COALESCE($2, "is_hidden")
+WHERE token = $3
+  AND identifier = $4
+RETURNING token, identifier, owner, metadata, is_burned, is_hidden, block_number, tx_index
+`
+
+type UpdateNftStatusParams struct {
+	IsBurned   sql.NullBool
+	IsHidden   sql.NullBool
+	Token      string
+	Identifier string
+}
+
+func (q *Queries) UpdateNftStatus(ctx context.Context, arg UpdateNftStatusParams) (Nft, error) {
+	row := q.db.QueryRowContext(ctx, updateNftStatus,
+		arg.IsBurned,
+		arg.IsHidden,
+		arg.Token,
+		arg.Identifier,
+	)
+	var i Nft
+	err := row.Scan(
+		&i.Token,
+		&i.Identifier,
+		&i.Owner,
+		&i.Metadata,
+		&i.IsBurned,
+		&i.IsHidden,
+		&i.BlockNumber,
+		&i.TxIndex,
+	)
+	return i, err
 }

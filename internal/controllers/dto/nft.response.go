@@ -15,6 +15,7 @@ type GetNftRes struct {
 	Description string              `json:"description"`
 	Metadata    map[string]any      `json:"metadata"`
 	Listings    []*GetNftListingRes `json:"listings"`
+	IsHidden    bool                `json:"isHidden"`
 }
 
 type GetNftListingRes struct {

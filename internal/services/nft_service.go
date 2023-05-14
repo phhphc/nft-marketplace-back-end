@@ -16,7 +16,8 @@ import (
 
 type NftNewService interface {
 	GetNFTWithListings(ctx context.Context, token common.Address, identifier *big.Int) (*entities.NftRead, error)
-	GetNFTsWithListings(ctx context.Context, token common.Address, owner common.Address, offset int32, limit int32) ([]*entities.NftRead, error)
+	GetNFTsWithListings(ctx context.Context, token common.Address, owner common.Address, isHidden *bool, offset int32, limit int32) ([]*entities.NftRead, error)
+	UpdateNftStatus(ctx context.Context, token common.Address, identifier *big.Int, isHidden bool) error
 }
 
 func ToBigInt(str string) *big.Int {
@@ -25,7 +26,7 @@ func ToBigInt(str string) *big.Int {
 	return bigInt
 }
 
-func (s *Services) GetNFTsWithListings(ctx context.Context, token common.Address, owner common.Address, offset int32, limit int32) ([]*entities.NftRead, error) {
+func (s *Services) GetNFTsWithListings(ctx context.Context, token common.Address, owner common.Address, isHidden *bool, offset int32, limit int32) ([]*entities.NftRead, error) {
 	tokenValid := true
 	ownerValid := true
 	if bytes.Equal(token.Bytes(), common.Address{}.Bytes()) {
@@ -36,12 +37,19 @@ func (s *Services) GetNFTsWithListings(ctx context.Context, token common.Address
 		ownerValid = false
 	}
 
-	res, err := s.repo.GetNFTsWithPricesPaginated(ctx, postgresql.GetNFTsWithPricesPaginatedParams{
+	params := postgresql.GetNFTsWithPricesPaginatedParams{
 		Offset: offset,
 		Limit:  limit,
 		Token:  sql.NullString{String: token.Hex(), Valid: tokenValid},
 		Owner:  sql.NullString{String: owner.Hex(), Valid: ownerValid},
-	})
+	}
+	if isHidden != nil {
+		params.IsHidden = sql.NullBool{
+			Bool:  *isHidden,
+			Valid: true,
+		}
+	}
+	res, err := s.repo.GetNFTsWithPricesPaginated(ctx, params)
 
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("error in query nfts with prices")
@@ -58,6 +66,7 @@ func (s *Services) GetNFTsWithListings(ctx context.Context, token common.Address
 				Image:       FromInterfaceString2String(nft.Image),
 				Name:        FromInterfaceString2String(nft.Name),
 				Description: FromInterfaceString2String(nft.Description),
+				IsHidden:    nft.IsHidden,
 				Listings:    make([]*entities.ListingRead, 0),
 			}
 		}
@@ -123,6 +132,23 @@ func (s *Services) GetNFTWithListings(ctx context.Context, token common.Address,
 		}
 	}
 	return nft, nil
+}
+
+func (s *Services) UpdateNftStatus(ctx context.Context, token common.Address, identifier *big.Int, isHidden bool) error {
+	_, err := s.repo.UpdateNftStatus(ctx, postgresql.UpdateNftStatusParams{
+		IsHidden: sql.NullBool{
+			Bool:  isHidden,
+			Valid: true,
+		},
+		Token:      token.Hex(),
+		Identifier: identifier.String(),
+	})
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("update error")
+		return err
+	}
+
+	return nil
 }
 
 func FromInterfaceString2String(bstr interface{}) string {

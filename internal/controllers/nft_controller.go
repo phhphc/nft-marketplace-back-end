@@ -24,7 +24,7 @@ func (ctl *Controls) GetNFTsWithListings(c echo.Context) error {
 	token := common.HexToAddress(req.Token)
 	owner := common.HexToAddress(req.Owner)
 
-	nfts, err := ctl.service.GetNFTsWithListings(c.Request().Context(), token, owner, req.Offset, req.Limit)
+	nfts, err := ctl.service.GetNFTsWithListings(c.Request().Context(), token, owner, req.IsHidden, req.Offset, req.Limit)
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("error")
 	}
@@ -38,6 +38,7 @@ func (ctl *Controls) GetNFTsWithListings(c echo.Context) error {
 			Owner:       nft.Owner.String(),
 			Image:       nft.Image,
 			Name:        nft.Name,
+			IsHidden:    nft.IsHidden,
 			Description: nft.Description,
 			Listings:    make([]*dto.GetNftListingRes, len(nft.Listings)),
 		}
@@ -61,6 +62,30 @@ func (ctl *Controls) GetNFTsWithListings(c echo.Context) error {
 		},
 		IsSuccess: true,
 	})
+}
+
+func (ctl *Controls) UpdateNftStatus(c echo.Context) error {
+	var req dto.UpdateNftStatus
+	var err error
+	if err = c.Bind(&req); err != nil {
+		return dto.NewHTTPError(400, err)
+	}
+	if err = c.Validate(&req); err != nil {
+		return dto.NewHTTPError(400, err)
+	}
+
+	identifier, ok := new(big.Int).SetString(req.Identifier, 0)
+	if !ok {
+		ctl.lg.Error().Caller().Msg("err")
+		return ErrParseBigInt
+	}
+
+	err = ctl.service.UpdateNftStatus(c.Request().Context(), common.HexToAddress(req.Token), identifier, req.IsHidden)
+	if err != nil {
+		ctl.lg.Error().Caller().Err(err).Msg("err")
+	}
+
+	return err
 }
 
 func (ctl *Controls) GetNFTWithListings(c echo.Context) error {

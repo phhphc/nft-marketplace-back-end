@@ -13,18 +13,18 @@ import (
 )
 
 const getListValidNFT = `-- name: GetListValidNFT :many
-SELECT
-    n.token, n.identifier, n.owner, n.metadata, n.is_burned
+SELECT n.token,
+       n.identifier,
+       n.owner,
+       n.metadata,
+       n.is_burned,
+       n.is_hidden
 FROM "nfts" n
-WHERE
-    n.is_burned = FALSE
-  AND
-    (n.token ILIKE $1 OR $1 IS NULL)
-  AND
-    (n.owner ILIKE $2 OR $2 IS NULL)
+WHERE n.is_burned = FALSE
+  AND (n.token ILIKE $1 OR $1 IS NULL)
+  AND (n.owner ILIKE $2 OR $2 IS NULL)
 ORDER BY n.token ASC, n.identifier ASC
-OFFSET $3
-LIMIT $4
+OFFSET $3 LIMIT $4
 `
 
 type GetListValidNFTParams struct {
@@ -40,6 +40,7 @@ type GetListValidNFTRow struct {
 	Owner      string
 	Metadata   pqtype.NullRawMessage
 	IsBurned   bool
+	IsHidden   bool
 }
 
 func (q *Queries) GetListValidNFT(ctx context.Context, arg GetListValidNFTParams) ([]GetListValidNFTRow, error) {
@@ -62,6 +63,7 @@ func (q *Queries) GetListValidNFT(ctx context.Context, arg GetListValidNFTParams
 			&i.Owner,
 			&i.Metadata,
 			&i.IsBurned,
+			&i.IsHidden,
 		); err != nil {
 			return nil, err
 		}
@@ -77,29 +79,29 @@ func (q *Queries) GetListValidNFT(ctx context.Context, arg GetListValidNFTParams
 }
 
 const getNFTValidConsiderations = `-- name: GetNFTValidConsiderations :many
-SELECT
-    selected_nft.block_number,
-    selected_nft.token,
-    selected_nft.identifier,
-    selected_nft.owner,
-    selected_nft.metadata ->> 'image' AS image,
-    selected_nft.metadata ->> 'name' AS name,
-    selected_nft.metadata ->> 'description' AS description,
-    selected_nft.metadata AS metadata,
-    ci.order_hash,
-    ci.item_type,
-    ci.start_amount AS start_price,
-    ci.end_amount AS end_price,
-    o.start_time AS start_time,
-    o.end_time AS end_time
-FROM (
-         SELECT token, identifier, owner, metadata, is_burned, block_number, tx_index FROM nfts WHERE nfts.token ILIKE $1 AND nfts.identifier = $2
-     ) selected_nft
+SELECT selected_nft.block_number,
+       selected_nft.token,
+       selected_nft.identifier,
+       selected_nft.owner,
+       selected_nft.is_hidden,
+       selected_nft.metadata ->> 'image'       AS image,
+       selected_nft.metadata ->> 'name'        AS name,
+       selected_nft.metadata ->> 'description' AS description,
+       selected_nft.metadata                   AS metadata,
+       ci.order_hash,
+       ci.item_type,
+       ci.start_amount                         AS start_price,
+       ci.end_amount                           AS end_price,
+       o.start_time                            AS start_time,
+       o.end_time                              AS end_time
+FROM (SELECT token, identifier, owner, metadata, is_burned, is_hidden, block_number, tx_index
+      FROM nfts
+      WHERE nfts.token ILIKE $1
+        AND nfts.identifier = $2) selected_nft
          LEFT JOIN "offer_items" oi ON oi.token ILIKE selected_nft.token AND oi.identifier = selected_nft.identifier
          LEFT JOIN "consideration_items" ci ON ci.order_hash ILIKE oi.order_hash
-         LEFT JOIN (
-    SELECT order_hash, offerer, recipient, salt, start_time, end_time, signature, is_cancelled, is_validated, is_fulfilled, is_invalid FROM orders WHERE orders.is_fulfilled = FALSE AND orders.is_cancelled = FALSE
-) o ON oi.order_hash ILIKE o.order_hash
+         LEFT JOIN (SELECT order_hash, offerer, recipient, salt, start_time, end_time, signature, is_cancelled, is_validated, is_fulfilled, is_invalid FROM orders WHERE orders.is_fulfilled = FALSE AND orders.is_cancelled = FALSE) o
+                   ON oi.order_hash ILIKE o.order_hash
 `
 
 type GetNFTValidConsiderationsParams struct {
@@ -112,6 +114,7 @@ type GetNFTValidConsiderationsRow struct {
 	Token       string
 	Identifier  string
 	Owner       string
+	IsHidden    bool
 	Image       interface{}
 	Name        interface{}
 	Description interface{}
@@ -138,6 +141,7 @@ func (q *Queries) GetNFTValidConsiderations(ctx context.Context, arg GetNFTValid
 			&i.Token,
 			&i.Identifier,
 			&i.Owner,
+			&i.IsHidden,
 			&i.Image,
 			&i.Name,
 			&i.Description,
@@ -163,42 +167,45 @@ func (q *Queries) GetNFTValidConsiderations(ctx context.Context, arg GetNFTValid
 }
 
 const getNFTsWithPricesPaginated = `-- name: GetNFTsWithPricesPaginated :many
-SELECT
-    paged_nfts.block_number,
-    paged_nfts.token,
-    paged_nfts.identifier,
-    paged_nfts.owner,
-    paged_nfts.metadata -> 'image' AS image,
-    paged_nfts.metadata -> 'name' AS name,
-    paged_nfts.metadata -> 'description' AS description,
-    ci.order_hash,
-    ci.item_type,
-    ci.start_amount AS start_price,
-    ci.end_amount AS end_price,
-    o.start_time AS start_time,
-    o.end_time AS end_time
-FROM (
-         SELECT token, identifier, owner, metadata, is_burned, block_number, tx_index FROM nfts
-         WHERE nfts.is_burned = FALSE
-         AND (nfts.owner ILIKE $1 OR $1 IS NULL)
-         AND (nfts.token ILIKE $2 OR $2 IS NULL)
-         LIMIT $4
-         OFFSET $3
-     ) AS paged_nfts
+SELECT paged_nfts.block_number,
+       paged_nfts.token,
+       paged_nfts.identifier,
+       paged_nfts.owner,
+       paged_nfts.is_hidden,
+       paged_nfts.metadata -> 'image'       AS image,
+       paged_nfts.metadata -> 'name'        AS name,
+       paged_nfts.metadata -> 'description' AS description,
+       ci.order_hash,
+       ci.item_type,
+       ci.start_amount                      AS start_price,
+       ci.end_amount                        AS end_price,
+       o.start_time                         AS start_time,
+       o.end_time                           AS end_time
+FROM (SELECT token, identifier, owner, metadata, is_burned, is_hidden, block_number, tx_index
+      FROM nfts
+      WHERE nfts.is_burned = FALSE
+        AND nfts."is_hidden" = COALESCE($1, "nfts"."is_hidden")
+        AND (nfts.owner ILIKE $2 OR $2 IS NULL)
+        AND (nfts.token ILIKE $3 OR $3 IS NULL)
+      LIMIT $5 OFFSET $4) AS paged_nfts
          LEFT JOIN offer_items oi
                    ON paged_nfts.token ILIKE oi.token AND paged_nfts.identifier = oi.identifier
          LEFT JOIN consideration_items ci ON oi.order_hash ILIKE ci.order_hash
-         LEFT JOIN (
-    SELECT order_hash, offerer, recipient, salt, start_time, end_time, signature, is_cancelled, is_validated, is_fulfilled, is_invalid FROM orders WHERE orders.is_fulfilled = FALSE AND orders.is_cancelled = FALSE AND orders.is_invalid = FALSE
-) o ON oi.order_hash ILIKE o.order_hash
+         LEFT JOIN (SELECT order_hash, offerer, recipient, salt, start_time, end_time, signature, is_cancelled, is_validated, is_fulfilled, is_invalid
+                    FROM orders
+                    WHERE orders.is_fulfilled = FALSE
+                      AND orders.is_cancelled = FALSE
+                      AND orders.is_invalid = FALSE) o
+                   ON oi.order_hash ILIKE o.order_hash
 ORDER BY paged_nfts.block_number, paged_nfts.tx_index, ci.id, paged_nfts.token, paged_nfts.identifier
 `
 
 type GetNFTsWithPricesPaginatedParams struct {
-	Owner  sql.NullString
-	Token  sql.NullString
-	Offset int32
-	Limit  int32
+	IsHidden sql.NullBool
+	Owner    sql.NullString
+	Token    sql.NullString
+	Offset   int32
+	Limit    int32
 }
 
 type GetNFTsWithPricesPaginatedRow struct {
@@ -206,6 +213,7 @@ type GetNFTsWithPricesPaginatedRow struct {
 	Token       string
 	Identifier  string
 	Owner       string
+	IsHidden    bool
 	Image       interface{}
 	Name        interface{}
 	Description interface{}
@@ -219,6 +227,7 @@ type GetNFTsWithPricesPaginatedRow struct {
 
 func (q *Queries) GetNFTsWithPricesPaginated(ctx context.Context, arg GetNFTsWithPricesPaginatedParams) ([]GetNFTsWithPricesPaginatedRow, error) {
 	rows, err := q.db.QueryContext(ctx, getNFTsWithPricesPaginated,
+		arg.IsHidden,
 		arg.Owner,
 		arg.Token,
 		arg.Offset,
@@ -236,6 +245,7 @@ func (q *Queries) GetNFTsWithPricesPaginated(ctx context.Context, arg GetNFTsWit
 			&i.Token,
 			&i.Identifier,
 			&i.Owner,
+			&i.IsHidden,
 			&i.Image,
 			&i.Name,
 			&i.Description,
@@ -262,11 +272,11 @@ func (q *Queries) GetNFTsWithPricesPaginated(ctx context.Context, arg GetNFTsWit
 const upsertNFTV2 = `-- name: UpsertNFTV2 :exec
 INSERT INTO "nfts" (token, identifier, owner, metadata, is_burned)
 VALUES ($1, $2, $3, $4, $5)
-ON CONFLICT (token, identifier) DO UPDATE SET
-                                              owner = $3,
-                                              metadata = $4,
+ON CONFLICT (token, identifier) DO UPDATE SET owner     = $3,
+                                              metadata  = $4,
                                               is_burned = $5
-WHERE nfts.block_number < $6 OR (nfts.block_number = $6 AND nfts.tx_index < $7)
+WHERE nfts.block_number < $6
+   OR (nfts.block_number = $6 AND nfts.tx_index < $7)
 `
 
 type UpsertNFTV2Params struct {

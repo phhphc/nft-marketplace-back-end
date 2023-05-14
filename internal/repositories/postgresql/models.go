@@ -62,6 +62,7 @@ type Nft struct {
 	Owner       string
 	Metadata    pqtype.NullRawMessage
 	IsBurned    bool
+	IsHidden    bool
 	BlockNumber string
 	TxIndex     int64
 }

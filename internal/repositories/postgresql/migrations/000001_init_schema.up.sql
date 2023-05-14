@@ -8,6 +8,7 @@ CREATE TABLE "nfts"
     "metadata"     jsonb,
 
     "is_burned"    BOOLEAN        NOT NULL,
+    "is_hidden" BOOLEAN NOT NULL DEFAULT FALSE,
 
     "block_number" numeric(19, 0) NOT NULL,
     "tx_index"     bigint         NOT NULL,
