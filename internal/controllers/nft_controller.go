@@ -65,7 +65,7 @@ func (ctl *Controls) GetNFTsWithListings(c echo.Context) error {
 }
 
 func (ctl *Controls) UpdateNftStatus(c echo.Context) error {
-	var req dto.UpdateNftStatus
+	var req dto.UpdateNftStatusReq
 	var err error
 	if err = c.Bind(&req); err != nil {
 		return dto.NewHTTPError(400, err)
@@ -83,9 +83,13 @@ func (ctl *Controls) UpdateNftStatus(c echo.Context) error {
 	err = ctl.service.UpdateNftStatus(c.Request().Context(), common.HexToAddress(req.Token), identifier, req.IsHidden)
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("err")
+		return err
 	}
 
-	return err
+	return c.JSON(http.StatusOK, dto.Response{
+		Data:      dto.UpdateNftStatusRes(req),
+		IsSuccess: true,
+	})
 }
 
 func (ctl *Controls) GetNFTWithListings(c echo.Context) error {

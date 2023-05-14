@@ -9,9 +9,15 @@ type GetListNftReq struct {
 	Limit      int32  `query:"limit" validate:"gte=0,lte=100"`
 }
 
-type UpdateNftStatus struct {
+type UpdateNftStatusReq struct {
 	Token      string `param:"token" validate:"required,eth_addr"`
 	Identifier string `param:"identifier" validate:"required,hexadecimal"`
+	IsHidden   bool   `json:"isHidden"`
+}
+
+type UpdateNftStatusRes struct {
+	Token      string `json:"token"`
+	Identifier string `json:"identifier"`
 	IsHidden   bool   `json:"isHidden"`
 }
 
