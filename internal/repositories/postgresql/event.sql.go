@@ -11,8 +11,13 @@ import (
 )
 
 const getEvent = `-- name: GetEvent :many
-SELECT e.name, e.token, e.token_id, e.quantity, e.type, e.price, e.from, e.to, e.date, e.link
-FROM "events" e
+SELECT e.name, e.token, e.token_id, e.quantity, e.type, e.price, e.from, e.to, e.date, e.link,
+    CAST(n.metadata ->> 'image' AS VARCHAR) AS nft_image,
+	CAST(n.metadata ->> 'name' AS VARCHAR) AS nft_name,
+    o.end_time, o.is_cancelled, o.is_fulfilled
+FROM "events" e 
+JOIN "nfts" n ON e.token = n.token AND e.token_id = CAST(n.identifier AS varchar(78))
+LEFT JOIN "orders" o ON e.order_hash = o.order_hash
 WHERE (e.name ILIKE $1 OR $1 IS NULL)
 AND (e.token ILIKE $2 OR $2 IS NULL)
 AND (e.token_id ILIKE $3 OR $3 IS NULL)
@@ -29,16 +34,21 @@ type GetEventParams struct {
 }
 
 type GetEventRow struct {
-	Name     string
-	Token    string
-	TokenID  string
-	Quantity sql.NullInt32
-	Type     sql.NullString
-	Price    sql.NullString
-	From     string
-	To       sql.NullString
-	Date     sql.NullTime
-	Link     sql.NullString
+	Name        string
+	Token       string
+	TokenID     string
+	Quantity    sql.NullInt32
+	Type        sql.NullString
+	Price       sql.NullString
+	From        string
+	To          sql.NullString
+	Date        sql.NullTime
+	Link        sql.NullString
+	NftImage    string
+	NftName     string
+	EndTime     sql.NullString
+	IsCancelled sql.NullBool
+	IsFulfilled sql.NullBool
 }
 
 func (q *Queries) GetEvent(ctx context.Context, arg GetEventParams) ([]GetEventRow, error) {
@@ -67,6 +77,11 @@ func (q *Queries) GetEvent(ctx context.Context, arg GetEventParams) ([]GetEventR
 			&i.To,
 			&i.Date,
 			&i.Link,
+			&i.NftImage,
+			&i.NftName,
+			&i.EndTime,
+			&i.IsCancelled,
+			&i.IsFulfilled,
 		); err != nil {
 			return nil, err
 		}
@@ -82,21 +97,22 @@ func (q *Queries) GetEvent(ctx context.Context, arg GetEventParams) ([]GetEventR
 }
 
 const insertEvent = `-- name: InsertEvent :one
-INSERT INTO "events" ("name", "token", "token_id", "quantity", "type", "price", "from", "to", "link")
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-RETURNING id, name, token, token_id, quantity, type, price, "from", "to", date, link
+INSERT INTO "events" ("name", "token", "token_id", "quantity", "type", "price", "from", "to", "link", "order_hash")
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+RETURNING id, name, token, token_id, quantity, type, price, "from", "to", date, link, order_hash
 `
 
 type InsertEventParams struct {
-	Name     string
-	Token    string
-	TokenID  string
-	Quantity sql.NullInt32
-	Type     sql.NullString
-	Price    sql.NullString
-	From     string
-	To       sql.NullString
-	Link     sql.NullString
+	Name      string
+	Token     string
+	TokenID   string
+	Quantity  sql.NullInt32
+	Type      sql.NullString
+	Price     sql.NullString
+	From      string
+	To        sql.NullString
+	Link      sql.NullString
+	OrderHash sql.NullString
 }
 
 func (q *Queries) InsertEvent(ctx context.Context, arg InsertEventParams) (Event, error) {
@@ -110,6 +126,7 @@ func (q *Queries) InsertEvent(ctx context.Context, arg InsertEventParams) (Event
 		arg.From,
 		arg.To,
 		arg.Link,
+		arg.OrderHash,
 	)
 	var i Event
 	err := row.Scan(
@@ -124,6 +141,7 @@ func (q *Queries) InsertEvent(ctx context.Context, arg InsertEventParams) (Event
 		&i.To,
 		&i.Date,
 		&i.Link,
+		&i.OrderHash,
 	)
 	return i, err
 }

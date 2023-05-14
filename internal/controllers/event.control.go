@@ -50,6 +50,8 @@ func (ctl *Controls) GetEvent(c echo.Context) error {
 			// to
 			Date: e.Date,
 			// link
+			NftImage: e.NftImage,
+			NftName:  e.NftName,
 		}
 
 		if e.Name == "listing" || e.Name == "offer" || e.Name == "sale" {
@@ -58,6 +60,11 @@ func (ctl *Controls) GetEvent(c echo.Context) error {
 		if e.Name == "sale" || e.Name == "transfer" {
 			newEvent.To = e.To.Hex()
 			newEvent.Link = e.Link
+		}
+		if e.Name == "listing" || e.Name == "offer" {
+			newEvent.EndTime = e.EndTime.String()
+			newEvent.IsCancelled = e.IsCancelled
+			newEvent.IsFulfilled = e.IsFulfilled
 		}
 
 		event.Events = append(event.Events, newEvent)

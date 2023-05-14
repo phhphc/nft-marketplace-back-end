@@ -7,16 +7,23 @@ import (
 )
 
 type Event struct {
-	Name     string
-	Token    common.Address
-	TokenId  *big.Int
-	Quantity int32
-	Type     string
-	Price    *big.Int
-	From     common.Address
-	To       common.Address
-	Date     time.Time
-	Link     string
+	Name     string         `json:"name"`
+	Token    common.Address `json:"token"`
+	TokenId  *big.Int       `json:"token_id"`
+	Quantity int32          `json:"quantity"`
+	Type     string         `json:"type"`
+	Price    *big.Int       `json:"price"`
+	From     common.Address `json:"from"`
+	To       common.Address `json:"to"`
+	Date     time.Time      `json:"date"`
+	Link     string         `json:"link"`
+
+	OrderHash   common.Hash `json:"order_hash"`
+	NftImage    string      `json:"nft_image"`
+	NftName     string      `json:"nft_name"`
+	EndTime     *big.Int    `json:"end_time"`
+	IsCancelled bool        `json:"is_cancelled"`
+	IsFulfilled bool        `json:"is_fulfilled"`
 }
 
 type EventRead struct {
