@@ -3,6 +3,7 @@ package nft
 import (
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
+	"github.com/phhphc/nft-marketplace-back-end/internal/elasticsearch"
 	"log"
 	"net/http"
 )
@@ -11,7 +12,7 @@ type Handler struct {
 	service Service
 }
 
-func NewHandler(storage NFTStorer) *Handler {
+func NewHandler(storage elasticsearch.NFTStorer) *Handler {
 	return &Handler{
 		service: NewService(storage),
 	}

@@ -14,7 +14,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	storage, err := nft.NewNFTStorage(elastic, false)
+	storage, err := elasticsearch.NewNFTStorage(elastic, false)
 	if err != nil {
 		log.Fatalln(err)
 	}

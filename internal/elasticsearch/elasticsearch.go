@@ -3,8 +3,8 @@ package elasticsearch
 import (
 	"context"
 	"fmt"
-	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/elastic/go-elasticsearch/v7/esapi"
+	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"log"
 	"strings"
 )
@@ -12,6 +12,17 @@ import (
 type Elasticsearch struct {
 	Client *elasticsearch.Client
 	Index  string
+}
+
+type ElasticsearchResponse struct {
+	Hits struct {
+		Total struct {
+			Value int `json:"value"`
+		} `json:"total"`
+		Hits []struct {
+			Source interface{} `json:"_source"`
+		} `json:"hits"`
+	} `json:"hits"`
 }
 
 func NewElasticsearch(addresses []string) (*Elasticsearch, error) {
@@ -31,9 +42,11 @@ func (e *Elasticsearch) CreateIndex(index string, mapping string) error {
 	e.Index = index
 
 	res, err := e.Client.Indices.Exists([]string{index})
+
 	if err != nil {
-		return fmt.Errorf("cannot check the existence of index %s: %w", index, err)
+		return fmt.Errorf("cannot check if index %s exists: %w", index, err)
 	}
+
 	if res.StatusCode == 200 {
 		return nil
 	}
@@ -41,14 +54,13 @@ func (e *Elasticsearch) CreateIndex(index string, mapping string) error {
 		return fmt.Errorf("unexpected status code %d", res.StatusCode)
 	}
 
-	res, err = e.Client.Indices.Create(
-		index,
-		e.Client.Indices.Create.WithBody(strings.NewReader(mapping)),
-	)
 	if err != nil {
 		return fmt.Errorf("cannot create index %s: %w", index, err)
 	}
 	defer res.Body.Close()
+
+	res, err = e.Client.Indices.Create(index, e.Client.Indices.Create.WithBody(strings.NewReader(mapping)))
+
 	if res.IsError() {
 		return fmt.Errorf("cannot create index %s: %s", index, res.String())
 	}

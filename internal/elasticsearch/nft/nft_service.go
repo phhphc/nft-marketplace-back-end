@@ -3,14 +3,15 @@ package nft
 import (
 	"context"
 	"fmt"
+	"github.com/phhphc/nft-marketplace-back-end/internal/elasticsearch"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 )
 
 type Service struct {
-	storage NFTStorer
+	storage elasticsearch.NFTStorer
 }
 
-func NewService(storage NFTStorer) Service {
+func NewService(storage elasticsearch.NFTStorer) Service {
 	return Service{storage: storage}
 }
 
@@ -26,7 +27,7 @@ func (s Service) FindOneNFT(ctx context.Context, req FindOneRequest) (FindOneRes
 }
 
 func (s Service) CreateNFT(ctx context.Context, req CreateRequest) (CreateResponse, error) {
-	nft := indexedNFT{
+	nft := elasticsearch.IndexedNFT{
 		Token:      req.Token,
 		Identifier: req.Identifier,
 		Owner:      req.Owner,
