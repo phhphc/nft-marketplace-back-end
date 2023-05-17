@@ -43,7 +43,7 @@ FROM (SELECT *
         AND nfts.identifier = sqlc.arg('identifier')) selected_nft
          LEFT JOIN "offer_items" oi ON oi.token ILIKE selected_nft.token AND oi.identifier = selected_nft.identifier
          LEFT JOIN "consideration_items" ci ON ci.order_hash ILIKE oi.order_hash
-         LEFT JOIN (SELECT * FROM orders WHERE orders.is_fulfilled = FALSE AND orders.is_cancelled = FALSE) o
+         LEFT JOIN (SELECT * FROM orders WHERE orders.is_fulfilled = FALSE AND orders.is_cancelled = FALSE AND round(EXTRACT(EPOCH FROM now())) <= end_time) o
                    ON oi.order_hash ILIKE o.order_hash;
 
 -- name: GetNFTsWithPricesPaginated :many
@@ -75,6 +75,7 @@ FROM (SELECT *
                     FROM orders
                     WHERE orders.is_fulfilled = FALSE
                       AND orders.is_cancelled = FALSE
-                      AND orders.is_invalid = FALSE) o
+                      AND orders.is_invalid = FALSE
+                      AND orders.end_time >= round(EXTRACT(EPOCH FROM now()))) o
                    ON oi.order_hash ILIKE o.order_hash
 ORDER BY paged_nfts.block_number, paged_nfts.tx_index, ci.id, paged_nfts.token, paged_nfts.identifier;
