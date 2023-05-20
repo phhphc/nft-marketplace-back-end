@@ -22,6 +22,81 @@ func (q *Queries) DeleteProfile(ctx context.Context, address string) error {
 	return err
 }
 
+const getOffer = `-- name: GetOffer :many
+SELECT e.name, e.token, e.token_id, e.quantity,
+  CAST(n.metadata ->> 'image' AS VARCHAR) AS nft_image, CAST(n.metadata ->> 'name' AS VARCHAR) AS nft_name,
+	e.type, o.order_hash, e.price, n.owner, e.from, o.start_time, o.end_time
+FROM "events" e 
+JOIN "nfts" n ON e.token = n.token AND e.token_id = CAST(n.identifier AS varchar(78))
+LEFT JOIN "orders" o ON e.order_hash = o.order_hash
+WHERE e.name ILIKE 'offer'
+AND o.start_time <= round(EXTRACT(EPOCH FROM now()))
+AND o.end_time >= round(EXTRACT(EPOCH FROM now()))
+AND o.is_fulfilled = FALSE
+AND o.is_cancelled = FALSE
+AND o.is_invalid = FALSE
+AND (n.owner ILIKE $1 OR $1 IS NULL)
+AND (e.from ILIKE $2 OR $2 IS NULL)
+`
+
+type GetOfferParams struct {
+	Owner sql.NullString
+	From  sql.NullString
+}
+
+type GetOfferRow struct {
+	Name      string
+	Token     string
+	TokenID   string
+	Quantity  sql.NullInt32
+	NftImage  string
+	NftName   string
+	Type      sql.NullString
+	OrderHash sql.NullString
+	Price     sql.NullString
+	Owner     string
+	From      string
+	StartTime sql.NullString
+	EndTime   sql.NullString
+}
+
+func (q *Queries) GetOffer(ctx context.Context, arg GetOfferParams) ([]GetOfferRow, error) {
+	rows, err := q.db.QueryContext(ctx, getOffer, arg.Owner, arg.From)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetOfferRow{}
+	for rows.Next() {
+		var i GetOfferRow
+		if err := rows.Scan(
+			&i.Name,
+			&i.Token,
+			&i.TokenID,
+			&i.Quantity,
+			&i.NftImage,
+			&i.NftName,
+			&i.Type,
+			&i.OrderHash,
+			&i.Price,
+			&i.Owner,
+			&i.From,
+			&i.StartTime,
+			&i.EndTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProfile = `-- name: GetProfile :one
 SELECT "address", "username", "metadata", "signature"
 FROM "profiles"

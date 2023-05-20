@@ -20,6 +20,7 @@ type Querier interface {
 	GetMarketplaceLastSyncBlock(ctx context.Context) (int64, error)
 	GetNFTValidConsiderations(ctx context.Context, arg GetNFTValidConsiderationsParams) ([]GetNFTValidConsiderationsRow, error)
 	GetNFTsWithPricesPaginated(ctx context.Context, arg GetNFTsWithPricesPaginatedParams) ([]GetNFTsWithPricesPaginatedRow, error)
+	GetOffer(ctx context.Context, arg GetOfferParams) ([]GetOfferRow, error)
 	GetOrder(ctx context.Context, arg GetOrderParams) ([]json.RawMessage, error)
 	GetProfile(ctx context.Context, address string) (Profile, error)
 	InsertCategory(ctx context.Context, name string) (Category, error)

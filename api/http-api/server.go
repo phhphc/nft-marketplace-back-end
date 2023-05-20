@@ -58,6 +58,7 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 	profileRoute := e.Group("/api/v0.1/profile")
 	profileRoute.GET("/:address", controller.GetProfile)
 	profileRoute.POST("", controller.PostProfile)
+	profileRoute.GET("/offer", controller.GetOffer)
 
 	eventRoute := e.Group("/api/v0.1/event")
 	eventRoute.GET("", controller.GetEvent)

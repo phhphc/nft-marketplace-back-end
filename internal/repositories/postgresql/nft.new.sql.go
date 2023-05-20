@@ -100,7 +100,10 @@ FROM (SELECT token, identifier, owner, metadata, is_burned, is_hidden, block_num
         AND nfts.identifier = $2) selected_nft
          LEFT JOIN "offer_items" oi ON oi.token ILIKE selected_nft.token AND oi.identifier = selected_nft.identifier
          LEFT JOIN "consideration_items" ci ON ci.order_hash ILIKE oi.order_hash
-         LEFT JOIN (SELECT order_hash, offerer, recipient, salt, start_time, end_time, signature, is_cancelled, is_validated, is_fulfilled, is_invalid FROM orders WHERE orders.is_fulfilled = FALSE AND orders.is_cancelled = FALSE AND round(EXTRACT(EPOCH FROM now())) <= end_time) o
+         LEFT JOIN (SELECT order_hash, offerer, recipient, salt, start_time, end_time, signature, is_cancelled, is_validated, is_fulfilled, is_invalid FROM orders WHERE orders.is_fulfilled = FALSE
+                   AND orders.is_cancelled = FALSE
+                   AND orders.start_time <= round(EXTRACT(EPOCH FROM now()))
+                   AND orders.end_time >= round(EXTRACT(EPOCH FROM now()))) o
                    ON oi.order_hash ILIKE o.order_hash
 `
 
@@ -196,6 +199,7 @@ FROM (SELECT token, identifier, owner, metadata, is_burned, is_hidden, block_num
                     WHERE orders.is_fulfilled = FALSE
                       AND orders.is_cancelled = FALSE
                       AND orders.is_invalid = FALSE
+                      AND orders.start_time <= round(EXTRACT(EPOCH FROM now()))
                       AND orders.end_time >= round(EXTRACT(EPOCH FROM now()))) o
                    ON oi.order_hash ILIKE o.order_hash
 ORDER BY paged_nfts.block_number, paged_nfts.tx_index, ci.id, paged_nfts.token, paged_nfts.identifier

@@ -15,6 +15,7 @@ type ProfileService interface {
 	GetProfile(ctx context.Context, address string) (entities.Profile, error)
 	UpsertProfile(ctx context.Context, profile entities.Profile) (entities.Profile, error)
 	DeleteProfile(ctx context.Context, address common.Address) error
+	GetOffer(ctx context.Context, owner common.Address, from common.Address) ([]entities.Event, error)
 }
 
 func (s *Services) GetProfile(ctx context.Context, address string) (entities.Profile, error) {
@@ -87,4 +88,46 @@ func (s *Services) DeleteProfile(ctx context.Context, address common.Address) er
 		return err
 	}
 	return nil
+}
+
+func (s *Services) GetOffer(ctx context.Context, owner common.Address, from common.Address) (offers []entities.Event, err error) {
+	params := postgresql.GetOfferParams{}
+	if owner != (common.Address{}) {
+		params.Owner = sql.NullString{
+			String: owner.Hex(),
+			Valid:  true,
+		}
+	}
+	if from != (common.Address{}) {
+		params.From = sql.NullString{
+			String: from.Hex(),
+			Valid:  true,
+		}
+	}
+
+	offerList, err := s.repo.GetOffer(ctx, params)
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("cannot get list offer")
+		return
+	}
+
+	for _, offer := range offerList {
+		newOffer := entities.Event{
+			Name:     offer.Name,
+			Token:    common.HexToAddress(offer.Token),
+			TokenId:  ToBigInt(offer.TokenID),
+			Quantity: offer.Quantity.Int32,
+			NftImage: offer.NftImage,
+			NftName:  offer.NftName,
+			Type: 	  offer.Type.String,
+			OrderHash: common.HexToHash(offer.OrderHash.String),
+			Price: 		ToBigInt(offer.Price.String),
+			Owner:	 common.HexToAddress(offer.Owner),
+			From:     common.HexToAddress(offer.From),
+			EndTime: ToBigInt(offer.EndTime.String),
+		}
+		
+		offers = append(offers, newOffer)
+	}
+	return
 }
