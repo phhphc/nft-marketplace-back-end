@@ -34,12 +34,12 @@ func TestNewNFTStorage(t *testing.T) {
 	nftStorage = storage
 }
 
-// func (n *NFTStorage) Insert(ctx context.Context, nft IndexedNFT) error
+// func (n *NFTStorage) Index(ctx context.Context, nft IndexedNFT) error
 func TestNftStorage_Insert(t *testing.T) {
 	loadNFTStorage()
 	nft := generateRandomNFT()
 
-	err := nftStorage.Insert(context.Background(), nft)
+	err := nftStorage.Index(context.Background(), nft)
 	if err != nil {
 		t.Errorf("error inserting nft: %v", err)
 	}
@@ -56,11 +56,35 @@ func TestNftStorage_Insert(t *testing.T) {
 	require.Equal(t, nft.Owner, insertedNft.Owner)
 }
 
+func TestNFTStorage_BulkInsert(t *testing.T) {
+	loadNFTStorage()
+	nfts := make([]IndexedNFT, 100)
+	for i := 0; i < 100; i++ {
+		nft := generateRandomNFT()
+		nfts[i] = nft
+	}
+	err := nftStorage.BulkInsert(context.Background(), nfts, 10)
+	if err != nil {
+		t.Errorf("error inserting nfts: %v", err)
+	}
+
+	for _, nft := range nfts {
+		insertedNft, err := nftStorage.FindOne(context.Background(), nft.Token, nft.Identifier)
+		if err != nil {
+			t.Errorf("error finding nft: %v", err)
+		}
+		require.NotNil(t, insertedNft)
+		require.Equal(t, nft.Token, insertedNft.Token)
+		require.Equal(t, nft.Identifier, insertedNft.Identifier)
+		require.Equal(t, nft.Owner, insertedNft.Owner)
+	}
+}
+
 func TestNftStorage_Delete(t *testing.T) {
 	loadNFTStorage()
 	nft := generateRandomNFT()
 
-	err := nftStorage.Insert(context.Background(), nft)
+	err := nftStorage.Index(context.Background(), nft)
 	if err != nil {
 		t.Errorf("error inserting nft: %v", err)
 	}
@@ -77,13 +101,35 @@ func TestNftStorage_Delete(t *testing.T) {
 func TestNFTStorage_FullTextSearch(t *testing.T) {
 	loadNFTStorage()
 	// insert 50 nft
-	for i := 0; i < 50; i++ {
+	insertMultipleNFTs(nftStorage, 50)
+	results, err := nftStorage.FullTextSearch(context.Background(), "NFT")
+
+	if err != nil {
+		t.Errorf("error searching nft: %v", err)
+	}
+
+	assert.Equal(t, 10, len(results))
+}
+
+func insertMultipleNFTs(nftStorage *NFTStorage, count int) {
+	//nfts := make([]IndexedNFT, count)
+	for i := 0; i < count; i++ {
 		nft := generateRandomNFT()
-		err := nftStorage.Insert(context.Background(), nft)
+		err := nftStorage.Index(context.Background(), nft)
 		if err != nil {
-			t.Errorf("error inserting nft: %v", err)
+			log.Printf("error inserting nft: %v", err)
 		}
 	}
+
+	//for i := 0; i < count; i++ {
+	//	nft := generateRandomNFT()
+	//	nfts[i] = nft
+	//}
+	//err := nftStorage.BulkInsert(context.Background(), nfts, 1000)
+	//
+	//if err != nil {
+	//	log.Printf("error inserting nfts: %v", err)
+	//}
 }
 
 func generateRandomNFT() IndexedNFT {

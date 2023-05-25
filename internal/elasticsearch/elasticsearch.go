@@ -14,13 +14,13 @@ type Elasticsearch struct {
 	Index  string
 }
 
-type ElasticsearchResponse struct {
+type ElasticsearchResponse[T any] struct {
 	Hits struct {
 		Total struct {
 			Value int `json:"value"`
 		} `json:"total"`
 		Hits []struct {
-			Source interface{} `json:"_source"`
+			Source T `json:"_source"`
 		} `json:"hits"`
 	} `json:"hits"`
 }

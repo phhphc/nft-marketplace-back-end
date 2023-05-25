@@ -7,8 +7,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/elastic/go-elasticsearch/v8/esutil"
 	"io"
 	"log"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -97,13 +99,6 @@ const mapping = `
 	}
 }`
 
-//type indexedNFTListing struct {
-//	OrderHash  string `json:"order_hash"`
-//	ItemType   int    `json:"item_type"`
-//	StartPrice string `json:"start_price"`
-//	EndPrice   string `json:"end_price"`
-//}
-
 func NewNFTStorage(elastic *Elasticsearch, rebuild bool) (*NFTStorage, error) {
 	if rebuild {
 		log.Printf("Rebuilding index %s", elastic.Index)
@@ -127,10 +122,7 @@ func GetNftDocumentId(token string, identifier string) string {
 	return fmt.Sprintf("%x", id)
 }
 
-func (n *NFTStorage) Insert(ctx context.Context, nft IndexedNFT) error {
-
-	fmt.Printf("Inserting nft %+v", nft)
-
+func (n *NFTStorage) Index(ctx context.Context, nft IndexedNFT) error {
 	data, err := json.Marshal(nft)
 	if err != nil {
 		return err
@@ -163,7 +155,60 @@ func (n *NFTStorage) Insert(ctx context.Context, nft IndexedNFT) error {
 		}
 	}
 
-	io.Copy(io.Discard, resp.Body)
+	//io.Copy(io.Discard, resp.Body)
+
+	return nil
+}
+
+// BulkInsert
+// Some bug happened on the elasticsearch client, so we use this workaround
+func (n *NFTStorage) BulkInsert(ctx context.Context, nfts []IndexedNFT, flushBytes int64) error {
+	var (
+		countSuccessful int
+		err             error
+	)
+
+	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
+		Index:         n.elastic.Index,  // The default index name
+		Client:        n.elastic.Client, // The Elasticsearch client
+		NumWorkers:    runtime.NumCPU(), // The number of worker goroutines
+		FlushBytes:    int(flushBytes),  // The flush threshold in bytes
+		FlushInterval: 30 * time.Second, // The periodic flush interval
+	})
+	if err != nil {
+		log.Fatalf("Error creating the indexer: %s", err)
+		return err
+	}
+
+	for _, n := range nfts {
+		// prepare data payload
+		data, err := json.Marshal(n)
+		if err != nil {
+			log.Fatalf("Cannot encode nft: %s", err)
+		}
+
+		err = bi.Add(
+			ctx,
+			esutil.BulkIndexerItem{
+				Action:     "index",
+				DocumentID: GetNftDocumentId(n.Token, n.Identifier),
+				Body:       bytes.NewReader(data),
+				OnSuccess: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem) {
+					countSuccessful++
+				},
+				OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error) {
+					log.Printf("ERROR: %s", err)
+				},
+			},
+		)
+		if err != nil {
+			log.Fatalf("Unexpected error: %s", err)
+		}
+	}
+	//
+	//if err := bi.Close(context.Background()); err != nil {
+	//	log.Fatalf("Unexpected error: %s", err)
+	//}
 
 	return nil
 }
@@ -239,62 +284,46 @@ func (n *NFTStorage) FindAll(ctx context.Context) ([]IndexedNFT, error) {
 
 	body, err := io.ReadAll(resp.Body)
 
+	var searchResponse ElasticsearchResponse[IndexedNFT]
 	var nfts []IndexedNFT
 
-	err = json.Unmarshal(body, &nfts)
+	// First, we unmarshal the response body into our ElasticsearchResponse struct
+	err = json.Unmarshal(body, &searchResponse)
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Printf("Found %d nfts\n", len(searchResponse.Hits.Hits))
+
 	return nfts, nil
 }
 
+// FullTextSearch for a query string, with a boost on the name and description fields
+// Return top 10 match results
 func (n *NFTStorage) FullTextSearch(ctx context.Context, query string) ([]IndexedNFT, error) {
-	// Build the query
-	// Execute the query
-	// Parse the response
-	//var buf bytes.Buffer
-	//query := map[string]interface{}{
-	//	"query": map[string]interface{}{
-	//		"match": map[string]interface{}{
-	//			""
-	//		},
-	//	},
-	//}
 	esQuery := fmt.Sprintf(`{
 	"query": {
-		"bool": {
-			"must": [
-				{
-					"multi-match": {
-						"query": "%s",
-						"fields": ["token", "identifier", "metadata.name^3", "metadata.description^2"]
-					}
-				}
-			]
-		}
-	}
-}`, query)
-
-	//newQuery := map[string]interface{}{
-	//	"query": map[string]interface{}{
-	//		"bool": map[string]interface{}{
-	//			"must": []interface{}{
-	//				map[string]interface{}{
-	//					"multi-match": map[string]interface{}{
-	//						"query": query,
-	//						"fields": []string{
-	//							"token",
-	//							"identifier",
-	//							"metadata.name^3",
-	//							"metadata.description^2",
-	//						},
-	//					},
-	//				},
-	//			},
-	//		},
-	//	},
-	//}
+    "bool": {
+      "should": [
+        {"nested": {
+          "path": "metadata",
+          "query": {
+            "multi_match": {
+              "query": "%s",
+              "fields": ["metadata.name^4", "metadata.description^2"]
+            }
+          }
+        }},
+        {
+          "multi_match": {
+            "query": "%s",
+            "fields": ["token", "identifier", "owner"]
+          }
+        }
+      ]
+    }
+  }
+}`, query, query)
 
 	searchReq := esapi.SearchRequest{
 		Index: []string{n.elastic.Index},
@@ -319,11 +348,17 @@ func (n *NFTStorage) FullTextSearch(ctx context.Context, query string) ([]Indexe
 		return nil, err
 	}
 
+	var searchResponse ElasticsearchResponse[IndexedNFT]
 	var nfts []IndexedNFT
 
-	err = json.Unmarshal(body, &nfts)
+	err = json.Unmarshal(body, &searchResponse)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, hit := range searchResponse.Hits.Hits {
+		nfts = append(nfts, hit.Source)
+		fmt.Printf("NFT: %s\n", hit.Source)
 	}
 
 	return nfts, nil

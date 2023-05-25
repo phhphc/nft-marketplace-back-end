@@ -47,7 +47,7 @@ func (h *Handler) CreateNFT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.service.CreateNFT(r.Context(), req)
+	res, err := h.service.IndexNFT(r.Context(), req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
