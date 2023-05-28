@@ -63,6 +63,9 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 	eventRoute := e.Group("/api/v0.1/event")
 	eventRoute.GET("", controller.GetEvent)
 
+	searchRoute := e.Group("/api/v0.1/search")
+	searchRoute.GET("", controller.SearchNFTs)
+
 	return &httpServer{
 		lg:   log.GetLogger(),
 		Echo: e,

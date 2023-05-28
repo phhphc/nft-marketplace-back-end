@@ -22,89 +22,97 @@ type NFTStorage struct {
 	timeout time.Duration
 }
 
+const NFT_MAPPING = `
+{
+  "settings": {
+    "number_of_replicas": 0,
+    "number_of_shards": 1
+  }, 
+  "mappings": {
+    "properties": {
+      "token": {
+        "type": "keyword"
+      },
+      "identifier": {
+        "type": "keyword"
+      },
+      "owner": {
+        "type": "keyword"
+      },
+      "metadata": {
+        "type": "nested",
+        "properties": {
+          "name": {
+            "type": "text"
+          },
+          "description": {
+            "type": "text"
+          },
+          "image": {
+            "type": "text"
+          }
+        }
+      },
+      "is_hidden": {
+        "type": "boolean"
+      },
+      "order_hash": {
+        "type": "keyword"
+      },
+      "item_type": {
+        "type": "keyword"
+      },
+      "start_price": {
+        "type": "float"
+      },
+      "end_price": {
+        "type": "float"
+      },
+      "start_time": {
+        "type": "float"
+      },
+      "end_time": {
+        "type": "float"
+      }
+    }
+  }
+}
+`
+
 type IndexedNFT struct {
-	Token      string             `json:"token"`
-	Identifier string             `json:"identifier"`
-	Owner      string             `json:"owner"`
-	Metadata   IndexedNFTMetadata `json:"metadata"`
-	//CurrentPrice float64 `json:"current_price"`
-	//Currency     string  `json:"currency"`
+	Token         string             `json:"token"`
+	Identifier    string             `json:"identifier"`
+	Owner         string             `json:"owner"`
+	Metadata      IndexedNFTMetadata `json:"metadata"`
+	IsHidden      bool               `json:"is_hidden"`
+	OrderHash     string             `json:"order_hash"`
+	ItemType      int64              `json:"item_type"`
+	Listings      []*IndexedListing  `json:"listings"`
+	BigStartPrice string             `json:"start_price"`
+	BigEndPrice   string             `json:"end_price"`
+	BigStartTime  string             `json:"start_time"`
+	BigEndTime    string             `json:"end_time"`
 }
 
 type IndexedNFTMetadata struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Image       string `json:"image"`
-	//Attributes  []Attribute `json:"attributes"`
 }
 
-type Attribute struct {
-	TraitType string `json:"trait_type"`
-	Value     any    `json:"value"`
+type IndexedListing struct {
+	Hash      string `json:"hash"`
+	Price     string `json:"price"`
+	StartTime string `json:"start_time"`
+	EndTime   string `json:"end_time"`
 }
-
-type NFTSearchFilters struct {
-	Token      string `json:"token"`
-	Owner      string `json:"owner"`
-	Identifier string `json:"identifier"`
-	Name       string `json:"name"`
-	//MinPrice   string `json:"min_price"`
-	//MaxPrice   string `json:"max_price"`
-}
-
-const mapping = `
-{
-	"settings": {
-		"number_of_shards": 1,
-		"number_of_replicas": 0
-	},
-	"mappings": {
-		"properties": {
-			"token": {
-				"type": "keyword"
-			},
-			"identifier": {
-				"type": "keyword"
-			},
-			"owner": {
-				"type": "keyword"
-			},
-			"metadata": {
-				"type": "nested",
-				"properties": {
-					"name": {
-						"type": "text"
-					},
-					"description": {
-						"type": "text"
-					},
-					"image": {
-						"type": "text"
-					},
-					"traits": {
-						"type": "object",
-						"dynamic": true,
-						"properties": {
-							"trait_type": {
-								"type": "keyword"
-							},
-							"value": {
-								"type": "keyword"
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-}`
 
 func NewNFTStorage(elastic *Elasticsearch, rebuild bool) (*NFTStorage, error) {
 	if rebuild {
 		log.Printf("Rebuilding index %s", elastic.Index)
 		_ = elastic.DeleteIndex("nft_test")
 	}
-	err := elastic.CreateIndex("nft_test", mapping)
+	err := elastic.CreateIndex("nft_test", NFT_MAPPING)
 
 	if err != nil {
 		return nil, err

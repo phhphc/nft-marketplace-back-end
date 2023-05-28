@@ -149,6 +149,19 @@ func generateRandomNFT() IndexedNFT {
 	}
 	owner := hex.EncodeToString(ownerBytes)
 
+	rand.Seed(time.Now().UnixNano())
+	orderHashBytes := make([]byte, 16)
+	if _, err := rand.Read(orderHashBytes); err != nil {
+		panic(err)
+	}
+	orderHash := hex.EncodeToString(orderHashBytes)
+
+	startPrice := rand.Float64() * 1.0
+	endPrice := startPrice + rand.Float64()*1.0
+
+	startTime := time.Now().Add(time.Duration(rand.Intn(1000000)) * time.Second)
+	endTime := startTime.Add(time.Duration(rand.Intn(1000000)) * time.Second)
+
 	metadata := IndexedNFTMetadata{
 		Name:        fmt.Sprintf("NFT %s", gofakeit.Name()),
 		Description: fmt.Sprintf("Description for NFT %s", gofakeit.Paragraph(1, 3, 30, " ")),
@@ -159,6 +172,13 @@ func generateRandomNFT() IndexedNFT {
 		Token:      token,
 		Identifier: identifier,
 		Owner:      owner,
+		OrderHash:  orderHash,
+		ItemType:   2,
 		Metadata:   metadata,
+		IsHidden:   false,
+		StartPrice: startPrice,
+		EndPrice:   endPrice.UnixNano(),
+		StartTime:  startTime.UnixNano(),
+		EndTime:    endTime.UnixNano(),
 	}
 }
