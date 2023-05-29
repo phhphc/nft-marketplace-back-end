@@ -93,3 +93,12 @@ WHERE o.order_hash in (SELECT DISTINCT o.order_hash
                          AND o.offerer = $1
                          AND oi.token = $2
                          AND oi.identifier = $3);
+
+-- name: GetExpiredOrder :many
+SELECT e.name, o.order_hash, o.end_time, o.is_cancelled, o.is_invalid, o.offerer
+FROM events e
+JOIN orders o ON e.order_hash = o.order_hash
+WHERE (e.name = 'listing' OR e.name = 'offer')
+AND o.is_cancelled = false
+AND o.is_invalid = false
+AND o.end_time < round(EXTRACT(EPOCH FROM now()));

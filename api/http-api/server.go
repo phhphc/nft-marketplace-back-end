@@ -62,6 +62,10 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 
 	eventRoute := e.Group("/api/v0.1/event")
 	eventRoute.GET("", controller.GetEvent)
+	
+	notificationRoute := e.Group("/api/v0.1/notification")
+	notificationRoute.GET("", controller.GetNotification)
+	notificationRoute.POST("", controller.UpdateNotification)
 
 	return &httpServer{
 		lg:   log.GetLogger(),

@@ -17,6 +17,9 @@ type Controller interface {
 	ProfileController
 
 	GetEvent(c echo.Context) error
+
+	GetNotification(c echo.Context) error
+	UpdateNotification(c echo.Context) error
 }
 
 var _ Controller = (*Controls)(nil)
