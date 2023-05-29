@@ -278,7 +278,7 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 			Info: 		"offer_accepted",
 			EventName: 	eventName,
 			OrderHash: 	order.OrderHash,
-			Address: 	from,
+			Address: 	to,
 		})
 
 		return
