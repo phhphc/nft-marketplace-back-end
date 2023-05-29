@@ -280,6 +280,18 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 			OrderHash: 	order.OrderHash,
 			Address: 	to,
 		})
+		
+		// Handle order (make offer) that still be valid after being fulfilled
+		s.repo.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
+			OrderHash: sql.NullString{
+				Valid: true,
+				String: order.OrderHash.Hex(),
+			},
+			IsInvalid: sql.NullBool{
+				Valid: true,
+				Bool: true,
+			},
+		})
 
 		return
 	}
