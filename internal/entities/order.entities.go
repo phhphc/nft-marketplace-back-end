@@ -53,3 +53,12 @@ const (
 func (e *EnumItemType) Int() int {
 	return int(*e)
 }
+
+type ExpiredOrder struct {
+	EventName		string
+	OrderHash		common.Hash
+	EndTime       	*big.Int
+	IsCancelled		bool
+	IsInvalid		bool
+	Offerer			common.Address
+}

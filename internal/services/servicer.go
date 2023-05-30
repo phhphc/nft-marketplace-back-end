@@ -19,6 +19,7 @@ type Servicer interface {
 	MarketplaceService
 	EventService
 	SearchService
+	NotificationService
 
 	EmitTask(ctx context.Context, event models.EnumTask, value []byte) error
 	SubcribeTask(ctx context.Context, event models.EnumTask, handler asynq.HandlerFunc) error

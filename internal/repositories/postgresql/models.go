@@ -69,6 +69,15 @@ type Nft struct {
 	Tsv         interface{}
 }
 
+type Notification struct {
+	ID        int32
+	Info      string
+	EventName string
+	OrderHash string
+	Address   string
+	IsViewed  sql.NullBool
+}
+
 type OfferItem struct {
 	ID          int64
 	OrderHash   string

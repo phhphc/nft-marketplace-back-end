@@ -73,6 +73,9 @@ func (w *worker) Run(ctx context.Context) error {
 	wg.Add(1)
 	go w.watchTokenEvent(ctx, &wg)
 
+	wg.Add(1)
+	go w.listenOrderExpired(ctx, &wg)
+
 	wg.Wait()
 	return nil
 }

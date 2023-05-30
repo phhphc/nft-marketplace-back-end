@@ -11,6 +11,55 @@ import (
 	"encoding/json"
 )
 
+const getExpiredOrder = `-- name: GetExpiredOrder :many
+SELECT DISTINCT e.name, o.order_hash, o.end_time, o.is_cancelled, o.is_invalid, o.offerer
+FROM events e
+JOIN orders o ON e.order_hash = o.order_hash
+WHERE (e.name = 'listing' OR e.name = 'offer')
+AND o.is_cancelled = false
+AND o.is_invalid = false
+AND o.end_time < round(EXTRACT(EPOCH FROM now()))
+`
+
+type GetExpiredOrderRow struct {
+	Name        string
+	OrderHash   string
+	EndTime     sql.NullString
+	IsCancelled bool
+	IsInvalid   bool
+	Offerer     string
+}
+
+func (q *Queries) GetExpiredOrder(ctx context.Context) ([]GetExpiredOrderRow, error) {
+	rows, err := q.db.QueryContext(ctx, getExpiredOrder)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetExpiredOrderRow{}
+	for rows.Next() {
+		var i GetExpiredOrderRow
+		if err := rows.Scan(
+			&i.Name,
+			&i.OrderHash,
+			&i.EndTime,
+			&i.IsCancelled,
+			&i.IsInvalid,
+			&i.Offerer,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getOrder = `-- name: GetOrder :many
 SELECT json_build_object(
                'orderHash', o.order_hash,

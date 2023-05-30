@@ -29,6 +29,7 @@ type OrderService interface {
 	RemoveInvalidOrder(ctx context.Context, offerer common.Address, token common.Address, identifier *big.Int) error
 	HandleOrderCancelled(ctx context.Context, orderHash common.Hash) error
 	HandleCounterIncremented(ctx context.Context, offerer common.Address) error
+	GetExpiredOrder(ctx context.Context) ([]entities.ExpiredOrder, error)
 }
 
 func (s *Services) CreateOrder(ctx context.Context, order entities.Order) (err error) {
@@ -350,6 +351,40 @@ func ToNullString(s Stringer) (ns sql.NullString) {
 	if !reflect.ValueOf(s).IsNil() {
 		ns.Valid = true
 		ns.String = s.String()
+	}
+	return
+}
+
+func (s *Services) GetExpiredOrder(ctx context.Context) (expiredOrderList []entities.ExpiredOrder, err error) {
+	eos, err := s.repo.GetExpiredOrder(ctx)
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("get expired orders error")
+		return
+	}
+
+	for _, eo := range eos {
+		expiredOrder := entities.ExpiredOrder{
+			EventName: 		eo.Name,
+			OrderHash: 		common.HexToHash(eo.OrderHash),
+			EndTime: 		ToBigInt(eo.EndTime.String),
+			IsCancelled:	eo.IsCancelled,
+			IsInvalid:		eo.IsInvalid,
+			Offerer:		common.HexToAddress(eo.Offerer),
+		}
+
+		// Update expired order's isInvalid to true
+		s.repo.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
+			OrderHash: sql.NullString{
+				Valid: true,
+				String: eo.OrderHash,
+			},
+			IsInvalid: sql.NullBool{
+				Valid: true,
+				Bool: true,
+			},
+		})
+		
+		expiredOrderList = append(expiredOrderList, expiredOrder)
 	}
 	return
 }

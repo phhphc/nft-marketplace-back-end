@@ -177,6 +177,15 @@ func (s *Services) CreateEventsByOrder(ctx context.Context, order entities.Order
 
 			ees = append(ees, e)
 		}
+
+		firstOfferedNft, _ := s.GetNFTWithListings(ctx, order.Consideration[0].Token, order.Consideration[0].Identifier)
+		s.CreateNotification(ctx, entities.NotificationPost{
+			Info: 		"offer_received",
+			EventName: 	eventName,
+			OrderHash: 	order.OrderHash,
+			Address: 	firstOfferedNft.Owner,
+		})
+
 		return
 	}
 	return
@@ -221,6 +230,14 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 
 			ees = append(ees, e)
 		}
+
+		s.CreateNotification(ctx, entities.NotificationPost{
+			Info: 		"listing_sold",
+			EventName: 	eventName,
+			OrderHash: 	order.OrderHash,
+			Address: 	from,
+		})
+
 		return
 		// Event sale on make offer
 	} else {
@@ -256,6 +273,26 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 
 			ees = append(ees, e)
 		}
+
+		s.CreateNotification(ctx, entities.NotificationPost{
+			Info: 		"offer_accepted",
+			EventName: 	eventName,
+			OrderHash: 	order.OrderHash,
+			Address: 	to,
+		})
+		
+		// Handle order (make offer) that still be valid after being fulfilled
+		s.repo.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
+			OrderHash: sql.NullString{
+				Valid: true,
+				String: order.OrderHash.Hex(),
+			},
+			IsInvalid: sql.NullBool{
+				Valid: true,
+				Bool: true,
+			},
+		})
+
 		return
 	}
 }
