@@ -12,6 +12,7 @@ import (
 
 type Querier interface {
 	DeleteProfile(ctx context.Context, address string) error
+	FullTextSearch(ctx context.Context, arg FullTextSearchParams) ([]FullTextSearchRow, error)
 	GetCategoryByName(ctx context.Context, name string) (Category, error)
 	GetCollection(ctx context.Context, arg GetCollectionParams) ([]GetCollectionRow, error)
 	GetCollectionLastSyncBlock(ctx context.Context, token string) (int64, error)

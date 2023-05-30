@@ -66,6 +66,7 @@ type Nft struct {
 	IsHidden    bool
 	BlockNumber string
 	TxIndex     int64
+	Tsv         interface{}
 }
 
 type Notification struct {

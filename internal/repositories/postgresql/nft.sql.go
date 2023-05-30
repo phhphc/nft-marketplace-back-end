@@ -69,7 +69,7 @@ SET "is_burned" = COALESCE($1, "is_burned"),
     "is_hidden"= COALESCE($2, "is_hidden")
 WHERE token = $3
   AND identifier = $4
-RETURNING token, identifier, owner, metadata, is_burned, is_hidden, block_number, tx_index
+RETURNING token, identifier, owner, metadata, is_burned, is_hidden, block_number, tx_index, tsv
 `
 
 type UpdateNftStatusParams struct {
@@ -96,6 +96,7 @@ func (q *Queries) UpdateNftStatus(ctx context.Context, arg UpdateNftStatusParams
 		&i.IsHidden,
 		&i.BlockNumber,
 		&i.TxIndex,
+		&i.Tsv,
 	)
 	return i, err
 }

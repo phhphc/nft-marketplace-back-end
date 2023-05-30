@@ -15,6 +15,7 @@ type Controller interface {
 	GetNFTWithListings(c echo.Context) error
 
 	ProfileController
+	SearchController
 
 	GetEvent(c echo.Context) error
 

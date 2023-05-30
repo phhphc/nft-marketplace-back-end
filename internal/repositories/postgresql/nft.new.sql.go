@@ -94,7 +94,7 @@ SELECT selected_nft.block_number,
        ci.end_amount                           AS end_price,
        o.start_time                            AS start_time,
        o.end_time                              AS end_time
-FROM (SELECT token, identifier, owner, metadata, is_burned, is_hidden, block_number, tx_index
+FROM (SELECT token, identifier, owner, metadata, is_burned, is_hidden, block_number, tx_index, tsv
       FROM nfts
       WHERE nfts.token ILIKE $1
         AND nfts.identifier = $2) selected_nft
@@ -184,7 +184,7 @@ SELECT paged_nfts.block_number,
        ci.end_amount                        AS end_price,
        o.start_time                         AS start_time,
        o.end_time                           AS end_time
-FROM (SELECT token, identifier, owner, metadata, is_burned, is_hidden, block_number, tx_index
+FROM (SELECT token, identifier, owner, metadata, is_burned, is_hidden, block_number, tx_index, tsv
       FROM nfts
       WHERE nfts.is_burned = FALSE
         AND nfts."is_hidden" = COALESCE($1, "nfts"."is_hidden")

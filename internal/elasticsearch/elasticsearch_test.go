@@ -7,43 +7,14 @@ import (
 
 // All test is writing for Elasticsearch v7.11.0
 
-func NewDummyElasticClient(endpoint string) (*Elasticsearch, error) {
-	client, err := NewElasticsearch([]string{endpoint})
-	if err != nil {
-		panic(err)
-	}
-	if client == nil {
-		panic("client is nil")
-	}
-	return client, err
-}
-
-func LoadElasticFixture() (*Elasticsearch, error) {
-	client, err := NewDummyElasticClient("http://localhost:9200")
-	if err != nil {
-		panic(err)
-	}
-	if client == nil {
-		panic("client is nil")
-	}
-	err = client.CreateIndex("nft", "")
-	if err != nil {
-		panic(err)
-	}
-	return client, err
-}
-
-func TestNewElasticsearch(t *testing.T) {
-	client, err := LoadElasticFixture()
-	assert.Nil(t, err, "should not return error")
-	assert.NotNil(t, client, "should not return nil")
-	assert.NotNil(t, client.Client, "should not have not client info")
-}
-
 func TestCreateIndex(t *testing.T) {
-	client, err := LoadElasticFixture()
 	// pre-process: delete index if exists
-	_, err = client.Client.Indices.Delete([]string{"nft"})
+	resp, err := elasticClient.Client.Indices.Exists([]string{"nft"})
+
+	if resp.StatusCode == 404 {
+		_, err = elasticClient.Client.Indices.Delete([]string{"nft"})
+		assert.Nilf(t, err, "should not return error while delete index: %v", err)
+	}
 
 	const mapping = `
 	{
@@ -54,23 +25,23 @@ func TestCreateIndex(t *testing.T) {
 			"mappings": {
 				"properties": {
 					"token": {
-						"type": "text"
+						"type": "keyword"
 					},
 					"identifier": {
-						"type": "text"
+						"type": "keyword"
 					},
 					"owner": {
-						"type": "text"
+						"type": "keyword"
 					}
 				}
 			}
 	}`
 
-	err = client.CreateIndex("nft", mapping)
+	err = elasticClient.CreateIndex("nft", mapping)
 	assert.Nilf(t, err, "should not return error while create index: %v", err)
 
-	res, err := client.Client.Indices.Exists([]string{"nft"})
-	assert.Nilf(t, err, "should not return error while check index exists: %v", err)
-	assert.Equal(t, 200, res.StatusCode, "should return 200 status code")
-	assert.Nilf(t, err, "should not return error while read response body: %v", err)
+	// check the index is created
+	resp, err = elasticClient.Client.Indices.Exists([]string{"nft"})
+	assert.Nilf(t, err, "should not return error while check index: %v", err)
+	assert.Equal(t, 200, resp.StatusCode, "should return status code 200")
 }

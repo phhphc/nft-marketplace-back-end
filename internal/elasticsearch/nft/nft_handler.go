@@ -3,6 +3,7 @@ package nft
 import (
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
+	"github.com/phhphc/nft-marketplace-back-end/internal/elasticsearch"
 	"log"
 	"net/http"
 )
@@ -11,7 +12,7 @@ type Handler struct {
 	service Service
 }
 
-func NewHandler(storage NFTStorer) *Handler {
+func NewHandler(storage elasticsearch.NFTStorer) *Handler {
 	return &Handler{
 		service: NewService(storage),
 	}
@@ -46,7 +47,7 @@ func (h *Handler) CreateNFT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.service.CreateNFT(r.Context(), req)
+	res, err := h.service.IndexNFT(r.Context(), req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
