@@ -12,7 +12,7 @@ import (
 )
 
 const getExpiredOrder = `-- name: GetExpiredOrder :many
-SELECT e.name, o.order_hash, o.end_time, o.is_cancelled, o.is_invalid, o.offerer
+SELECT DISTINCT e.name, o.order_hash, o.end_time, o.is_cancelled, o.is_invalid, o.offerer
 FROM events e
 JOIN orders o ON e.order_hash = o.order_hash
 WHERE (e.name = 'listing' OR e.name = 'offer')
