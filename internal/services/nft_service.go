@@ -75,9 +75,9 @@ func (s *Services) GetNFTsWithListings(ctx context.Context, token common.Address
 			nftRes := nftsMap[nft.Identifier]
 			nftRes.Listings = append(nftRes.Listings, &entities.ListingRead{
 				OrderHash:  common.HexToHash(nft.OrderHash.String),
-				ItemType:   entities.EnumItemType(nft.ItemType.Int32),
-				StartPrice: ToBigInt(nft.StartPrice.String),
-				EndPrice:   ToBigInt(nft.EndPrice.String),
+				ItemType:   entities.EnumItemType(nft.ItemType),
+				StartPrice: new(big.Int).SetInt64(nft.StartPrice),
+				EndPrice:   new(big.Int).SetInt64(nft.EndPrice),
 				StartTime:  ToBigInt(nft.StartTime.String),
 				EndTime:    ToBigInt(nft.EndTime.String),
 			})

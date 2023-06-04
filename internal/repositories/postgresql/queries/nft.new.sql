@@ -43,10 +43,12 @@ FROM (SELECT *
         AND nfts.identifier = sqlc.arg('identifier')) selected_nft
          LEFT JOIN "offer_items" oi ON oi.token ILIKE selected_nft.token AND oi.identifier = selected_nft.identifier
          LEFT JOIN "consideration_items" ci ON ci.order_hash ILIKE oi.order_hash
-         LEFT JOIN (SELECT * FROM orders WHERE orders.is_fulfilled = FALSE
-                   AND orders.is_cancelled = FALSE
-                   AND orders.start_time <= round(EXTRACT(EPOCH FROM now()))
-                   AND orders.end_time >= round(EXTRACT(EPOCH FROM now()))) o
+         LEFT JOIN (SELECT *
+                    FROM orders
+                    WHERE orders.is_fulfilled = FALSE
+                      AND orders.is_cancelled = FALSE
+                      AND orders.start_time <= round(EXTRACT(EPOCH FROM now()))
+                      AND orders.end_time >= round(EXTRACT(EPOCH FROM now()))) o
                    ON oi.order_hash ILIKE o.order_hash;
 
 -- name: GetNFTsWithPricesPaginated :many
@@ -58,7 +60,7 @@ SELECT paged_nfts.block_number,
        paged_nfts.metadata -> 'image'       AS image,
        paged_nfts.metadata -> 'name'        AS name,
        paged_nfts.metadata -> 'description' AS description,
-       ci.order_hash,
+       oi.order_hash,
        ci.item_type,
        ci.start_amount                      AS start_price,
        ci.end_amount                        AS end_price,
@@ -73,7 +75,12 @@ FROM (SELECT *
       LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset')) AS paged_nfts
          LEFT JOIN offer_items oi
                    ON paged_nfts.token ILIKE oi.token AND paged_nfts.identifier = oi.identifier
-         LEFT JOIN consideration_items ci ON oi.order_hash ILIKE ci.order_hash
+         LEFT JOIN (SELECT order_hash,
+                           item_type,
+                           SUM(start_amount) as start_amount,
+                           SUM(end_amount)   as end_amount
+                    FROM consideration_items
+                    GROUP BY order_hash, item_type) AS ci ON oi.order_hash ILIKE ci.order_hash
          LEFT JOIN (SELECT *
                     FROM orders
                     WHERE orders.is_fulfilled = FALSE
@@ -82,4 +89,4 @@ FROM (SELECT *
                       AND orders.start_time <= round(EXTRACT(EPOCH FROM now()))
                       AND orders.end_time >= round(EXTRACT(EPOCH FROM now()))) o
                    ON oi.order_hash ILIKE o.order_hash
-ORDER BY paged_nfts.block_number, paged_nfts.tx_index, ci.id, paged_nfts.token, paged_nfts.identifier;
+ORDER BY paged_nfts.block_number, paged_nfts.tx_index, paged_nfts.token, paged_nfts.identifier;
