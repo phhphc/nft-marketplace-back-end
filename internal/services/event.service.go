@@ -330,6 +330,18 @@ func (s *Services) GetListEvent(ctx context.Context, query entities.EventRead) (
 			Valid:  true,
 		}
 	}
+	if query.Month != nil {
+		params.Month = sql.NullInt32{
+			Valid: true,
+			Int32: int32(*query.Month),
+		}
+	}
+	if query.Year != nil {
+		params.Year = sql.NullInt32{
+			Valid: true,
+			Int32: int32(*query.Year),
+		}
+	}
 
 	eventList, err := s.repo.GetEvent(ctx, params)
 	if err != nil {

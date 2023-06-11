@@ -15,4 +15,6 @@ WHERE (e.name ILIKE sqlc.narg('name') OR sqlc.narg('name') IS NULL)
 AND (e.token ILIKE sqlc.narg('token') OR sqlc.narg('token') IS NULL)
 AND (e.token_id ILIKE sqlc.narg('token_id') OR sqlc.narg('token_id') IS NULL)
 AND (e.type ILIKE sqlc.narg('type') OR sqlc.narg('type') IS NULL)
-AND ((e.from ILIKE sqlc.narg('address') OR sqlc.narg('address') IS NULL) OR (e.to ILIKE sqlc.narg('address') OR sqlc.narg('address') IS NULL));
+AND ((e.from ILIKE sqlc.narg('address') OR sqlc.narg('address') IS NULL) OR (e.to ILIKE sqlc.narg('address') OR sqlc.narg('address') IS NULL))
+AND (extract(month from e.date) = sqlc.narg('month')::int OR sqlc.narg('month')::int IS NULL)
+AND (extract(year from e.date) = sqlc.narg('year')::int OR sqlc.narg('year')::int IS NULL);

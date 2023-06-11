@@ -33,4 +33,6 @@ type EventRead struct {
 	TokenId *big.Int
 	Type    string
 	Address common.Address
+	Month	*int
+	Year	*int
 }

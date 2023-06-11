@@ -25,6 +25,8 @@ func (ctl *Controls) GetEvent(c echo.Context) error {
 		// TokenId
 		Address: common.HexToAddress(req.Address),
 		Type:    req.Type,
+		Month: 	req.Month,
+		Year:	req.Year,	
 	}
 	tokenId, ok := big.NewInt(0).SetString(req.TokenId, 10)
 	if ok {

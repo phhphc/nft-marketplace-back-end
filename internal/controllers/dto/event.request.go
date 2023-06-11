@@ -6,4 +6,6 @@ type GetEventReq struct {
 	Name    string `query:"name" validate:"omitempty"`
 	Address string `query:"address" validate:"omitempty,eth_addr"`
 	Type    string `query:"type" validate:"omitempty"`
+	Month   *int   `query:"month" validate:"omitempty"`
+	Year    *int   `query:"year" validate:"omitempty"`
 }

@@ -23,6 +23,8 @@ AND (e.token ILIKE $2 OR $2 IS NULL)
 AND (e.token_id ILIKE $3 OR $3 IS NULL)
 AND (e.type ILIKE $4 OR $4 IS NULL)
 AND ((e.from ILIKE $5 OR $5 IS NULL) OR (e.to ILIKE $5 OR $5 IS NULL))
+AND (extract(month from e.date) = $6::int OR $6::int IS NULL)
+AND (extract(year from e.date) = $7::int OR $7::int IS NULL)
 `
 
 type GetEventParams struct {
@@ -31,6 +33,8 @@ type GetEventParams struct {
 	TokenID sql.NullString
 	Type    sql.NullString
 	Address sql.NullString
+	Month   sql.NullInt32
+	Year    sql.NullInt32
 }
 
 type GetEventRow struct {
@@ -58,6 +62,8 @@ func (q *Queries) GetEvent(ctx context.Context, arg GetEventParams) ([]GetEventR
 		arg.TokenID,
 		arg.Type,
 		arg.Address,
+		arg.Month,
+		arg.Year,
 	)
 	if err != nil {
 		return nil, err
