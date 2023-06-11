@@ -19,9 +19,14 @@ SELECT n.is_viewed, n.info, n.event_name, n.order_hash, n.address,
 FROM "notifications" n
 JOIN "events" e ON n.event_name = e.name AND n.order_hash = e.order_hash
 JOIN "nfts" nft ON e.token = nft.token AND e.token_id = CAST(nft.identifier AS varchar(78))
-WHERE n.is_viewed = false
-AND (n.address = $1 OR $1 IS NULL)
+WHERE (n.address = $1 OR $1 IS NULL)
+AND (n.is_viewed = $2 OR $2 IS NULL)
 `
+
+type GetNotificationParams struct {
+	Address  sql.NullString
+	IsViewed sql.NullBool
+}
 
 type GetNotificationRow struct {
 	IsViewed  sql.NullBool
@@ -42,8 +47,8 @@ type GetNotificationRow struct {
 	NftName   string
 }
 
-func (q *Queries) GetNotification(ctx context.Context, address sql.NullString) ([]GetNotificationRow, error) {
-	rows, err := q.db.QueryContext(ctx, getNotification, address)
+func (q *Queries) GetNotification(ctx context.Context, arg GetNotificationParams) ([]GetNotificationRow, error) {
+	rows, err := q.db.QueryContext(ctx, getNotification, arg.Address, arg.IsViewed)
 	if err != nil {
 		return nil, err
 	}

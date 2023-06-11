@@ -125,6 +125,9 @@ func (s *Services) GetOffer(ctx context.Context, owner common.Address, from comm
 			Owner:	 common.HexToAddress(offer.Owner),
 			From:     common.HexToAddress(offer.From),
 			EndTime: ToBigInt(offer.EndTime.String),
+			IsFulfilled: offer.IsFulfilled.Bool,
+			IsCancelled: offer.IsCancelled.Bool,
+			IsExpired: offer.IsExpired,
 		}
 		
 		offers = append(offers, newOffer)

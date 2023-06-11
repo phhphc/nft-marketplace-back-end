@@ -1,7 +1,8 @@
 package dto
 
 type GetNotificationReq struct {
-	Address string `query:"address" validation:"eth_addr,omitempty"`
+	Address string `query:"address" validate:"omitempty,eth_addr"`
+	IsViewed *bool  `query:"is_viewed" validate:"omitempty"`
 }
 
 type UpdateNotificationReq struct {

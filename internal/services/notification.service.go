@@ -11,7 +11,7 @@ import (
 
 type NotificationService interface {
 	CreateNotification(ctx context.Context, notification entities.NotificationPost) error
-	GetListNotification(ctx context.Context, address common.Address) ([]entities.NotificationGet, error)
+	GetListNotification(ctx context.Context, address common.Address, isViewed *bool) ([]entities.NotificationGet, error)
 	UpdateNotification(ctx context.Context, notification entities.NotificationUpdate) error
 }
 
@@ -38,13 +38,23 @@ func (s *Services) CreateNotification(ctx context.Context, notification entities
 	return nil
 }
 
-func (s *Services) GetListNotification(ctx context.Context, address common.Address) (ns []entities.NotificationGet, err error) {
-	param := sql.NullString {
-		Valid: true,
-		String: address.Hex(),
+func (s *Services) GetListNotification(ctx context.Context, address common.Address, isViewed *bool) (ns []entities.NotificationGet, err error) {
+	
+	params := postgresql.GetNotificationParams {}
+	if address != (common.Address{}) {
+		params.Address = sql.NullString{
+			Valid: true,
+			String: address.Hex(),
+		}
+	}
+	if isViewed != nil {
+		params.IsViewed = sql.NullBool{
+			Valid: true,
+			Bool: *isViewed,
+		}
 	}
 
-	notificationList, err := s.repo.GetNotification(ctx, param)
+	notificationList, err := s.repo.GetNotification(ctx, params)
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("cannot get list notification")
 		return

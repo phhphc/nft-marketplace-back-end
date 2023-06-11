@@ -17,7 +17,7 @@ func (ctl *Controls) GetNotification(c echo.Context) error {
 		return dto.NewHTTPError(400, err)
 	}
 
-	ns, err := ctl.service.GetListNotification(c.Request().Context(), common.HexToAddress(req.Address))
+	ns, err := ctl.service.GetListNotification(c.Request().Context(), common.HexToAddress(req.Address), req.IsViewed)
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("controller cannot get list notification")
 		return err

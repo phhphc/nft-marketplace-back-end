@@ -25,16 +25,13 @@ func (q *Queries) DeleteProfile(ctx context.Context, address string) error {
 const getOffer = `-- name: GetOffer :many
 SELECT e.name, e.token, e.token_id, e.quantity,
   CAST(n.metadata ->> 'image' AS VARCHAR) AS nft_image, CAST(n.metadata ->> 'name' AS VARCHAR) AS nft_name,
-	e.type, o.order_hash, e.price, n.owner, e.from, o.start_time, o.end_time
+	e.type, o.order_hash, e.price, n.owner, e.from, o.start_time, o.end_time,
+  o.is_fulfilled, o.is_cancelled, (o.end_time < round(EXTRACT(EPOCH FROM now()))) as is_expired
 FROM "events" e 
 JOIN "nfts" n ON e.token = n.token AND e.token_id = CAST(n.identifier AS varchar(78))
 LEFT JOIN "orders" o ON e.order_hash = o.order_hash
 WHERE e.name ILIKE 'offer'
 AND o.start_time <= round(EXTRACT(EPOCH FROM now()))
-AND o.end_time >= round(EXTRACT(EPOCH FROM now()))
-AND o.is_fulfilled = FALSE
-AND o.is_cancelled = FALSE
-AND o.is_invalid = FALSE
 AND (n.owner ILIKE $1 OR $1 IS NULL)
 AND (e.from ILIKE $2 OR $2 IS NULL)
 `
@@ -45,19 +42,22 @@ type GetOfferParams struct {
 }
 
 type GetOfferRow struct {
-	Name      string
-	Token     string
-	TokenID   string
-	Quantity  sql.NullInt32
-	NftImage  string
-	NftName   string
-	Type      sql.NullString
-	OrderHash sql.NullString
-	Price     sql.NullString
-	Owner     string
-	From      string
-	StartTime sql.NullString
-	EndTime   sql.NullString
+	Name        string
+	Token       string
+	TokenID     string
+	Quantity    sql.NullInt32
+	NftImage    string
+	NftName     string
+	Type        sql.NullString
+	OrderHash   sql.NullString
+	Price       sql.NullString
+	Owner       string
+	From        string
+	StartTime   sql.NullString
+	EndTime     sql.NullString
+	IsFulfilled sql.NullBool
+	IsCancelled sql.NullBool
+	IsExpired   bool
 }
 
 func (q *Queries) GetOffer(ctx context.Context, arg GetOfferParams) ([]GetOfferRow, error) {
@@ -83,6 +83,9 @@ func (q *Queries) GetOffer(ctx context.Context, arg GetOfferParams) ([]GetOfferR
 			&i.From,
 			&i.StartTime,
 			&i.EndTime,
+			&i.IsFulfilled,
+			&i.IsCancelled,
+			&i.IsExpired,
 		); err != nil {
 			return nil, err
 		}

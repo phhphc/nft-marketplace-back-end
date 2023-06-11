@@ -166,6 +166,9 @@ func (ctl *Controls) GetOffer(c echo.Context) error {
 			Owner:     offer.Owner.Hex(),
 			From:      offer.From.Hex(),
 			EndTime:   offer.EndTime.String(),
+			IsFulfilled: offer.IsFulfilled,
+			IsCancelled: offer.IsCancelled,
+			IsExpired: 	 offer.IsExpired,
 		}
 		res.OfferList = append(res.OfferList, newOffer)
 	}

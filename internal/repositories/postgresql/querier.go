@@ -6,7 +6,6 @@ package postgresql
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 )
 
@@ -23,7 +22,7 @@ type Querier interface {
 	GetMarketplaceLastSyncBlock(ctx context.Context) (int64, error)
 	GetNFTValidConsiderations(ctx context.Context, arg GetNFTValidConsiderationsParams) ([]GetNFTValidConsiderationsRow, error)
 	GetNFTsWithPricesPaginated(ctx context.Context, arg GetNFTsWithPricesPaginatedParams) ([]GetNFTsWithPricesPaginatedRow, error)
-	GetNotification(ctx context.Context, address sql.NullString) ([]GetNotificationRow, error)
+	GetNotification(ctx context.Context, arg GetNotificationParams) ([]GetNotificationRow, error)
 	GetOffer(ctx context.Context, arg GetOfferParams) ([]GetOfferRow, error)
 	GetOrder(ctx context.Context, arg GetOrderParams) ([]json.RawMessage, error)
 	GetProfile(ctx context.Context, address string) (Profile, error)

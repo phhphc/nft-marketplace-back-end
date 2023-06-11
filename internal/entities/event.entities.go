@@ -24,6 +24,7 @@ type Event struct {
 	EndTime     *big.Int    `json:"end_time"`
 	IsCancelled bool        `json:"is_cancelled"`
 	IsFulfilled bool        `json:"is_fulfilled"`
+	IsExpired 	bool		`json:"is_expired"`
 }
 
 type EventRead struct {
