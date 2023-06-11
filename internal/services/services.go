@@ -6,11 +6,11 @@ import (
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 )
 
-func New(repo postgresql.Querier) *Services {
+func New(repo postgresql.Querier, redisUrl string, redisPass string) *Services {
 	return &Services{
 		lg:    *log.GetLogger(),
 		repo:  repo,
-		asynq: asyncQueue.New("165.232.160.106:6379", "12345"),
+		asynq: asyncQueue.New(redisUrl, redisPass),
 	}
 }
 

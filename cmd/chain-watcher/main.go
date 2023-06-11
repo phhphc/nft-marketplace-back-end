@@ -44,7 +44,7 @@ func main() {
 	defer cancel()
 
 	repo := postgresql.New(postgreClient.Database)
-	service := services.New(repo)
+	service := services.New(repo, cfg.RedisUrl, cfg.RedisPass)
 	defer func() {
 		err := service.Close()
 		if err != nil {

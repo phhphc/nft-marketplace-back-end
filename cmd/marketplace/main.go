@@ -39,7 +39,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 
-		httpServer := httpApi.NewHttpServer(postgreClient)
+		httpServer := httpApi.NewHttpServer(postgreClient, cfg)
 		address := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 		httpServer.Run(ctx, address)
 	}()

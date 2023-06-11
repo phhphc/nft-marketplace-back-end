@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/phhphc/nft-marketplace-back-end/configs"
 	"github.com/phhphc/nft-marketplace-back-end/internal/controllers"
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 	"github.com/phhphc/nft-marketplace-back-end/internal/services"
@@ -23,7 +24,7 @@ type httpServer struct {
 	Echo *echo.Echo
 }
 
-func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
+func NewHttpServer(postgreClient *clients.PostgreClient, cfg *configs.Config) HttpServer {
 	e := echo.New()
 	e.Use(middleware.Recover())
 	e.Use(RequestLogger())
@@ -38,7 +39,7 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 	// nftRoute.GET("", nftController.GetNFTsWithPrices)
 
 	var repository postgresql.Querier = postgresql.New(postgreClient.Database)
-	var service services.Servicer = services.New(repository)
+	var service services.Servicer = services.New(repository, cfg.RedisUrl, cfg.RedisPass)
 	var controller controllers.Controller = controllers.New(service)
 
 	nftRoute := e.Group("/api/v0.1/nft")
@@ -62,7 +63,7 @@ func NewHttpServer(postgreClient *clients.PostgreClient) HttpServer {
 
 	eventRoute := e.Group("/api/v0.1/event")
 	eventRoute.GET("", controller.GetEvent)
-	
+
 	notificationRoute := e.Group("/api/v0.1/notification")
 	notificationRoute.GET("", controller.GetNotification)
 	notificationRoute.POST("", controller.UpdateNotification)
