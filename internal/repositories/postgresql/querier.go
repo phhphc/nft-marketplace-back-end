@@ -20,15 +20,18 @@ type Querier interface {
 	GetExpiredOrder(ctx context.Context) ([]GetExpiredOrderRow, error)
 	GetListValidNFT(ctx context.Context, arg GetListValidNFTParams) ([]GetListValidNFTRow, error)
 	GetMarketplaceLastSyncBlock(ctx context.Context) (int64, error)
+	GetMarketplaceSettings(ctx context.Context, arg GetMarketplaceSettingsParams) (GetMarketplaceSettingsRow, error)
 	GetNFTValidConsiderations(ctx context.Context, arg GetNFTValidConsiderationsParams) ([]GetNFTValidConsiderationsRow, error)
 	GetNFTsWithPricesPaginated(ctx context.Context, arg GetNFTsWithPricesPaginatedParams) ([]GetNFTsWithPricesPaginatedRow, error)
 	GetNotification(ctx context.Context, arg GetNotificationParams) ([]GetNotificationRow, error)
 	GetOffer(ctx context.Context, arg GetOfferParams) ([]GetOfferRow, error)
 	GetOrder(ctx context.Context, arg GetOrderParams) ([]json.RawMessage, error)
 	GetProfile(ctx context.Context, address string) (Profile, error)
+	GetValidMarketplaceSettings(ctx context.Context, marketplace string) (GetValidMarketplaceSettingsRow, error)
 	InsertCategory(ctx context.Context, name string) (Category, error)
 	InsertCollection(ctx context.Context, arg InsertCollectionParams) (Collection, error)
 	InsertEvent(ctx context.Context, arg InsertEventParams) (Event, error)
+	InsertMarketplaceSettings(ctx context.Context, arg InsertMarketplaceSettingsParams) (MarketplaceSetting, error)
 	InsertNotification(ctx context.Context, arg InsertNotificationParams) (Notification, error)
 	InsertOrder(ctx context.Context, arg InsertOrderParams) error
 	InsertOrderConsiderationItem(ctx context.Context, arg InsertOrderConsiderationItemParams) error

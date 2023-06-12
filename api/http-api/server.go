@@ -28,6 +28,10 @@ func NewHttpServer(postgreClient *clients.PostgreClient, cfg *configs.Config) Ht
 	e := echo.New()
 	e.Use(middleware.Recover())
 	e.Use(RequestLogger())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
 
 	e.HTTPErrorHandler = HTTPErrorHandler
 	e.Validator = NewValidator()
@@ -67,6 +71,11 @@ func NewHttpServer(postgreClient *clients.PostgreClient, cfg *configs.Config) Ht
 	notificationRoute := e.Group("/api/v0.1/notification")
 	notificationRoute.GET("", controller.GetNotification)
 	notificationRoute.POST("", controller.UpdateNotification)
+
+	marketplaceSettingsRoute := e.Group("/api/v0.1/marketplace-settings")
+	marketplaceSettingsRoute.GET("/:marketplace", controller.GetMarketplaceSettings)
+	marketplaceSettingsRoute.POST("", controller.CreateMarketplaceSettings)
+	//marketplaceSettingsRoute.POST("/:id/signature", controller.UpdateMarketplaceSettingsSignature)
 
 	searchRoute := e.Group("/api/v0.1/search")
 	searchRoute.GET("", controller.SearchNFTs)
