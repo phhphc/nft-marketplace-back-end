@@ -9,6 +9,9 @@ import (
 
 	httpApi "github.com/phhphc/nft-marketplace-back-end/api/http-api"
 	"github.com/phhphc/nft-marketplace-back-end/configs"
+	"github.com/phhphc/nft-marketplace-back-end/internal/controllers"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
+	"github.com/phhphc/nft-marketplace-back-end/internal/services"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/clients"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 )
@@ -35,11 +38,15 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
+	var repository postgresql.Querier = postgresql.New(postgreClient.Database)
+	var service services.Servicer = services.New(repository, cfg.RedisUrl, cfg.RedisPass)
+	var contronller controllers.Controller = controllers.New(service)
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
-		httpServer := httpApi.NewHttpServer(postgreClient, cfg)
+		httpServer := httpApi.NewHttpServer(contronller)
 		address := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 		httpServer.Run(ctx, address)
 	}()

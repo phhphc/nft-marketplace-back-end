@@ -30,7 +30,7 @@ type worker struct {
 	Service services.Servicer
 }
 
-func NewChainListener(service services.Servicer, postgreClient *clients.PostgreClient, ethClient *clients.EthClient, mkpContractAddr string) (ChainListener, error) {
+func NewChainListener(service services.Servicer, ethClient *clients.EthClient, mkpContractAddr string) (ChainListener, error) {
 	mkpAddr := common.HexToAddress(mkpContractAddr)
 	mkpAbi, err := abi.JSON(strings.NewReader(contracts.MarketplaceMetaData.ABI))
 	if err != nil {

@@ -7,11 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/phhphc/nft-marketplace-back-end/configs"
 	"github.com/phhphc/nft-marketplace-back-end/internal/controllers"
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
-	"github.com/phhphc/nft-marketplace-back-end/internal/services"
-	"github.com/phhphc/nft-marketplace-back-end/pkg/clients"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 )
 
@@ -24,7 +20,9 @@ type httpServer struct {
 	Echo *echo.Echo
 }
 
-func NewHttpServer(postgreClient *clients.PostgreClient, cfg *configs.Config) HttpServer {
+func NewHttpServer(
+	controller controllers.Controller,
+) HttpServer {
 	e := echo.New()
 	e.Use(middleware.Recover())
 	e.Use(RequestLogger())
@@ -32,48 +30,13 @@ func NewHttpServer(postgreClient *clients.PostgreClient, cfg *configs.Config) Ht
 	e.HTTPErrorHandler = HTTPErrorHandler
 	e.Validator = NewValidator()
 
-	// nftController := controllers.NewNftController(postgreClient.Database)
-
-	// nftRoute := e.Group("/api/v0.1/nft")
-	// nftRoute.GET("/:contract_addr/:token_id", nftController.GetNFT)
-	// nftRoute.GET("", nftController.GetNFTsWithPrices)
-
-	var repository postgresql.Querier = postgresql.New(postgreClient.Database)
-	var service services.Servicer = services.New(repository, cfg.RedisUrl, cfg.RedisPass)
-	var controller controllers.Controller = controllers.New(service)
-
-	nftRoute := e.Group("/api/v0.1/nft")
-	nftRoute.GET("", controller.GetNFTsWithListings)
-	nftRoute.PATCH("/:token/:identifier", controller.UpdateNftStatus)
-
-	orderRoute := e.Group("/api/v0.1/order")
-	orderRoute.GET("", controller.GetOrder)
-	orderRoute.POST("", controller.PostOrder)
-
-	collectionRoute := e.Group("/api/v0.1/collection")
-	collectionRoute.POST("", controller.PostCollection)
-	collectionRoute.GET("", controller.GetCollection)
-	collectionRoute.GET("/:category", controller.GetCollectionWithCategory)
-
-	profileRoute := e.Group("/api/v0.1/profile")
-	profileRoute.GET("/:address", controller.GetProfile)
-	profileRoute.POST("", controller.PostProfile)
-	profileRoute.GET("/offer", controller.GetOffer)
-
-	eventRoute := e.Group("/api/v0.1/event")
-	eventRoute.GET("", controller.GetEvent)
-
-	notificationRoute := e.Group("/api/v0.1/notification")
-	notificationRoute.GET("", controller.GetNotification)
-	notificationRoute.POST("", controller.UpdateNotification)
-
-	searchRoute := e.Group("/api/v0.1/search")
-	searchRoute.GET("", controller.SearchNFTs)
-
-	return &httpServer{
+	s := httpServer{
 		lg:   log.GetLogger(),
 		Echo: e,
 	}
+	s.applyRoutes(controller)
+
+	return &s
 }
 
 func (s *httpServer) Run(ctx context.Context, address string) error {
