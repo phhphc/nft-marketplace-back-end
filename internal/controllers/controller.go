@@ -15,6 +15,7 @@ type Controller interface {
 
 	ProfileController
 	SearchController
+	MarketplaceSettingsController
 
 	GetEvent(c echo.Context) error
 

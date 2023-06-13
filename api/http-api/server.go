@@ -26,6 +26,10 @@ func NewHttpServer(
 	e := echo.New()
 	e.Use(middleware.Recover())
 	e.Use(RequestLogger())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
 
 	e.HTTPErrorHandler = HTTPErrorHandler
 	e.Validator = NewValidator()

@@ -57,6 +57,18 @@ type Marketplace struct {
 	LastSyncBlock int64
 }
 
+type MarketplaceSetting struct {
+	ID          int32
+	Marketplace string
+	Admin       string
+	Signer      string
+	Royalty     string
+	TypedData   pqtype.NullRawMessage
+	Sighash     sql.NullString
+	Signature   sql.NullString
+	CreatedAt   sql.NullString
+}
+
 type Nft struct {
 	Token       string
 	Identifier  string
