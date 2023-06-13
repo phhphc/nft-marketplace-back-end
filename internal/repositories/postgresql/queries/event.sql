@@ -1,13 +1,13 @@
 -- name: InsertEvent :one
-INSERT INTO "events" ("name", "token", "token_id", "quantity", "type", "price", "from", "to", "link", "order_hash")
+INSERT INTO "events" ("name", "token", "token_id", "quantity", "type", "price", "from", "to", "tx_hash", "order_hash")
 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
 RETURNING *;
 
 -- name: GetEvent :many
-SELECT e.name, e.token, e.token_id, e.quantity, e.type, e.price, e.from, e.to, e.date, e.link,
+SELECT e.name, e.token, e.token_id, e.quantity, e.type, e.price, e.from, e.to, e.date, e.tx_hash,
     CAST(n.metadata ->> 'image' AS VARCHAR) AS nft_image,
 	CAST(n.metadata ->> 'name' AS VARCHAR) AS nft_name,
-    o.end_time, o.is_cancelled, o.is_fulfilled
+    o.end_time, o.is_cancelled, o.is_fulfilled, o.order_hash
 FROM "events" e 
 JOIN "nfts" n ON e.token = n.token AND e.token_id = CAST(n.identifier AS varchar(78))
 LEFT JOIN "orders" o ON e.order_hash = o.order_hash

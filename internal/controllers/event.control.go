@@ -54,6 +54,7 @@ func (ctl *Controls) GetEvent(c echo.Context) error {
 			// link
 			NftImage: e.NftImage,
 			NftName:  e.NftName,
+			OrderHash: e.OrderHash.Hex(),
 		}
 
 		if e.Name == "listing" || e.Name == "offer" || e.Name == "sale" {
@@ -61,7 +62,7 @@ func (ctl *Controls) GetEvent(c echo.Context) error {
 		}
 		if e.Name == "sale" || e.Name == "transfer" {
 			newEvent.To = e.To.Hex()
-			newEvent.Link = e.Link
+			newEvent.TxHash = e.TxHash
 		}
 		if e.Name == "listing" || e.Name == "offer" {
 			newEvent.EndTime = e.EndTime.String()

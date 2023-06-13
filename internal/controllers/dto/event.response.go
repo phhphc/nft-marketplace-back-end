@@ -12,8 +12,8 @@ type EventRes struct {
 	From        string    `json:"from"`
 	To          string    `json:"to,omitempty"`
 	Date        time.Time `json:"date"`
-	Link        string    `json:"link,omitempty"`
-	OrderHash   string    `json:"order_hash,omitempty"`
+	TxHash      string    `json:"tx_hash,omitempty"`
+	OrderHash   string    `json:"order_hash"`
 	NftImage    string    `json:"nft_image"`
 	NftName     string    `json:"nft_name"`
 	EndTime     string    `json:"end_time,omitempty"`

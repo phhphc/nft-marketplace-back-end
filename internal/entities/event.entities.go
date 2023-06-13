@@ -16,7 +16,7 @@ type Event struct {
 	From     common.Address `json:"from"`
 	To       common.Address `json:"to"`
 	Date     time.Time      `json:"date"`
-	Link     string         `json:"link"`
+	TxHash   string         `json:"tx_hash"`
 	Owner    common.Address	`json:"owner,omitempty"`
 	OrderHash   common.Hash `json:"order_hash"`
 	NftImage    string      `json:"nft_image"`

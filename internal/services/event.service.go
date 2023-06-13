@@ -49,9 +49,9 @@ func (s *Services) CreateEvent(ctx context.Context, event entities.Event) (ee en
 			Valid:  true,
 			String: event.To.Hex(),
 		},
-		Link: sql.NullString{
+		TxHash: sql.NullString{
 			Valid:  true,
-			String: event.Link,
+			String: event.TxHash,
 		},
 		OrderHash: sql.NullString{
 			Valid:  true,
@@ -92,7 +92,7 @@ func (s *Services) CreateEvent(ctx context.Context, event entities.Event) (ee en
 	// date
 	ee.Date = dbEvent.Date.Time
 	//link
-	ee.Link = dbEvent.Link.String
+	ee.TxHash = dbEvent.TxHash.String
 	//order hash
 	if dbEvent.OrderHash.Valid {
 		ee.OrderHash = common.HexToHash(dbEvent.OrderHash.String)
@@ -228,7 +228,7 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 				Price:     price,
 				From:      from,
 				To:        to,
-				Link:      "https://sepolia.etherscan.io/tx/" + txHash,
+				TxHash:    txHash,
 				OrderHash: order.OrderHash,
 			})
 
@@ -271,7 +271,7 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 				Price:     price,
 				From:      from,
 				To:        to,
-				Link:      "https://sepolia.etherscan.io/tx/" + txHash,
+				TxHash:    txHash,
 				OrderHash: order.OrderHash,
 			})
 
@@ -360,9 +360,10 @@ func (s *Services) GetListEvent(ctx context.Context, query entities.EventRead) (
 			TokenId:  ToBigInt(event.TokenID),
 			From:     common.HexToAddress(event.From),
 			Date:     event.Date.Time,
-			Link:     event.Link.String,
+			TxHash:   event.TxHash.String,
 			NftImage: event.NftImage,
 			NftName:  event.NftName,
+			OrderHash: common.HexToHash(event.OrderHash.String),
 		}
 
 		if event.Quantity.Valid {

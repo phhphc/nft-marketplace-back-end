@@ -10,7 +10,7 @@ CREATE TABLE "events"
     "from"          CHAR(42) NOT NULL,
     "to"            CHAR(42),
     "date"          TIMESTAMP DEFAULT current_timestamp,
-    "link"          VARCHAR,
+    "tx_hash"       VARCHAR,
     
     "order_hash"   CHAR(66)
 );
