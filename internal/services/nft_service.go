@@ -3,12 +3,10 @@ package services
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
@@ -50,104 +48,50 @@ func (s *Services) ListNftsWithListings(
 	offset int32,
 	limit int32,
 ) ([]*entities.NftRead, error) {
-	p := postgresql.ListNftWithListingParams{
-		OffsetNft: offset,
-		LimitNft:  limit,
-		ItemType:  0,
-		Now: sql.NullString{
-			String: strconv.FormatInt(time.Now().Unix(), 10),
-			Valid:  true,
-		},
-		LimitListing: ListingLimit,
-	}
-	if token != (common.Address{}) {
-		p.Token = sql.NullString{
-			String: token.Hex(),
-			Valid:  true,
-		}
-	}
-	if identifier != nil {
-		p.Identifier = sql.NullString{
-			String: identifier.String(),
-			Valid:  true,
-		}
-	}
-	if owner != (common.Address{}) {
-		p.Owner = sql.NullString{
-			String: owner.Hex(),
-			Valid:  true,
-		}
-	}
-	if isHidden != nil {
-		p.IsHidden = sql.NullBool{
-			Bool:  *isHidden,
-			Valid: true,
-		}
-	}
 
-	res, err := s.repo.ListNftWithListing(ctx, p)
+	ns, err := s.nftReader.FindNftsWithListings(
+		ctx,
+		token,
+		identifier,
+		owner,
+		isHidden,
+		offset,
+		limit,
+		ListingLimit,
+	)
 	if err != nil {
-		s.lg.Error().Caller().Err(err).Msg("error list")
+		s.lg.Error().Caller().Err(err).Msg("error find")
 		return nil, err
 	}
 
-	type DbNftListing struct {
-		OrderHash  string `json:"order_hash"`
-		ItemType   int    `json:"item_type"`
-		StartTime  string `json:"start_time"`
-		EndTime    string `json:"end_time"`
-		StartPrice string `json:"start_price"`
-		EndPrice   string `json:"end_price"`
-	}
-
-	type DbNft struct {
-		Token      string         `json:"token"`
-		Identifier string         `json:"identifier"`
-		Owner      string         `json:"owner"`
-		Metadata   map[string]any `json:"metadata"`
-		IsHidden   bool           `json:"is_hidden"`
-		Listing    []DbNftListing `json:"listing"`
-	}
-
-	ns := make([]*entities.NftRead, len(res))
-	for i, r := range res {
-		var dbn DbNft
-		err = json.Unmarshal(r, &dbn)
-		if err != nil {
-			s.lg.Error().Caller().Err(err).Msg("error marshal")
-			return nil, err
-		}
-
-		n := entities.NftRead{
-			Token:      common.HexToAddress(dbn.Token),
-			Identifier: ToBigInt(dbn.Identifier),
-			Owner:      common.HexToAddress(dbn.Owner),
-			Metadata:   dbn.Metadata,
-			IsHidden:   dbn.IsHidden,
-		}
-		if dbn.Listing != nil {
-			n.Listings = make([]*entities.ListingRead, len(dbn.Listing))
-			for j, l := range dbn.Listing {
-				n.Listings[j] = &entities.ListingRead{
-					OrderHash:  common.HexToHash(l.OrderHash),
-					ItemType:   entities.EnumItemType(l.ItemType),
-					StartPrice: ToBigInt(l.StartPrice),
-					EndPrice:   ToBigInt(l.EndPrice),
-					StartTime:  ToBigInt(l.StartTime),
-					EndTime:    ToBigInt(l.EndTime),
-				}
+	ne := make([]*entities.NftRead, len(ns))
+	for i, e := range ns {
+		listing := make([]*entities.ListingRead, len(e.Listings))
+		for j, l := range e.Listings {
+			listing[j] = &entities.ListingRead{
+				OrderHash:  l.OrderHash,
+				ItemType:   l.ItemType,
+				StartPrice: l.StartPrice,
+				EndPrice:   l.EndPrice,
+				StartTime:  l.StartTime,
+				EndTime:    l.EndTime,
 			}
 		}
-
-		// depreciated
+		n := entities.NftRead{
+			Token:      e.Token,
+			Identifier: e.Identifier,
+			Owner:      e.Owner,
+			Metadata:   e.Metadata,
+			IsHidden:   e.IsHidden,
+			Listings:   listing,
+		}
 		n.Name, _ = n.Metadata["name"].(string)
 		n.Description, _ = n.Metadata["description"].(string)
 		n.Image, _ = n.Metadata["image"].(string)
 
-		ns[i] = &n
+		ne[i] = &n
 	}
-
-	return ns, nil
+	return ne, nil
 }
 
 func (s *Services) UpdateNftStatus(ctx context.Context, token common.Address, identifier *big.Int, isHidden bool) error {
@@ -193,21 +137,15 @@ func (s *Services) GetNft(
 	token common.Address,
 	identifier *big.Int,
 ) (*entities.Nft, error) {
-	p := postgresql.GetNftParams{
-		Token:      token.Hex(),
-		Identifier: identifier.String(),
-	}
-	res, err := s.repo.GetNft(ctx, p)
+
+	n, err := s.nftReader.FindOneNft(
+		ctx,
+		token,
+		identifier,
+	)
 	if err != nil {
-		s.lg.Error().Caller().Err(err).Msg("error get")
+		s.lg.Error().Caller().Err(err).Msg("error find one")
 		return nil, err
 	}
-
-	return &entities.Nft{
-		Token:      common.HexToAddress(res.Token),
-		Identifier: identifier,
-		Owner:      common.HexToAddress(res.Owner),
-		Metadata:   string(res.Metadata.RawMessage),
-		IsBurned:   res.IsBurned,
-	}, nil
+	return &n, nil
 }

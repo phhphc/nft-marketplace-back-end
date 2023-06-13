@@ -7,7 +7,8 @@ import (
 	"sync"
 
 	"github.com/phhphc/nft-marketplace-back-end/configs"
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
+	postgresqlV1 "github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql-v2"
 	"github.com/phhphc/nft-marketplace-back-end/internal/services"
 	chainListener "github.com/phhphc/nft-marketplace-back-end/internal/worker/chain-listener"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/clients"
@@ -43,8 +44,13 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	repo := postgresql.New(postgreClient.Database)
-	service := services.New(repo, cfg.RedisUrl, cfg.RedisPass)
+	postgresql, err := postgresql.NewPostgresqlRepository(ctx, cfg.PostgreUri)
+	if err != nil {
+		lg.Panic().Caller().Err(err).Msg("error")
+	}
+	defer postgresql.Close()
+	repo := postgresqlV1.New(postgreClient.Database)
+	service := services.New(repo, cfg.RedisUrl, cfg.RedisPass, postgresql)
 	defer func() {
 		err := service.Close()
 		if err != nil {

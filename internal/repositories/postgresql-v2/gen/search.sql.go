@@ -3,7 +3,7 @@
 //   sqlc v1.18.0
 // source: search.sql
 
-package postgresql
+package gen
 
 import (
 	"context"
@@ -74,7 +74,7 @@ type FullTextSearchRow struct {
 }
 
 func (q *Queries) FullTextSearch(ctx context.Context, arg FullTextSearchParams) ([]FullTextSearchRow, error) {
-	rows, err := q.db.QueryContext(ctx, fullTextSearch,
+	rows, err := q.query(ctx, q.fullTextSearchStmt, fullTextSearch,
 		arg.Q,
 		arg.IsHidden,
 		arg.Owner,

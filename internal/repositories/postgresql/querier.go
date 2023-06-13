@@ -18,10 +18,7 @@ type Querier interface {
 	GetCollectionWithCategory(ctx context.Context, arg GetCollectionWithCategoryParams) ([]GetCollectionWithCategoryRow, error)
 	GetEvent(ctx context.Context, arg GetEventParams) ([]GetEventRow, error)
 	GetExpiredOrder(ctx context.Context) ([]GetExpiredOrderRow, error)
-	GetListValidNFT(ctx context.Context, arg GetListValidNFTParams) ([]GetListValidNFTRow, error)
 	GetMarketplaceLastSyncBlock(ctx context.Context) (int64, error)
-	GetNFTValidConsiderations(ctx context.Context, arg GetNFTValidConsiderationsParams) ([]GetNFTValidConsiderationsRow, error)
-	GetNft(ctx context.Context, arg GetNftParams) (Nft, error)
 	GetNotification(ctx context.Context, arg GetNotificationParams) ([]GetNotificationRow, error)
 	GetOffer(ctx context.Context, arg GetOfferParams) ([]GetOfferRow, error)
 	GetOrder(ctx context.Context, arg GetOrderParams) ([]json.RawMessage, error)
@@ -33,7 +30,6 @@ type Querier interface {
 	InsertOrder(ctx context.Context, arg InsertOrderParams) error
 	InsertOrderConsiderationItem(ctx context.Context, arg InsertOrderConsiderationItemParams) error
 	InsertOrderOfferItem(ctx context.Context, arg InsertOrderOfferItemParams) error
-	ListNftWithListing(ctx context.Context, arg ListNftWithListingParams) ([]json.RawMessage, error)
 	MarkOrderInvalid(ctx context.Context, arg MarkOrderInvalidParams) error
 	UpdateCollectionLastSyncBlock(ctx context.Context, arg UpdateCollectionLastSyncBlockParams) error
 	UpdateMarketplaceLastSyncBlock(ctx context.Context, lastSyncBlock int64) error
@@ -42,7 +38,6 @@ type Querier interface {
 	UpdateNftStatus(ctx context.Context, arg UpdateNftStatusParams) (Nft, error)
 	UpdateNotification(ctx context.Context, arg UpdateNotificationParams) (Notification, error)
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) error
-	UpsertNFTV2(ctx context.Context, arg UpsertNFTV2Params) error
 	UpsertProfile(ctx context.Context, arg UpsertProfileParams) (Profile, error)
 }
 

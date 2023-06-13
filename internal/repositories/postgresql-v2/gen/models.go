@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.18.0
 
-package postgresql
+package gen
 
 import (
 	"database/sql"

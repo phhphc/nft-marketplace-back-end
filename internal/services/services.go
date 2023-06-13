@@ -2,15 +2,23 @@ package services
 
 import (
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
+	"github.com/phhphc/nft-marketplace-back-end/internal/services/infrastructure"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/asyncQueue"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 )
 
-func New(repo postgresql.Querier, redisUrl string, redisPass string) *Services {
+func New(
+	repo postgresql.Querier,
+	redisUrl string,
+	redisPass string,
+	nftReader infrastructure.NftReader,
+) *Services {
 	return &Services{
 		lg:    *log.GetLogger(),
 		repo:  repo,
 		asynq: asyncQueue.New(redisUrl, redisPass),
+
+		nftReader: nftReader,
 	}
 }
 
@@ -22,4 +30,6 @@ type Services struct {
 	lg    log.Logger
 	repo  postgresql.Querier
 	asynq asyncQueue.AsyncQueue
+
+	nftReader infrastructure.NftReader
 }
