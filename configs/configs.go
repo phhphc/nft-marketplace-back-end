@@ -9,4 +9,5 @@ type Config struct {
 	MarkeplaceAddr string `mapstructure:"MKP_ADDR" validate:"required,eth_addr"`
 	RedisUrl       string `mapstructure:"REDIS_URL" validate:"required"`
 	RedisPass      string `mapstructure:"REDIS_PASS" validate:"required"`
+	JwtSecret      string `mapstructure:"JWT_SECRET" validate:"required"`
 }

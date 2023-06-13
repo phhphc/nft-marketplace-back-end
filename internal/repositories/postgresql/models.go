@@ -121,3 +121,18 @@ type Profile struct {
 	Metadata  pqtype.NullRawMessage
 	Signature string
 }
+
+type Role struct {
+	ID   int32
+	Name string
+}
+
+type User struct {
+	PublicAddress string
+	Nonce         string
+}
+
+type UserRole struct {
+	UserID string
+	RoleID int32
+}

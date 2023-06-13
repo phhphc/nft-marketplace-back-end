@@ -13,5 +13,3 @@ CREATE TABLE "marketplace_settings"
 
 ALTER TABLE "marketplace_settings"
     ADD CONSTRAINT posivite_transaction_fee CHECK (royalty >= 0);
-
-

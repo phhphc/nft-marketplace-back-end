@@ -27,6 +27,7 @@ type Querier interface {
 	GetOffer(ctx context.Context, arg GetOfferParams) ([]GetOfferRow, error)
 	GetOrder(ctx context.Context, arg GetOrderParams) ([]json.RawMessage, error)
 	GetProfile(ctx context.Context, address string) (Profile, error)
+	GetUserByAddress(ctx context.Context, publicAddress string) (User, error)
 	GetValidMarketplaceSettings(ctx context.Context, marketplace string) (GetValidMarketplaceSettingsRow, error)
 	InsertCategory(ctx context.Context, name string) (Category, error)
 	InsertCollection(ctx context.Context, arg InsertCollectionParams) (Collection, error)
@@ -36,6 +37,7 @@ type Querier interface {
 	InsertOrder(ctx context.Context, arg InsertOrderParams) error
 	InsertOrderConsiderationItem(ctx context.Context, arg InsertOrderConsiderationItemParams) error
 	InsertOrderOfferItem(ctx context.Context, arg InsertOrderOfferItemParams) error
+	InsertUser(ctx context.Context, arg InsertUserParams) (User, error)
 	ListNftWithListing(ctx context.Context, arg ListNftWithListingParams) ([]json.RawMessage, error)
 	MarkOrderInvalid(ctx context.Context, arg MarkOrderInvalidParams) error
 	UpdateCollectionLastSyncBlock(ctx context.Context, arg UpdateCollectionLastSyncBlockParams) error
@@ -43,6 +45,7 @@ type Querier interface {
 	UpdateNft(ctx context.Context, arg UpdateNftParams) error
 	UpdateNftMetadata(ctx context.Context, arg UpdateNftMetadataParams) error
 	UpdateNftStatus(ctx context.Context, arg UpdateNftStatusParams) (Nft, error)
+	UpdateNonce(ctx context.Context, arg UpdateNonceParams) (User, error)
 	UpdateNotification(ctx context.Context, arg UpdateNotificationParams) (Notification, error)
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) error
 	UpsertNFTV2(ctx context.Context, arg UpsertNFTV2Params) error
