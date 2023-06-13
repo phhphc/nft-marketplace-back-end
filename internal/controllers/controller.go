@@ -12,7 +12,6 @@ type Controller interface {
 
 	UpdateNftStatus(c echo.Context) error
 	GetNFTsWithListings(c echo.Context) error
-	GetNFTWithListings(c echo.Context) error
 
 	ProfileController
 	SearchController

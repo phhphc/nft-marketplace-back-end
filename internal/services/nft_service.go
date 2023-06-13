@@ -1,23 +1,38 @@
 package services
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 )
 
+const ListingLimit = 10
+
 type NftNewService interface {
-	GetNFTWithListings(ctx context.Context, token common.Address, identifier *big.Int) (*entities.NftRead, error)
-	GetNFTsWithListings(ctx context.Context, token common.Address, owner common.Address, isHidden *bool, offset int32, limit int32) ([]*entities.NftRead, error)
 	UpdateNftStatus(ctx context.Context, token common.Address, identifier *big.Int, isHidden bool) error
+	ListNftsWithListings(
+		ctx context.Context,
+		token common.Address,
+		identifier *big.Int,
+		owner common.Address,
+		isHidden *bool,
+		offset int32,
+		limit int32,
+	) ([]*entities.NftRead, error)
+	GetNft(
+		ctx context.Context,
+		token common.Address,
+		identifier *big.Int,
+	) (*entities.Nft, error)
 }
 
 func ToBigInt(str string) *big.Int {
@@ -26,112 +41,113 @@ func ToBigInt(str string) *big.Int {
 	return bigInt
 }
 
-func (s *Services) GetNFTsWithListings(ctx context.Context, token common.Address, owner common.Address, isHidden *bool, offset int32, limit int32) ([]*entities.NftRead, error) {
-	tokenValid := true
-	ownerValid := true
-	if bytes.Equal(token.Bytes(), common.Address{}.Bytes()) {
-		tokenValid = false
+func (s *Services) ListNftsWithListings(
+	ctx context.Context,
+	token common.Address,
+	identifier *big.Int,
+	owner common.Address,
+	isHidden *bool,
+	offset int32,
+	limit int32,
+) ([]*entities.NftRead, error) {
+	p := postgresql.ListNftWithListingParams{
+		OffsetNft: offset,
+		LimitNft:  limit,
+		ItemType:  0,
+		Now: sql.NullString{
+			String: strconv.FormatInt(time.Now().Unix(), 10),
+			Valid:  true,
+		},
+		LimitListing: ListingLimit,
 	}
-
-	if bytes.Equal(owner.Bytes(), common.Address{}.Bytes()) {
-		ownerValid = false
+	if token != (common.Address{}) {
+		p.Token = sql.NullString{
+			String: token.Hex(),
+			Valid:  true,
+		}
 	}
-
-	params := postgresql.GetNFTsWithPricesPaginatedParams{
-		Offset: offset,
-		Limit:  limit,
-		Token:  sql.NullString{String: token.Hex(), Valid: tokenValid},
-		Owner:  sql.NullString{String: owner.Hex(), Valid: ownerValid},
+	if identifier != nil {
+		p.Identifier = sql.NullString{
+			String: identifier.String(),
+			Valid:  true,
+		}
+	}
+	if owner != (common.Address{}) {
+		p.Owner = sql.NullString{
+			String: owner.Hex(),
+			Valid:  true,
+		}
 	}
 	if isHidden != nil {
-		params.IsHidden = sql.NullBool{
+		p.IsHidden = sql.NullBool{
 			Bool:  *isHidden,
 			Valid: true,
 		}
 	}
-	res, err := s.repo.GetNFTsWithPricesPaginated(ctx, params)
 
+	res, err := s.repo.ListNftWithListing(ctx, p)
 	if err != nil {
-		s.lg.Error().Caller().Err(err).Msg("error in query nfts with prices")
+		s.lg.Error().Caller().Err(err).Msg("error list")
 		return nil, err
 	}
 
-	nftsMap := make(map[string]*entities.NftRead)
-	for _, nft := range res {
-		if _, ok := nftsMap[nft.Identifier]; !ok {
-			nftsMap[nft.Identifier] = &entities.NftRead{
-				Token:       common.HexToAddress(nft.Token),
-				Identifier:  ToBigInt(nft.Identifier),
-				Owner:       common.HexToAddress(nft.Owner),
-				Image:       FromInterfaceString2String(nft.Image),
-				Name:        FromInterfaceString2String(nft.Name),
-				Description: FromInterfaceString2String(nft.Description),
-				IsHidden:    nft.IsHidden,
-				Listings:    make([]*entities.ListingRead, 0),
+	type DbNftListing struct {
+		OrderHash  string `json:"order_hash"`
+		ItemType   int    `json:"item_type"`
+		StartTime  string `json:"start_time"`
+		EndTime    string `json:"end_time"`
+		StartPrice string `json:"start_price"`
+		EndPrice   string `json:"end_price"`
+	}
+
+	type DbNft struct {
+		Token      string         `json:"token"`
+		Identifier string         `json:"identifier"`
+		Owner      string         `json:"owner"`
+		Metadata   map[string]any `json:"metadata"`
+		IsHidden   bool           `json:"is_hidden"`
+		Listing    []DbNftListing `json:"listing"`
+	}
+
+	ns := make([]*entities.NftRead, len(res))
+	for i, r := range res {
+		var dbn DbNft
+		err = json.Unmarshal(r, &dbn)
+		if err != nil {
+			s.lg.Error().Caller().Err(err).Msg("error marshal")
+			return nil, err
+		}
+
+		n := entities.NftRead{
+			Token:      common.HexToAddress(dbn.Token),
+			Identifier: ToBigInt(dbn.Identifier),
+			Owner:      common.HexToAddress(dbn.Owner),
+			Metadata:   dbn.Metadata,
+			IsHidden:   dbn.IsHidden,
+		}
+		if dbn.Listing != nil {
+			n.Listings = make([]*entities.ListingRead, len(dbn.Listing))
+			for j, l := range dbn.Listing {
+				n.Listings[j] = &entities.ListingRead{
+					OrderHash:  common.HexToHash(l.OrderHash),
+					ItemType:   entities.EnumItemType(l.ItemType),
+					StartPrice: ToBigInt(l.StartPrice),
+					EndPrice:   ToBigInt(l.EndPrice),
+					StartTime:  ToBigInt(l.StartTime),
+					EndTime:    ToBigInt(l.EndTime),
+				}
 			}
 		}
 
-		if nft.StartTime.Valid || nft.EndTime.Valid {
-			nftRes := nftsMap[nft.Identifier]
-			nftRes.Listings = append(nftRes.Listings, &entities.ListingRead{
-				OrderHash:  common.HexToHash(nft.OrderHash.String),
-				ItemType:   entities.EnumItemType(nft.ItemType),
-				StartPrice: new(big.Int).SetInt64(nft.StartPrice),
-				EndPrice:   new(big.Int).SetInt64(nft.EndPrice),
-				StartTime:  ToBigInt(nft.StartTime.String),
-				EndTime:    ToBigInt(nft.EndTime.String),
-			})
-		}
+		// depreciated
+		n.Name, _ = n.Metadata["name"].(string)
+		n.Description, _ = n.Metadata["description"].(string)
+		n.Image, _ = n.Metadata["image"].(string)
+
+		ns[i] = &n
 	}
 
-	nfts := make([]*entities.NftRead, 0)
-	for _, nft := range nftsMap {
-		nfts = append(nfts, nft)
-	}
-
-	return nfts, nil
-}
-
-func (s *Services) GetNFTWithListings(ctx context.Context, token common.Address, identifier *big.Int) (*entities.NftRead, error) {
-	res, err := s.repo.GetNFTValidConsiderations(ctx, postgresql.GetNFTValidConsiderationsParams{
-		Token:      token.Hex(),
-		Identifier: identifier.String(),
-	})
-
-	if err != nil {
-		s.lg.Error().Caller().Err(err).Msg("error in query nft")
-		return nil, err
-	}
-
-	// Lay len thong tin cua nft
-	// Lay len danh sach cac order ma nft nay la offer item (order valid)
-	var nft *entities.NftRead
-	for i, order := range res {
-		if i == 0 {
-			s.lg.Debug().Caller().Interface("order", order).Msg("order")
-
-			nft = &entities.NftRead{
-				Token:      common.HexToAddress(order.Token),
-				Identifier: ToBigInt(order.Identifier),
-				Owner:      common.HexToAddress(order.Owner),
-				Metadata:   order.Metadata.RawMessage,
-				Listings:   make([]*entities.ListingRead, 0),
-			}
-		}
-
-		if order.OrderHash.Valid {
-			listing := &entities.ListingRead{
-				OrderHash:  common.HexToHash(order.OrderHash.String),
-				ItemType:   entities.EnumItemType(order.ItemType.Int32),
-				StartPrice: ToBigInt(order.StartPrice.String),
-				EndPrice:   ToBigInt(order.EndPrice.String),
-				StartTime:  ToBigInt(order.StartTime.String),
-				EndTime:    ToBigInt(order.EndTime.String),
-			}
-			nft.Listings = append(nft.Listings, listing)
-		}
-	}
-	return nft, nil
+	return ns, nil
 }
 
 func (s *Services) UpdateNftStatus(ctx context.Context, token common.Address, identifier *big.Int, isHidden bool) error {
@@ -170,4 +186,28 @@ func FromInterfaceString2String(bstr interface{}) string {
 
 	str := string(byteArray)
 	return str
+}
+
+func (s *Services) GetNft(
+	ctx context.Context,
+	token common.Address,
+	identifier *big.Int,
+) (*entities.Nft, error) {
+	p := postgresql.GetNftParams{
+		Token:      token.Hex(),
+		Identifier: identifier.String(),
+	}
+	res, err := s.repo.GetNft(ctx, p)
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("error get")
+		return nil, err
+	}
+
+	return &entities.Nft{
+		Token:      common.HexToAddress(res.Token),
+		Identifier: identifier,
+		Owner:      common.HexToAddress(res.Owner),
+		Metadata:   string(res.Metadata.RawMessage),
+		IsBurned:   res.IsBurned,
+	}, nil
 }

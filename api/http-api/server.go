@@ -45,7 +45,6 @@ func NewHttpServer(postgreClient *clients.PostgreClient, cfg *configs.Config) Ht
 	nftRoute := e.Group("/api/v0.1/nft")
 	nftRoute.GET("", controller.GetNFTsWithListings)
 	nftRoute.PATCH("/:token/:identifier", controller.UpdateNftStatus)
-	nftRoute.GET("/:token/:identifier", controller.GetNFTWithListings)
 
 	orderRoute := e.Group("/api/v0.1/order")
 	orderRoute.GET("", controller.GetOrder)
