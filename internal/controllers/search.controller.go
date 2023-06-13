@@ -1,10 +1,11 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/labstack/echo/v4"
 	"github.com/phhphc/nft-marketplace-back-end/internal/controllers/dto"
-	"net/http"
 )
 
 type SearchController interface {
@@ -36,6 +37,7 @@ func (ctl *Controls) SearchNFTs(c echo.Context) error {
 			Token:       nft.Token.String(),
 			Identifier:  nft.Identifier.String(),
 			Owner:       nft.Owner.String(),
+			Metadata:    nft.Metadata,
 			Image:       nft.Image,
 			Name:        nft.Name,
 			IsHidden:    nft.IsHidden,

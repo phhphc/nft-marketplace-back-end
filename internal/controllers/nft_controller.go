@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
-	"fmt"
 	"math/big"
 	"net/http"
 
@@ -22,9 +20,21 @@ func (ctl *Controls) GetNFTsWithListings(c echo.Context) error {
 	}
 
 	token := common.HexToAddress(req.Token)
+	identifier, ok := new(big.Int).SetString(req.Identifier, 0)
+	if !ok {
+		identifier = nil
+	}
 	owner := common.HexToAddress(req.Owner)
 
-	nfts, err := ctl.service.GetNFTsWithListings(c.Request().Context(), token, owner, req.IsHidden, req.Offset, req.Limit)
+	nfts, err := ctl.service.ListNftsWithListings(
+		c.Request().Context(),
+		token,
+		identifier,
+		owner,
+		req.IsHidden,
+		req.Offset,
+		req.Limit,
+	)
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("error")
 	}
@@ -36,10 +46,11 @@ func (ctl *Controls) GetNFTsWithListings(c echo.Context) error {
 			Token:       nft.Token.String(),
 			Identifier:  nft.Identifier.String(),
 			Owner:       nft.Owner.String(),
+			Metadata:    nft.Metadata,
 			Image:       nft.Image,
 			Name:        nft.Name,
-			IsHidden:    nft.IsHidden,
 			Description: nft.Description,
+			IsHidden:    nft.IsHidden,
 			Listings:    make([]*dto.GetNftListingRes, len(nft.Listings)),
 		}
 		for j, listing := range nft.Listings {
@@ -88,76 +99,6 @@ func (ctl *Controls) UpdateNftStatus(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, dto.Response{
 		Data:      dto.UpdateNftStatusRes(req),
-		IsSuccess: true,
-	})
-}
-
-func (ctl *Controls) GetNFTWithListings(c echo.Context) error {
-	var req dto.GetNftReq
-	var err error
-	if err = c.Bind(&req); err != nil {
-		return dto.NewHTTPError(400, err)
-	}
-	if err = c.Validate(&req); err != nil {
-		return dto.NewHTTPError(400, err)
-	}
-
-	token := common.HexToAddress(req.Token)
-	identifier, ok := big.NewInt(0).SetString(req.Identifier, 10)
-	if !ok {
-		return dto.NewHTTPError(400, fmt.Errorf("invalid type in identifier"))
-	}
-
-	nft, err := ctl.service.GetNFTWithListings(c.Request().Context(), token, identifier)
-
-	if err != nil {
-		return dto.NewHTTPError(400, err)
-	}
-	if nft == nil {
-		return c.JSON(http.StatusOK, dto.Response{
-			Data:      []byte(""),
-			IsSuccess: true,
-		})
-	}
-
-	var metadata map[string]any
-	err = json.Unmarshal(nft.Metadata, &metadata)
-	if err != nil {
-		ctl.lg.Panic().Caller().Err(err).Msg("panic")
-	}
-
-	nftResponse := &dto.GetNftRes{
-		Token:       nft.Token.String(),
-		Identifier:  nft.Identifier.String(),
-		Owner:       nft.Owner.String(),
-		Image:       nft.Image,
-		Name:        nft.Name,
-		Description: nft.Description,
-		Metadata:    metadata,
-	}
-
-	nftResponse.Listings = make([]*dto.GetNftListingRes, len(nft.Listings))
-
-	if len(nft.Listings) == 0 {
-		return c.JSON(http.StatusOK, dto.Response{
-			Data:      nftResponse,
-			IsSuccess: true,
-		})
-	}
-
-	for j, listing := range nft.Listings {
-		nftResponse.Listings[j] = &dto.GetNftListingRes{
-			OrderHash:  listing.OrderHash.String(),
-			ItemType:   listing.ItemType.Int(),
-			StartPrice: listing.StartPrice.String(),
-			EndPrice:   listing.EndPrice.String(),
-			StartTime:  listing.StartTime.String(),
-			EndTime:    listing.EndTime.String(),
-		}
-	}
-
-	return c.JSON(http.StatusOK, dto.Response{
-		Data:      nftResponse,
 		IsSuccess: true,
 	})
 }
