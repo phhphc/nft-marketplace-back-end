@@ -162,7 +162,7 @@ func (w *worker) handleErc721Event(vLog types.Log) {
 			// Price
 			From: transfer.From,
 			To:   transfer.To,
-			Link: "https://sepolia.etherscan.io/tx/" + vLog.TxHash.Hex(),
+			TxHash: vLog.TxHash.Hex(),
 		})
 	case "Approval":
 		// TODO - handle

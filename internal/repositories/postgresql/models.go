@@ -49,7 +49,7 @@ type Event struct {
 	From      string
 	To        sql.NullString
 	Date      sql.NullTime
-	Link      sql.NullString
+	TxHash    sql.NullString
 	OrderHash sql.NullString
 }
 
