@@ -3,28 +3,32 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
-	"github.com/tabbed/pqtype"
+	"github.com/phhphc/nft-marketplace-back-end/internal/services/infrastructure"
+	"github.com/phhphc/nft-marketplace-back-end/internal/util"
 )
 
-func (s *Services) TransferNft(ctx context.Context, transfer models.NftTransfer, blockNumber uint64, txIndex uint) (err error) {
-	params := postgresql.UpdateNftParams{
-		Token:       transfer.Token.Hex(),
-		Identifier:  transfer.Identifier.String(),
-		Owner:       transfer.To.Hex(),
-		IsBurned:    transfer.To == common.Address{},
-		BlockNumber: fmt.Sprintf("%v", blockNumber),
-		TxIndex:     int64(txIndex),
-	}
-	err = s.repo.UpdateNft(ctx, params)
+func (s *Services) TransferNft(
+	ctx context.Context,
+	transfer models.NftTransfer,
+	blockNumber uint64,
+	txIndex uint,
+) error {
+	_, err := s.nftWriter.UpsertNftLatest(
+		ctx,
+		transfer.Token,
+		transfer.Identifier,
+		transfer.To,
+		transfer.To == util.ZeroAddress,
+		blockNumber,
+		txIndex,
+	)
 	if err != nil {
-		s.lg.Error().Caller().Err(err).Msg("update nft fail")
-		return
+		s.lg.Error().Caller().Err(err).Msg("upsert nft fail")
+		return err
 	}
 
 	value, err := json.Marshal(models.NewErc721Task{
@@ -33,7 +37,7 @@ func (s *Services) TransferNft(ctx context.Context, transfer models.NftTransfer,
 	})
 	if err != nil {
 		s.lg.Panic().Caller().Err(err).Msg("cannot marshal")
-		return
+		return err
 	}
 	if (transfer.From == common.Address{}) {
 		s.EmitTask(context.TODO(), models.TaskNewErc721, value)
@@ -43,18 +47,23 @@ func (s *Services) TransferNft(ctx context.Context, transfer models.NftTransfer,
 	if err != nil {
 		s.lg.Fatal().Caller().Err(err).Msg("remove error")
 	}
-	return
+	return err
 }
 
-func (s *Services) UpdateNftMetadata(ctx context.Context, token common.Address, identifier *big.Int, metadata json.RawMessage) (err error) {
-	err = s.repo.UpdateNftMetadata(ctx, postgresql.UpdateNftMetadataParams{
-		Metadata: pqtype.NullRawMessage{
-			RawMessage: metadata,
-			Valid:      len(metadata) > 0,
+func (s *Services) UpdateNftMetadata(
+	ctx context.Context,
+	token common.Address,
+	identifier *big.Int,
+	metadata map[string]any,
+) (err error) {
+	_, err = s.nftWriter.UpdateNft(
+		ctx,
+		token,
+		identifier,
+		infrastructure.UpdateNftNewValue{
+			Metadata: metadata,
 		},
-		Token:      token.Hex(),
-		Identifier: identifier.String(),
-	})
+	)
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("update nft metadata fail")
 		return

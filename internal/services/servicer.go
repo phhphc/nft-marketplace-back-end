@@ -3,7 +3,6 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -28,7 +27,7 @@ type Servicer interface {
 	SubcribeTask(ctx context.Context, event models.EnumTask, handler asynq.HandlerFunc) error
 
 	TransferNft(ctx context.Context, transfer models.NftTransfer, blockNumber uint64, txIndex uint) error
-	UpdateNftMetadata(ctx context.Context, token common.Address, identifier *big.Int, metadata json.RawMessage) (err error)
+	UpdateNftMetadata(ctx context.Context, token common.Address, identifier *big.Int, metadata map[string]any) (err error)
 
 	Close() error
 }

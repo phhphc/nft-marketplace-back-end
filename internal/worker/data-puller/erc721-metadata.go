@@ -6,11 +6,12 @@ import (
 	"io"
 	"net/http"
 	"sync"
+
 	// "time"
 
+	"github.com/hibiken/asynq"
 	"github.com/phhphc/nft-marketplace-back-end/internal/contracts"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
-	"github.com/hibiken/asynq"
 )
 
 func (w *worker) pullErc721Metadata(ctx context.Context, wg *sync.WaitGroup) {
@@ -20,7 +21,7 @@ func (w *worker) pullErc721Metadata(ctx context.Context, wg *sync.WaitGroup) {
 	w.Service.SubcribeTask(ctx, models.TaskNewErc721, w.handleNewErc721Metadata)
 }
 
-func (w *worker) handleNewErc721Metadata(ctx context.Context, task *asynq.Task) error{
+func (w *worker) handleNewErc721Metadata(ctx context.Context, task *asynq.Task) error {
 	var value models.NewErc721Task
 	err := json.Unmarshal(task.Payload(), &value)
 	if err != nil {
@@ -41,7 +42,6 @@ func (w *worker) handleNewErc721Metadata(ctx context.Context, task *asynq.Task) 
 		return err
 	}
 
-	var rawMetadata json.RawMessage
 	res, err := http.Get(tokenURI)
 	if err != nil {
 		w.lg.Debug().Caller().Err(err).Msg("cannot handle HTTP Request")
@@ -50,14 +50,15 @@ func (w *worker) handleNewErc721Metadata(ctx context.Context, task *asynq.Task) 
 	body, _ := io.ReadAll(res.Body)
 	res.Body.Close()
 
-	err = json.Unmarshal(body, &rawMetadata)
+	var metadata map[string]any
+	err = json.Unmarshal(body, &metadata)
 	if err != nil {
 		w.lg.Debug().Caller().Err(err).Msg("Cannot parsing json from request body")
 		return err
 	}
 
-	w.lg.Info().Caller().Bytes("json", []byte(rawMetadata)).Msg("new")
-	err = w.Service.UpdateNftMetadata(context.TODO(), value.Token, value.Identifier, rawMetadata)
+	w.lg.Info().Caller().Interface("metadata", metadata).Msg("new")
+	err = w.Service.UpdateNftMetadata(context.TODO(), value.Token, value.Identifier, metadata)
 	if err != nil {
 		w.lg.Panic().Caller().Err(err).Msg("Cannot update database")
 		return err

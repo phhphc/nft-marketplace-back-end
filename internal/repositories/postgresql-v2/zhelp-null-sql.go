@@ -5,6 +5,8 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/phhphc/nft-marketplace-back-end/internal/util"
+	"github.com/tabbed/pqtype"
 )
 
 var zeroAddress common.Address
@@ -45,6 +47,20 @@ func PointerBoolToNullBool(
 			Bool:  *b,
 			Valid: true,
 		}
+	}
+	return
+}
+
+func MustMapJsonToNullRawMessage(
+	m map[string]any,
+) (r pqtype.NullRawMessage) {
+	bs := util.MustMapJsonToBytes(m)
+	if len(bs) == 0 {
+		return
+	}
+	r = pqtype.NullRawMessage{
+		RawMessage: bs,
+		Valid:      true,
 	}
 	return
 }

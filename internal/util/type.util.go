@@ -30,3 +30,17 @@ func MustBytesToMapJson(
 	}
 	return
 }
+
+func MustMapJsonToBytes(
+	m map[string]any,
+) (bs []byte) {
+	if m == nil {
+		return
+	}
+
+	bs, err := json.Marshal(m)
+	if err != nil {
+		panic(err)
+	}
+	return
+}

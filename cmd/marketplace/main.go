@@ -46,7 +46,7 @@ func main() {
 	defer postgresql.Close()
 
 	var repositoryV1 postgresqlV1.Querier = postgresqlV1.New(postgreClient.Database)
-	var service services.Servicer = services.New(repositoryV1, cfg.RedisUrl, cfg.RedisPass, postgresql)
+	var service services.Servicer = services.New(repositoryV1, cfg.RedisUrl, cfg.RedisPass, postgresql, postgresql)
 	var contronller controllers.Controller = controllers.New(service)
 
 	wg.Add(1)

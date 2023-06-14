@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -10,7 +9,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
+	"github.com/phhphc/nft-marketplace-back-end/internal/services/infrastructure"
 )
 
 const ListingLimit = 10
@@ -94,15 +93,20 @@ func (s *Services) ListNftsWithListings(
 	return ne, nil
 }
 
-func (s *Services) UpdateNftStatus(ctx context.Context, token common.Address, identifier *big.Int, isHidden bool) error {
-	_, err := s.repo.UpdateNftStatus(ctx, postgresql.UpdateNftStatusParams{
-		IsHidden: sql.NullBool{
-			Bool:  isHidden,
-			Valid: true,
+func (s *Services) UpdateNftStatus(
+	ctx context.Context,
+	token common.Address,
+	identifier *big.Int,
+	isHidden bool,
+) error {
+	_, err := s.nftWriter.UpdateNft(
+		ctx,
+		token,
+		identifier,
+		infrastructure.UpdateNftNewValue{
+			IsHidden: &isHidden,
 		},
-		Token:      token.Hex(),
-		Identifier: identifier.String(),
-	})
+	)
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("update error")
 		return err

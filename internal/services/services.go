@@ -11,7 +11,9 @@ func New(
 	repo postgresql.Querier,
 	redisUrl string,
 	redisPass string,
+
 	nftReader infrastructure.NftReader,
+	nftWriter infrastructure.NftWriter,
 ) *Services {
 	return &Services{
 		lg:    *log.GetLogger(),
@@ -19,6 +21,7 @@ func New(
 		asynq: asyncQueue.New(redisUrl, redisPass),
 
 		nftReader: nftReader,
+		nftWriter: nftWriter,
 	}
 }
 
@@ -32,4 +35,5 @@ type Services struct {
 	asynq asyncQueue.AsyncQueue
 
 	nftReader infrastructure.NftReader
+	nftWriter infrastructure.NftWriter
 }
