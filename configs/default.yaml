@@ -6,3 +6,5 @@ chain_url: ws://127.0.0.1:7545
 mkp_addr: 0x5FbDB2315678afecb367f032d93F642f64180aa3
 redis_url: 165.232.160.106:6379
 redis_pass: 12345
+jwt_secret: d266247a5032f53c3b3d06db725d42db71679710c10ec67e04226be912e7fff2
+jwt_expired: 3600
