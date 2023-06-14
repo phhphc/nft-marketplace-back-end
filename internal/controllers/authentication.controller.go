@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/phhphc/nft-marketplace-back-end/internal/controllers/dto"
 )
@@ -8,6 +9,7 @@ import (
 type AuthenticationController interface {
 	GetUserNonce(c echo.Context) error
 	Login(c echo.Context) error
+	Test(c echo.Context) error
 }
 
 type GetUserNonceReq struct {
@@ -28,6 +30,7 @@ type AuthenticateReq struct {
 type AuthenticateRes struct {
 	IsAuthenticated bool   `json:"is_authenticated"`
 	Address         string `json:"address"`
+	Nonce           string `json:"nonce"`
 	AuthToken       string `json:"auth_token"`
 }
 
@@ -58,7 +61,6 @@ func (ctl *Controls) GetUserNonce(c echo.Context) error {
 	})
 }
 
-// Authenticate is a function that returns a JSON response with the following structure:
 func (ctl *Controls) Login(c echo.Context) error {
 	var (
 		req AuthenticateReq
@@ -82,7 +84,23 @@ func (ctl *Controls) Login(c echo.Context) error {
 		Data: AuthenticateRes{
 			IsAuthenticated: true,
 			Address:         req.Address,
+			Nonce:           req.Message,
 			AuthToken:       token,
+		},
+		IsSuccess: true,
+	})
+}
+
+func (ctl *Controls) Test(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	address := claims["address"].(string)
+	return c.JSON(200, dto.Response{
+		Data: AuthenticateRes{
+			IsAuthenticated: true,
+			Address:         address,
+			Nonce:           claims["nonce"].(string),
+			AuthToken:       user.Raw,
 		},
 		IsSuccess: true,
 	})

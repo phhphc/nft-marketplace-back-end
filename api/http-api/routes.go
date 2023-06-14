@@ -1,6 +1,9 @@
 package httpApi
 
-import "github.com/phhphc/nft-marketplace-back-end/internal/controllers"
+import (
+	"github.com/phhphc/nft-marketplace-back-end/internal/controllers"
+	"github.com/phhphc/nft-marketplace-back-end/internal/middlewares"
+)
 
 func (s *httpServer) applyRoutes(
 	controller controllers.Controller,
@@ -30,6 +33,18 @@ func (s *httpServer) applyRoutes(
 	notificationRoute := apiV1.Group("/notification")
 	notificationRoute.GET("", controller.GetNotification)
 	notificationRoute.POST("", controller.UpdateNotification)
+
+	authenticationRoute := apiV1.Group("/auth")
+	authenticationRoute.GET("/:address/nonce", controller.GetUserNonce)
+	authenticationRoute.POST("/login", controller.Login)
+	authenticationRoute.POST("/test", controller.Test, middlewares.IsLoggedIn)
+
+	userRoute := apiV1.Group("/user")
+	userRoute.GET("", controller.GetUsers)
+	userRoute.GET("/:address", controller.GetUser)
+	userRoute.PATCH("/:address", controller.UpdateBlockState)
+	userRoute.POST("/role", controller.CreateUserRole)
+	userRoute.DELETE("/role", controller.DeleteUserRole)
 
 	searchRoute := apiV1.Group("/search")
 	searchRoute.GET("", controller.SearchNFTs)

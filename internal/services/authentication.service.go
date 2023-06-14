@@ -17,13 +17,22 @@ import (
 	"github.com/spruceid/siwe-go"
 	"math/big"
 	"regexp"
+	"strconv"
 	"time"
 )
 
 type AuthenticationService interface {
 	GetUserNonce(ctx context.Context, address string) (string, error)
 	Login(ctx context.Context, address string, messageStr string, sigHex string) (string, error)
+	GenerateJWTToken(user *entities.User) (string, error)
+	ValidateJWTToken(tokenString string) (jwt.MapClaims, error)
 }
+
+const (
+	ADMIN_ROLE_ID     = 1
+	MODERATOR_ROLE_ID = 2
+	USER_ROLE_ID      = 3
+)
 
 func (s *Services) isValidAddress(address string) bool {
 	if len(address) != 42 {
@@ -45,6 +54,15 @@ func (s *Services) GetUserNonce(ctx context.Context, address string) (string, er
 				Nonce:         nonce,
 				PublicAddress: etherAddress.Hex(),
 			})
+			if err != nil {
+				return "", err
+			}
+
+			_, err = s.repo.InsertUserRole(ctx, postgresql.InsertUserRoleParams{
+				RoleID:  USER_ROLE_ID,
+				Address: etherAddress.Hex(),
+			})
+
 			if err != nil {
 				return "", err
 			}
@@ -137,7 +155,7 @@ func (s *Services) Login(ctx context.Context, address string, messageStr string,
 	}
 
 	// Get the JWT token
-	token, err := s.generateJWTToken(user)
+	token, err := s.GenerateJWTToken(user)
 	if err != nil {
 		return "", err
 	}
@@ -145,20 +163,23 @@ func (s *Services) Login(ctx context.Context, address string, messageStr string,
 	return token, nil
 }
 
-func (s *Services) generateJWTToken(user *entities.User) (string, error) {
+func (s *Services) GenerateJWTToken(user *entities.User) (string, error) {
 	cfg, err := configs.LoadConfig()
 	if err != nil {
 		return "", err
 	}
 	fmt.Printf("secret: %s\n", cfg.JwtSecret)
 	secret := []byte(cfg.JwtSecret)
+	jwtExpired, err := strconv.Atoi(cfg.JwtExpired)
+	if err != nil {
+		return "", err
+	}
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
 	claims["address"] = user.Address
-	claims["nonce"] = user.Nonce
-	claims["exp"] = time.Now().Add(15 * time.Minute).Unix()
-	claims["authorized"] = true
+	claims["nonce"] = user.Nonce // current nonce for protect replay attack
+	claims["exp"] = time.Now().Add(time.Duration(jwtExpired) * time.Second).Unix()
 	claims["roles"] = user.Roles
 
 	tokenString, err := token.SignedString(secret)
@@ -167,4 +188,25 @@ func (s *Services) generateJWTToken(user *entities.User) (string, error) {
 		return "", err
 	}
 	return tokenString, nil
+}
+
+func (s *Services) ValidateJWTToken(tokenString string) (jwt.MapClaims, error) {
+	cfg, err := configs.LoadConfig()
+	if err != nil {
+		return nil, err
+	}
+	secret := []byte(cfg.JwtSecret)
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return secret, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	}
+	return nil, fmt.Errorf("invalid token")
 }
