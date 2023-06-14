@@ -12,34 +12,6 @@ import (
 	"github.com/tabbed/pqtype"
 )
 
-const getNft = `-- name: GetNft :one
-SELECT token, identifier, owner, metadata, is_burned, is_hidden, block_number, tx_index
-FROM "nfts"
-WHERE "token" = $1
-  AND "identifier" = $2
-`
-
-type GetNftParams struct {
-	Token      string
-	Identifier string
-}
-
-func (q *Queries) GetNft(ctx context.Context, arg GetNftParams) (Nft, error) {
-	row := q.db.QueryRowContext(ctx, getNft, arg.Token, arg.Identifier)
-	var i Nft
-	err := row.Scan(
-		&i.Token,
-		&i.Identifier,
-		&i.Owner,
-		&i.Metadata,
-		&i.IsBurned,
-		&i.IsHidden,
-		&i.BlockNumber,
-		&i.TxIndex,
-	)
-	return i, err
-}
-
 const updateNft = `-- name: UpdateNft :exec
 INSERT INTO "nfts" ("token", "identifier", "owner", "is_burned", "block_number", "tx_index")
 VALUES ($1, $2, $3, $4, $5, $6)

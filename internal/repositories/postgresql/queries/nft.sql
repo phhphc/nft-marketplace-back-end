@@ -23,9 +23,3 @@ SET "is_burned" = COALESCE(sqlc.narg('is_burned'), "is_burned"),
 WHERE token = @token
   AND identifier = @identifier
 RETURNING *;
-
--- name: GetNft :one
-SELECT *
-FROM "nfts"
-WHERE "token" = sqlc.arg('token')
-  AND "identifier" = sqlc.arg('identifier');

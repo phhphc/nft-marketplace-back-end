@@ -10,7 +10,8 @@ import (
 	httpApi "github.com/phhphc/nft-marketplace-back-end/api/http-api"
 	"github.com/phhphc/nft-marketplace-back-end/configs"
 	"github.com/phhphc/nft-marketplace-back-end/internal/controllers"
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
+	postgresqlV1 "github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql-v2"
 	"github.com/phhphc/nft-marketplace-back-end/internal/services"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/clients"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
@@ -38,8 +39,14 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	var repository postgresql.Querier = postgresql.New(postgreClient.Database)
-	var service services.Servicer = services.New(repository, cfg.RedisUrl, cfg.RedisPass)
+	postgresql, err := postgresql.NewPostgresqlRepository(ctx, cfg.PostgreUri)
+	if err != nil {
+		lg.Panic().Caller().Err(err).Msg("error")
+	}
+	defer postgresql.Close()
+
+	var repositoryV1 postgresqlV1.Querier = postgresqlV1.New(postgreClient.Database)
+	var service services.Servicer = services.New(repositoryV1, cfg.RedisUrl, cfg.RedisPass, postgresql)
 	var contronller controllers.Controller = controllers.New(service)
 
 	wg.Add(1)
