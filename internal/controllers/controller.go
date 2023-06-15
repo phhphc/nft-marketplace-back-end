@@ -17,6 +17,7 @@ type Controller interface {
 	SearchController
 	MarketplaceSettingsController
 	AuthenticationController
+	AuthorizationController
 	UserController
 
 	GetEvent(c echo.Context) error

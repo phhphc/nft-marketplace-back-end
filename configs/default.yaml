@@ -8,3 +8,5 @@ redis_url: 165.232.160.106:6379
 redis_pass: 12345
 jwt_secret: d266247a5032f53c3b3d06db725d42db71679710c10ec67e04226be912e7fff2
 jwt_expired: 3600
+mkp_admin: 0x5cc163BCf461482813a0E2c26a00b9FAaBf612eF
+royalty: 0.01

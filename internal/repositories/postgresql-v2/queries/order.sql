@@ -81,7 +81,8 @@ WHERE o.order_hash in (SELECT DISTINCT o.order_hash
                          AND (oi.token ILIKE sqlc.narg('offer_token') OR sqlc.narg('offer_token') IS NULL)
                          AND (oi.identifier = sqlc.narg('offer_identifier') OR sqlc.narg('offer_identifier') IS NULL))
                          AND o.offerer ILIKE COALESCE(sqlc.narg('offerer'), o.offerer)
-GROUP BY o.order_hash;
+GROUP BY o.order_hash, o.offerer, o.signature, o.start_time, o.end_time, o.salt, o.is_fulfilled, o.is_cancelled,
+         o.is_invalid;
 
 -- name: MarkOrderInvalid :exec
 UPDATE orders o

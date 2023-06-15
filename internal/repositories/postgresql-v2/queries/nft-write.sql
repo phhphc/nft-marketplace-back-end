@@ -53,5 +53,5 @@ WHERE n."is_burned" = FALSE
   AND n."owner" ILIKE COALESCE(sqlc.narg('owner'), n."owner")
   AND n."token" ILIKE COALESCE(sqlc.narg('token'), n."token")
   AND n."identifier" = COALESCE(sqlc.narg('identifier'), n."identifier")
-GROUP BY n.token, n.identifier
+GROUP BY n.token, n.identifier, n.owner, n.metadata, n.is_hidden
 LIMIT sqlc.arg('limit_nft') OFFSET sqlc.arg('offset_nft');

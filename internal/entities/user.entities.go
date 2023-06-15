@@ -15,8 +15,8 @@ type Role struct {
 }
 
 type Claims struct {
-	Address string   `json:"address"`
-	Nonce   string   `json:"nonce"`
-	Roles   []string `json:"roles"`
+	Address string `json:"address"`
+	Nonce   string `json:"nonce"`
+	Roles   []Role `json:"roles"`
 	jwt.StandardClaims
 }

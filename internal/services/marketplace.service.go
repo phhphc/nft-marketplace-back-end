@@ -9,8 +9,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
+	"github.com/phhphc/nft-marketplace-back-end/configs"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
+	"github.com/phhphc/nft-marketplace-back-end/internal/util"
 	"github.com/tabbed/pqtype"
 	"math/big"
 	"strconv"
@@ -21,6 +23,7 @@ type MarketplaceService interface {
 	GetMarketplaceLastSyncBlock(ctx context.Context) (uint64, error)
 	GetValidMarketplaceSettings(ctx context.Context, marketplaceAddress common.Address) (*entities.MarketplaceSettings, error)
 	CreateMarketplaceSettings(ctx context.Context, typedData apitypes.TypedData, signature []byte) (*entities.MarketplaceSettings, error)
+	InitMarketplaceSettings(ctx context.Context) error
 }
 
 func (s *Services) UpdateMarketplaceLastSyncBlock(ctx context.Context, block uint64) error {
@@ -73,22 +76,22 @@ func (s *Services) GetValidMarketplaceSettings(ctx context.Context, marketplaceA
 
 func (s *Services) CreateMarketplaceSettings(ctx context.Context, typedData apitypes.TypedData, signature []byte) (*entities.MarketplaceSettings, error) {
 	admin := common.HexToAddress(typedData.Message["admin"].(string))
-	fmt.Printf("admin: %s\n", admin.Hex())
+	//fmt.Printf("admin: %s\n", admin.Hex())
 	signer := common.HexToAddress(typedData.Message["signer"].(string))
-	fmt.Printf("signer: %s\n", signer.Hex())
+	//fmt.Printf("signer: %s\n", signer.Hex())
 	marketplace := common.HexToAddress(typedData.Message["marketplace"].(string))
-	fmt.Printf("marketplace: %s\n", marketplace.Hex())
+	//fmt.Printf("marketplace: %s\n", marketplace.Hex())
 	royalty, err := strconv.ParseFloat(typedData.Message["royalty"].(string), 64)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	fmt.Printf("royalty: %f\n", royalty)
+	//fmt.Printf("royalty: %f\n", royalty)
 	createdAt := new(big.Int)
 	_, ok := createdAt.SetString(typedData.Message["createdAt"].(string), 10)
 	if !ok {
 		fmt.Println("Error in created at:", err)
 	}
-	fmt.Printf("createdAt: %s\n", createdAt)
+	//fmt.Printf("createdAt: %s\n", createdAt)
 
 	lastSettings, err := s.GetValidMarketplaceSettings(ctx, marketplace)
 	if err != nil {
@@ -146,6 +149,12 @@ func (s *Services) CreateMarketplaceSettings(ctx context.Context, typedData apit
 		return nil, err
 	}
 
+	_, err = s.TransferAdminRole(ctx, signer.Hex(), admin.Hex())
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("error transfer admin role")
+		return nil, err
+	}
+
 	settings := &entities.MarketplaceSettings{
 		Id:          int64(res.ID),
 		Marketplace: marketplace,
@@ -193,4 +202,38 @@ func (s *Services) encodeForSigning(typedData apitypes.TypedData) (hash []byte, 
 	rawData := []byte(fmt.Sprintf("\x19\x01%s%s", string(domainSeparator), string(typedDataHash)))
 	hash = crypto.Keccak256(rawData)
 	return
+}
+
+func (s *Services) InitMarketplaceSettings(ctx context.Context) error {
+	cfg, err := configs.LoadConfig()
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("error load config")
+		return err
+	}
+	marketplace := common.HexToAddress(cfg.MarketplaceAddr)
+	admin := common.HexToAddress(cfg.MarketplaceAdmin)
+	signer := util.ZeroAddress
+	royalty := cfg.Royalty
+
+	lastSettings, err := s.GetValidMarketplaceSettings(ctx, marketplace)
+	if err != nil {
+		return err
+	}
+	if lastSettings != nil {
+		return fmt.Errorf("marketplace settings already initialized")
+	}
+
+	_, err = s.repo.InsertMarketplaceSettings(ctx, postgresql.InsertMarketplaceSettingsParams{
+		Marketplace: marketplace.Hex(),
+		Admin:       admin.Hex(),
+		Signer:      signer.Hex(),
+		Royalty:     fmt.Sprintf("%f", royalty),
+	})
+
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("error insert marketplace settings")
+		return err
+	}
+
+	return nil
 }

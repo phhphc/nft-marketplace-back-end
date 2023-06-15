@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
@@ -14,6 +15,7 @@ import (
 type MarketplaceSettingsController interface {
 	GetMarketplaceSettings(c echo.Context) error
 	CreateMarketplaceSettings(c echo.Context) error
+	InitMarketplaceSettings() error
 }
 
 type GetMarketplaceSettingsReq struct {
@@ -130,4 +132,13 @@ func (ctl *Controls) CreateMarketplaceSettings(c echo.Context) error {
 		},
 		IsSuccess: true,
 	})
+}
+
+func (ctl *Controls) InitMarketplaceSettings() error {
+	err := ctl.service.InitMarketplaceSettings(context.Background())
+	if err != nil {
+		ctl.lg.Error().Caller().Err(err).Msg("controller cannot init marketplace settings: ")
+		return err
+	}
+	return nil
 }

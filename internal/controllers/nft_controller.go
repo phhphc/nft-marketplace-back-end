@@ -91,6 +91,8 @@ func (ctl *Controls) UpdateNftStatus(c echo.Context) error {
 		return ErrParseBigInt
 	}
 
+	// TODO: check if the logged in user is the owner of the nft
+
 	err = ctl.service.UpdateNftStatus(c.Request().Context(), common.HexToAddress(req.Token), identifier, req.IsHidden)
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("err")
