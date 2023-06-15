@@ -14,10 +14,6 @@ func (ctl *Controls) GetRolesByUser(c echo.Context) error {
 	return nil
 }
 
-func (ctl *Controls) GetRoles(c echo.Context) error {
-	return nil
-}
-
 func (ctl *Controls) CreateRole(c echo.Context) error {
 	return nil
 }

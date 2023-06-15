@@ -19,6 +19,7 @@ type Controller interface {
 	AuthenticationController
 	AuthorizationController
 	UserController
+	RoleController
 
 	GetEvent(c echo.Context) error
 

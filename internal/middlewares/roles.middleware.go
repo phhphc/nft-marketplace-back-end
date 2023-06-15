@@ -32,7 +32,7 @@ func isLoggedIn() echo.MiddlewareFunc {
 	return jwt
 }
 
-func OrMiddleware(handlers ...echo.MiddlewareFunc) echo.MiddlewareFunc {
+func Or(handlers ...echo.MiddlewareFunc) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			for _, handler := range handlers {
