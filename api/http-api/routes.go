@@ -39,12 +39,12 @@ func (s *httpServer) applyRoutes(
 	authenticationRoute.POST("/login", controller.Login)
 	authenticationRoute.POST("/test", controller.Test, middlewares.IsLoggedIn)
 
-	userRoute := apiV1.Group("/user")
-	userRoute.GET("", controller.GetUsers, middlewares.IsLoggedIn, middlewares.IsModerator)
-	userRoute.GET("/:address", controller.GetUser, middlewares.IsLoggedIn, middlewares.IsModerator)
-	userRoute.PATCH("/:address/block", controller.UpdateBlockState, middlewares.IsLoggedIn, middlewares.IsModerator)
-	userRoute.POST("/role", controller.CreateUserRole, middlewares.IsLoggedIn, middlewares.IsModerator)
-	userRoute.DELETE("/role", controller.DeleteUserRole, middlewares.IsLoggedIn, middlewares.IsModerator)
+	userRoute := apiV1.Group("/user", middlewares.IsLoggedIn, middlewares.OrMiddleware(middlewares.IsModerator, middlewares.IsAdmin))
+	userRoute.GET("", controller.GetUsers)
+	userRoute.GET("/:address", controller.GetUser)
+	userRoute.PATCH("/:address/block", controller.UpdateBlockState)
+	userRoute.POST("/role", controller.CreateUserRole)
+	userRoute.DELETE("/role", controller.DeleteUserRole)
 
 	settingsRoute := apiV1.Group("/settings")
 	settingsRoute.GET("", controller.GetMarketplaceSettings, middlewares.IsLoggedIn)

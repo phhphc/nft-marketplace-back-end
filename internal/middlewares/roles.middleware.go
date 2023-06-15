@@ -32,6 +32,19 @@ func isLoggedIn() echo.MiddlewareFunc {
 	return jwt
 }
 
+func OrMiddleware(handlers ...echo.MiddlewareFunc) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			for _, handler := range handlers {
+				if err := handler(next)(c); err == nil {
+					return nil
+				}
+			}
+			return echo.ErrUnauthorized
+		}
+	}
+}
+
 func isAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := c.Get("user").(*jwt.Token)
