@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/phhphc/nft-marketplace-back-end/internal/controllers/dto"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
+	"github.com/phhphc/nft-marketplace-back-end/internal/util"
 )
 
 var ErrParseBigInt error = errors.New("parse error")
@@ -177,11 +178,56 @@ func (ctl *Controls) GetOrder(c echo.Context) error {
 		return err
 	}
 
+	res := make([]dto.GetOrderStruct, len(os))
+	for i, o := range os {
+		oOffer := o.Offer
+		offer := make([]dto.OrderOffer, len(oOffer))
+		for i, oi := range oOffer {
+			offer[i] = dto.OrderOffer{
+				ItemType:    oi.ItemType.Int(),
+				Token:       oi.Token.Hex(),
+				Identifier:  oi.Identifier.String(),
+				StartAmount: oi.StartAmount.String(),
+				EndAmount:   oi.EndAmount.String(),
+			}
+		}
+
+		oConsideration := o.Consideration
+		consideration := make([]dto.OrderConsideration, len(oConsideration))
+		for i, ci := range oConsideration {
+			consideration[i] = dto.OrderConsideration{
+				ItemType:    ci.ItemType.Int(),
+				Token:       ci.Token.Hex(),
+				Identifier:  ci.Identifier.String(),
+				StartAmount: ci.StartAmount.String(),
+				EndAmount:   ci.EndAmount.String(),
+				Recipient:   ci.Recipient.Hex(),
+			}
+		}
+
+		oStatus := o.Status
+		res[i] = dto.GetOrderStruct{
+			OrderHash: o.OrderHash.Hex(),
+			Offerer:   o.Offerer.Hex(),
+			StartTime: o.StartTime.String(),
+			EndTime:   o.EndTime.String(),
+			Salt:      o.Salt.Hex(),
+			Signature: util.BytesToHex(o.Signature),
+			Status: dto.OrderStatus{
+				IsCancelled: oStatus.IsCancelled,
+				IsFulfilled: oStatus.IsFulfilled,
+				IsInvalid:   oStatus.IsValidated,
+			},
+			Offer:         offer,
+			Consideration: consideration,
+		}
+	}
+
 	return c.JSON(200, dto.Response{
-		Data: dto.PagedRespond[map[string]any]{
+		Data: dto.PagedRespond[dto.GetOrderStruct]{
 			PageSize:    99999,
 			CurrentPage: 0,
-			Content:     os,
+			Content:     res,
 		},
 		IsSuccess: true,
 	})

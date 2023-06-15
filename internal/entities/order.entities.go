@@ -15,6 +15,7 @@ type Order struct {
 	Salt          *common.Hash
 	StartTime     *big.Int
 	EndTime       *big.Int
+	Status        OrderStatus
 
 	Recipient *common.Address
 	Signature []byte
@@ -41,6 +42,12 @@ type ConsiderationItem struct {
 	Recipient common.Address
 }
 
+type OrderStatus struct {
+	IsFulfilled bool
+	IsCancelled bool
+	IsValidated bool
+}
+
 type EnumItemType int
 
 const (
@@ -55,10 +62,10 @@ func (e *EnumItemType) Int() int {
 }
 
 type ExpiredOrder struct {
-	EventName		string
-	OrderHash		common.Hash
-	EndTime       	*big.Int
-	IsCancelled		bool
-	IsInvalid		bool
-	Offerer			common.Address
+	EventName   string
+	OrderHash   common.Hash
+	EndTime     *big.Int
+	IsCancelled bool
+	IsInvalid   bool
+	Offerer     common.Address
 }

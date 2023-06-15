@@ -12,6 +12,7 @@ import (
 )
 
 type PostgresqlRepository struct {
+	db      *sql.DB
 	queries *gen.Queries
 	lg      *log.Logger
 }
@@ -39,6 +40,7 @@ func NewPostgresqlRepository(
 	}
 
 	r := PostgresqlRepository{
+		db:      db,
 		queries: queries,
 		lg:      lg,
 	}

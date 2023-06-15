@@ -8,6 +8,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
+	"github.com/phhphc/nft-marketplace-back-end/internal/services/infrastructure"
+	"github.com/phhphc/nft-marketplace-back-end/internal/util"
 )
 
 type EventService interface {
@@ -286,16 +288,19 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 		})
 
 		// Handle order (make offer) that still be valid after being fulfilled
-		s.repo.UpdateOrderStatus(ctx, postgresql.UpdateOrderStatusParams{
-			OrderHash: sql.NullString{
-				Valid:  true,
-				String: order.OrderHash.Hex(),
+		err = s.orderWriter.UpdateOrderStatus(
+			ctx,
+			infrastructure.UpdateOrderCondition{
+				OrderHash: order.OrderHash,
 			},
-			IsInvalid: sql.NullBool{
-				Valid: true,
-				Bool:  true,
+			infrastructure.UpdateOrderValue{
+				IsInvalid: util.TruePointer,
 			},
-		})
+		)
+		if err != nil {
+			s.lg.Error().Caller().Err(err).Msg("error update")
+			return
+		}
 
 		return
 	}
@@ -355,14 +360,14 @@ func (s *Services) GetListEvent(ctx context.Context, query entities.EventRead) (
 
 	for _, event := range eventList {
 		newEvent := entities.Event{
-			Name:     event.Name,
-			Token:    common.HexToAddress(event.Token),
-			TokenId:  ToBigInt(event.TokenID),
-			From:     common.HexToAddress(event.From),
-			Date:     event.Date.Time,
-			TxHash:   event.TxHash.String,
-			NftImage: event.NftImage,
-			NftName:  event.NftName,
+			Name:      event.Name,
+			Token:     common.HexToAddress(event.Token),
+			TokenId:   ToBigInt(event.TokenID),
+			From:      common.HexToAddress(event.From),
+			Date:      event.Date.Time,
+			TxHash:    event.TxHash.String,
+			NftImage:  event.NftImage,
+			NftName:   event.NftName,
 			OrderHash: common.HexToHash(event.OrderHash.String),
 		}
 

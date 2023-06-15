@@ -90,9 +90,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listNftWithListingStmt, err = db.PrepareContext(ctx, listNftWithListing); err != nil {
 		return nil, fmt.Errorf("error preparing query ListNftWithListing: %w", err)
 	}
-	if q.markOrderInvalidStmt, err = db.PrepareContext(ctx, markOrderInvalid); err != nil {
-		return nil, fmt.Errorf("error preparing query MarkOrderInvalid: %w", err)
-	}
 	if q.updateCollectionLastSyncBlockStmt, err = db.PrepareContext(ctx, updateCollectionLastSyncBlock); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateCollectionLastSyncBlock: %w", err)
 	}
@@ -107,6 +104,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updateOrderStatusStmt, err = db.PrepareContext(ctx, updateOrderStatus); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateOrderStatus: %w", err)
+	}
+	if q.updateOrderStatusByOfferStmt, err = db.PrepareContext(ctx, updateOrderStatusByOffer); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateOrderStatusByOffer: %w", err)
 	}
 	if q.upsertNftLatestStmt, err = db.PrepareContext(ctx, upsertNftLatest); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertNftLatest: %w", err)
@@ -229,11 +229,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listNftWithListingStmt: %w", cerr)
 		}
 	}
-	if q.markOrderInvalidStmt != nil {
-		if cerr := q.markOrderInvalidStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing markOrderInvalidStmt: %w", cerr)
-		}
-	}
 	if q.updateCollectionLastSyncBlockStmt != nil {
 		if cerr := q.updateCollectionLastSyncBlockStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateCollectionLastSyncBlockStmt: %w", cerr)
@@ -257,6 +252,11 @@ func (q *Queries) Close() error {
 	if q.updateOrderStatusStmt != nil {
 		if cerr := q.updateOrderStatusStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateOrderStatusStmt: %w", cerr)
+		}
+	}
+	if q.updateOrderStatusByOfferStmt != nil {
+		if cerr := q.updateOrderStatusByOfferStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateOrderStatusByOfferStmt: %w", cerr)
 		}
 	}
 	if q.upsertNftLatestStmt != nil {
@@ -330,12 +330,12 @@ type Queries struct {
 	insertOrderConsiderationItemStmt   *sql.Stmt
 	insertOrderOfferItemStmt           *sql.Stmt
 	listNftWithListingStmt             *sql.Stmt
-	markOrderInvalidStmt               *sql.Stmt
 	updateCollectionLastSyncBlockStmt  *sql.Stmt
 	updateMarketplaceLastSyncBlockStmt *sql.Stmt
 	updateNftStmt                      *sql.Stmt
 	updateNotificationStmt             *sql.Stmt
 	updateOrderStatusStmt              *sql.Stmt
+	updateOrderStatusByOfferStmt       *sql.Stmt
 	upsertNftLatestStmt                *sql.Stmt
 	upsertProfileStmt                  *sql.Stmt
 }
@@ -366,12 +366,12 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		insertOrderConsiderationItemStmt:   q.insertOrderConsiderationItemStmt,
 		insertOrderOfferItemStmt:           q.insertOrderOfferItemStmt,
 		listNftWithListingStmt:             q.listNftWithListingStmt,
-		markOrderInvalidStmt:               q.markOrderInvalidStmt,
 		updateCollectionLastSyncBlockStmt:  q.updateCollectionLastSyncBlockStmt,
 		updateMarketplaceLastSyncBlockStmt: q.updateMarketplaceLastSyncBlockStmt,
 		updateNftStmt:                      q.updateNftStmt,
 		updateNotificationStmt:             q.updateNotificationStmt,
 		updateOrderStatusStmt:              q.updateOrderStatusStmt,
+		updateOrderStatusByOfferStmt:       q.updateOrderStatusByOfferStmt,
 		upsertNftLatestStmt:                q.upsertNftLatestStmt,
 		upsertProfileStmt:                  q.upsertProfileStmt,
 	}

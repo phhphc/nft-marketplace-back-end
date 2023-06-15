@@ -1,9 +1,11 @@
 package util
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"math/big"
+	"strings"
 )
 
 var ErrCastError = errors.New("error cast")
@@ -42,5 +44,22 @@ func MustMapJsonToBytes(
 	if err != nil {
 		panic(err)
 	}
+	return
+}
+
+func MustHexToBytes(
+	s string,
+) (bs []byte) {
+	bs, err := hex.DecodeString(strings.TrimLeft(s, "0x"))
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+func BytesToHex(
+	bs []byte,
+) (s string) {
+	s = "0x" + hex.EncodeToString(bs)
 	return
 }

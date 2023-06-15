@@ -14,6 +14,9 @@ func New(
 
 	nftReader infrastructure.NftReader,
 	nftWriter infrastructure.NftWriter,
+
+	orderReader infrastructure.OrderReader,
+	orderWriter infrastructure.OrderWritter,
 ) *Services {
 	return &Services{
 		lg:    *log.GetLogger(),
@@ -22,6 +25,9 @@ func New(
 
 		nftReader: nftReader,
 		nftWriter: nftWriter,
+
+		orderReader: orderReader,
+		orderWriter: orderWriter,
 	}
 }
 
@@ -36,4 +42,7 @@ type Services struct {
 
 	nftReader infrastructure.NftReader
 	nftWriter infrastructure.NftWriter
+
+	orderReader infrastructure.OrderReader
+	orderWriter infrastructure.OrderWritter
 }

@@ -9,20 +9,37 @@ import (
 	"github.com/tabbed/pqtype"
 )
 
-var zeroAddress common.Address
-
-func init() {
-	zeroAddress = common.Address{}
-}
-
 func AddressToNullString(
 	addr common.Address,
 ) (ns sql.NullString) {
-	if addr != zeroAddress {
+	if addr != util.ZeroAddress {
 		ns = sql.NullString{
 			String: addr.Hex(),
 			Valid:  true,
 		}
+	}
+	return
+}
+
+func HashToNullString(
+	h common.Hash,
+) (ns sql.NullString) {
+	if h != util.ZeroHash {
+		ns = sql.NullString{
+			String: h.Hex(),
+			Valid:  true,
+		}
+	}
+	return
+}
+
+func BytesToNullString(
+	bs []byte,
+) (ns sql.NullString) {
+	s := util.BytesToHex(bs)
+	ns = sql.NullString{
+		String: s,
+		Valid:  true,
 	}
 	return
 }

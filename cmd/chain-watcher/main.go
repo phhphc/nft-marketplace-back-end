@@ -50,7 +50,15 @@ func main() {
 	}
 	defer postgresql.Close()
 	repo := postgresqlV1.New(postgreClient.Database)
-	service := services.New(repo, cfg.RedisUrl, cfg.RedisPass, postgresql, postgresql)
+	service := services.New(
+		repo,
+		cfg.RedisUrl,
+		cfg.RedisPass,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+	)
 	defer func() {
 		err := service.Close()
 		if err != nil {
