@@ -7,8 +7,8 @@ import (
 )
 
 type NftTransfer struct {
-	ContractAddr common.Address
-	TokenId      *big.Int
-	From         common.Address
-	To           common.Address
+	Token      common.Address
+	Identifier *big.Int
+	From       common.Address
+	To         common.Address
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/phhphc/nft-marketplace-back-end/internal/models"
+	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 )
 
 func (w *worker) listenMkpEvent(ctx context.Context, wg *sync.WaitGroup) {
@@ -19,7 +19,12 @@ func (w *worker) listenMkpEvent(ctx context.Context, wg *sync.WaitGroup) {
 		Addresses: []common.Address{w.mkpAddr},
 	}
 
-	go w.resyncMkpEvent(ctx, query)
+	lastSyncBlock, err := w.Service.GetMarketplaceLastSyncBlock(ctx)
+	if err != nil {
+		w.lg.Fatal().Caller().Err(err).Msg("error get last block")
+	}
+
+	go w.resyncMkpEvent(ctx, query, lastSyncBlock)
 
 	sub, err := w.ethClient.SubscribeFilterLogs(ctx, query, logCh)
 	if err != nil {
@@ -40,15 +45,14 @@ func (w *worker) listenMkpEvent(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (w *worker) resyncMkpEvent(ctx context.Context, q ethereum.FilterQuery) {
-	lastSyncBlock := uint64(0)
+func (w *worker) resyncMkpEvent(ctx context.Context, q ethereum.FilterQuery, lastSyncBlock uint64) {
 	currentBlock, err := w.ethClient.BlockNumber(ctx)
 	if err != nil {
 		w.lg.Fatal().Caller().Err(err).Msg("cannot get current block")
 	}
 
 	// TODO - resync with max range
-	q.FromBlock = new(big.Int).SetUint64(lastSyncBlock)
+	q.FromBlock = new(big.Int).SetUint64(lastSyncBlock + 1)
 	q.ToBlock = new(big.Int).SetUint64(currentBlock)
 	logs, err := w.ethClient.FilterLogs(ctx, q)
 	if err != nil {
@@ -61,6 +65,13 @@ func (w *worker) resyncMkpEvent(ctx context.Context, q ethereum.FilterQuery) {
 }
 
 func (w *worker) handleMkpEvent(vLog types.Log) {
+	defer func() {
+		err := w.Service.UpdateMarketplaceLastSyncBlock(context.TODO(), vLog.BlockNumber)
+		if err != nil {
+			w.lg.Fatal().Caller().Err(err).Msg("error update last sync")
+		}
+	}()
+
 	eventAbi, err := w.mkpAbi.EventByID(vLog.Topics[0])
 	if err != nil {
 		w.lg.Error().Caller().Err(err).Msg("error get event abi")
@@ -68,51 +79,76 @@ func (w *worker) handleMkpEvent(vLog types.Log) {
 	}
 
 	switch eventAbi.Name {
-	case "NewListing":
-		nl, err := w.mkpContract.ParseNewListing(vLog)
+	case "OrderFulfilled":
+		log, err := w.mkpContract.ParseOrderFulfilled(vLog)
 		if err != nil {
 			w.lg.Error().Caller().Err(err).Msg("error parse event")
 			return
 		}
-		w.lg.Debug().Caller().Interface("log", nl).Msg("it work")
 
-		w.listingService.NewListing(context.TODO(), models.Listing{
-			ListingId:    nl.ListingId,
-			ContractAddr: nl.Collection,
-			TokenId:      nl.TokenId,
-			Seller:       nl.Seller,
-			Price:        nl.Price,
-		}, vLog.BlockNumber, vLog.TxIndex)
-	case "ListingCanceled":
-		lc, err := w.mkpContract.ParseListingCanceled(vLog)
+		var offerItems = make([]entities.OfferItem, len(log.Offer))
+		for i, item := range log.Offer {
+			offerItems[i] = entities.OfferItem{
+				ItemType:   entities.EnumItemType(item.ItemType),
+				Token:      item.Token,
+				Identifier: item.Identifier,
+				Amount:     item.Amount,
+			}
+		}
+
+		var considerationItem = make([]entities.ConsiderationItem, len(log.Consideration))
+		for i, item := range log.Consideration {
+			considerationItem[i] = entities.ConsiderationItem{
+				ItemType:   entities.EnumItemType(item.ItemType),
+				Token:      item.Token,
+				Identifier: item.Identifier,
+				Amount:     item.Amount,
+				Recipient:  item.Recipient,
+			}
+		}
+
+		w.lg.Info().Caller().Str("order hash", common.Hash(log.OrderHash).Hex()).Msg("OrderFulfilled")
+		w.Service.FulFillOrder(context.TODO(), entities.Order{
+			OrderHash: log.OrderHash,
+			Offerer:   log.Offerer,
+			Recipient: &log.Recipient,
+
+			Offer:         offerItems,
+			Consideration: considerationItem,
+		})
+
+		w.Service.CreateEventsByFulfilledOrder(context.TODO(), entities.Order{
+			OrderHash:     log.OrderHash,
+			Offer:         offerItems,
+			Consideration: considerationItem,
+			Offerer:       log.Offerer,
+			Recipient:     &log.Recipient,
+		}, vLog.TxHash.Hex())
+
+	case "OrderCancelled":
+		log, err := w.mkpContract.ParseOrderCancelled(vLog)
 		if err != nil {
 			w.lg.Error().Caller().Err(err).Msg("error parse event")
 			return
 		}
-		w.lg.Debug().Caller().Interface("log", lc).Msg("it work")
 
-		w.listingService.CancelListing(context.TODO(), models.Listing{
-			ListingId:    lc.ListingId,
-			ContractAddr: lc.Collection,
-			TokenId:      lc.TokenId,
-			Seller:       lc.Seller,
-			Price:        lc.Price,
-		}, vLog.BlockNumber, vLog.TxIndex)
-	case "ListingSale":
-		ls, err := w.mkpContract.ParseListingSale(vLog)
+		w.lg.Info().Caller().Str("order hash", common.Hash(log.OrderHash).Hex()).Msg("OrderCancelled")
+		err = w.Service.HandleOrderCancelled(context.TODO(), log.OrderHash)
+		if err != nil {
+			w.lg.Error().Caller().Err(err).Msg("cancel error")
+		}
+	case "CounterIncremented":
+		log, err := w.mkpContract.ParseCounterIncremented(vLog)
 		if err != nil {
 			w.lg.Error().Caller().Err(err).Msg("error parse event")
 			return
 		}
-		w.lg.Debug().Caller().Interface("log", ls).Msg("it work")
 
-		w.listingService.SellListing(context.TODO(), models.Listing{
-			ListingId:    ls.ListingId,
-			ContractAddr: ls.Collection,
-			TokenId:      ls.TokenId,
-			Seller:       ls.From,
-			Price:        ls.Price,
-		}, vLog.BlockNumber, vLog.TxIndex)
+		w.lg.Info().Caller().Str("offerer", log.Offerer.Hex()).Msg("CounterIncremented")
+		err = w.Service.HandleCounterIncremented(context.TODO(), log.Offerer)
+		if err != nil {
+			w.lg.Error().Caller().Err(err).Msg("cancel error")
+		}
 	default:
 		w.lg.Error().Caller().Err(err).Str("event", eventAbi.Name).Msg("unhandle contract event")
 	}

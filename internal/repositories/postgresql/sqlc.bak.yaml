@@ -1,0 +1,14 @@
+version: "2"
+sql:
+  - schema: "./migrations"
+    queries: "./queries"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "postgresql"
+        out: "./v2"
+        emit_interface: true
+        emit_empty_slices: true
+        overrides:
+          - column: "amount"
+            go_type: "math/big.Int"

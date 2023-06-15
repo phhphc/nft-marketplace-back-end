@@ -26,20 +26,75 @@ var (
 	_ = common.Big1
 	_ = types.BloomLookup
 	_ = event.NewSubscription
+	_ = abi.ConvertType
 )
 
-// TraderListingItem is an auto generated low-level Go binding around an user-defined struct.
-type TraderListingItem struct {
-	Collection common.Address
-	TokenId    *big.Int
-	Quantity   *big.Int
-	Price      *big.Int
-	Seller     common.Address
+// ConsiderationItem is an auto generated low-level Go binding around an user-defined struct.
+type ConsiderationItem struct {
+	ItemType    uint8
+	Token       common.Address
+	Identifier  *big.Int
+	StartAmount *big.Int
+	EndAmount   *big.Int
+	Recipient   common.Address
+}
+
+// OfferItem is an auto generated low-level Go binding around an user-defined struct.
+type OfferItem struct {
+	ItemType    uint8
+	Token       common.Address
+	Identifier  *big.Int
+	StartAmount *big.Int
+	EndAmount   *big.Int
+}
+
+// Order is an auto generated low-level Go binding around an user-defined struct.
+type Order struct {
+	Parameters OrderParameters
+	Signature  []byte
+}
+
+// OrderComponents is an auto generated low-level Go binding around an user-defined struct.
+type OrderComponents struct {
+	Offerer       common.Address
+	Offer         []OfferItem
+	Consideration []ConsiderationItem
+	StartTime     *big.Int
+	EndTime       *big.Int
+	Salt          *big.Int
+	Counter       *big.Int
+}
+
+// OrderParameters is an auto generated low-level Go binding around an user-defined struct.
+type OrderParameters struct {
+	Offerer       common.Address
+	Offer         []OfferItem
+	Consideration []ConsiderationItem
+	StartTime     *big.Int
+	EndTime       *big.Int
+	Salt          *big.Int
+}
+
+// ReceivedItem is an auto generated low-level Go binding around an user-defined struct.
+type ReceivedItem struct {
+	ItemType   uint8
+	Token      common.Address
+	Identifier *big.Int
+	Amount     *big.Int
+	Recipient  common.Address
+}
+
+// SpentItem is an auto generated low-level Go binding around an user-defined struct.
+type SpentItem struct {
+	ItemType   uint8
+	Token      common.Address
+	Identifier *big.Int
+	Amount     *big.Int
 }
 
 // MarketplaceMetaData contains all meta data concerning the Marketplace contract.
 var MarketplaceMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"listingId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"seller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"ListingCanceled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"listingId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"ListingSale\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"listingId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"seller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"NewListing\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"listingId\",\"type\":\"uint256\"}],\"name\":\"buy\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"listingId\",\"type\":\"uint256\"}],\"name\":\"cancelListing\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"listingId\",\"type\":\"uint256\"}],\"name\":\"getListing\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"quantity\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"seller\",\"type\":\"address\"}],\"internalType\":\"structTrader.ListingItem\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"CannotCancelOrder\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientNativeTokensSupplied\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"InvalidERC721TransferAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidNativeOfferItem\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidSigner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"name\":\"InvalidTime\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MissingItemAmount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"name\":\"OrderAlreadyFilled\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"name\":\"OrderIsCancelled\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"TokenTransferGenericFailure\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnusedItemParameters\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newCounter\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"}],\"name\":\"CounterIncremented\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"}],\"name\":\"OrderCancelled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structSpentItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"indexed\":false,\"internalType\":\"structReceivedItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"}],\"name\":\"OrderFulfilled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structOrderParameters\",\"name\":\"orderParameters\",\"type\":\"tuple\"}],\"name\":\"OrderValidated\",\"type\":\"event\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"counter\",\"type\":\"uint256\"}],\"internalType\":\"structOrderComponents[]\",\"name\":\"orders\",\"type\":\"tuple[]\"}],\"name\":\"cancel\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"cancelled\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"}],\"internalType\":\"structOrderParameters\",\"name\":\"parameters\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"structOrder\",\"name\":\"order\",\"type\":\"tuple\"}],\"name\":\"fulfillOrder\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"fulfilled\",\"type\":\"bool\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"}],\"internalType\":\"structOrderParameters\",\"name\":\"parameters\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"structOrder[]\",\"name\":\"orders\",\"type\":\"tuple[]\"}],\"name\":\"fulfillOrderBatch\",\"outputs\":[{\"internalType\":\"bool[]\",\"name\":\"fulfilled\",\"type\":\"bool[]\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"}],\"name\":\"getCounter\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"counter\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"counter\",\"type\":\"uint256\"}],\"internalType\":\"structOrderComponents\",\"name\":\"orderComponents\",\"type\":\"tuple\"}],\"name\":\"getOrderHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"}],\"name\":\"getOrderStatus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isValidated\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isCancelled\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isFulFilled\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"incrementCounter\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"newCounter\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"information\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"version\",\"type\":\"string\"},{\"internalType\":\"bytes32\",\"name\":\"domainSeparator\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"offerer\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"}],\"internalType\":\"structOfferItem[]\",\"name\":\"offer\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"enumItemType\",\"name\":\"itemType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"identifier\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endAmount\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"recipient\",\"type\":\"address\"}],\"internalType\":\"structConsiderationItem[]\",\"name\":\"consideration\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"}],\"internalType\":\"structOrderParameters\",\"name\":\"parameters\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"structOrder[]\",\"name\":\"order\",\"type\":\"tuple[]\"}],\"name\":\"validate\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // MarketplaceABI is the input ABI used to generate the binding from.
@@ -143,11 +198,11 @@ func NewMarketplaceFilterer(address common.Address, filterer bind.ContractFilter
 
 // bindMarketplace binds a generic wrapper to an already deployed contract.
 func bindMarketplace(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(MarketplaceABI))
+	parsed, err := MarketplaceMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -188,103 +243,302 @@ func (_Marketplace *MarketplaceTransactorRaw) Transact(opts *bind.TransactOpts, 
 	return _Marketplace.Contract.contract.Transact(opts, method, params...)
 }
 
-// GetListing is a free data retrieval call binding the contract method 0x107a274a.
+// GetCounter is a free data retrieval call binding the contract method 0xf07ec373.
 //
-// Solidity: function getListing(uint256 listingId) view returns((address,uint256,uint256,uint256,address))
-func (_Marketplace *MarketplaceCaller) GetListing(opts *bind.CallOpts, listingId *big.Int) (TraderListingItem, error) {
+// Solidity: function getCounter(address offerer) view returns(uint256 counter)
+func (_Marketplace *MarketplaceCaller) GetCounter(opts *bind.CallOpts, offerer common.Address) (*big.Int, error) {
 	var out []interface{}
-	err := _Marketplace.contract.Call(opts, &out, "getListing", listingId)
+	err := _Marketplace.contract.Call(opts, &out, "getCounter", offerer)
 
 	if err != nil {
-		return *new(TraderListingItem), err
+		return *new(*big.Int), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(TraderListingItem)).(*TraderListingItem)
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
 
 }
 
-// GetListing is a free data retrieval call binding the contract method 0x107a274a.
+// GetCounter is a free data retrieval call binding the contract method 0xf07ec373.
 //
-// Solidity: function getListing(uint256 listingId) view returns((address,uint256,uint256,uint256,address))
-func (_Marketplace *MarketplaceSession) GetListing(listingId *big.Int) (TraderListingItem, error) {
-	return _Marketplace.Contract.GetListing(&_Marketplace.CallOpts, listingId)
+// Solidity: function getCounter(address offerer) view returns(uint256 counter)
+func (_Marketplace *MarketplaceSession) GetCounter(offerer common.Address) (*big.Int, error) {
+	return _Marketplace.Contract.GetCounter(&_Marketplace.CallOpts, offerer)
 }
 
-// GetListing is a free data retrieval call binding the contract method 0x107a274a.
+// GetCounter is a free data retrieval call binding the contract method 0xf07ec373.
 //
-// Solidity: function getListing(uint256 listingId) view returns((address,uint256,uint256,uint256,address))
-func (_Marketplace *MarketplaceCallerSession) GetListing(listingId *big.Int) (TraderListingItem, error) {
-	return _Marketplace.Contract.GetListing(&_Marketplace.CallOpts, listingId)
+// Solidity: function getCounter(address offerer) view returns(uint256 counter)
+func (_Marketplace *MarketplaceCallerSession) GetCounter(offerer common.Address) (*big.Int, error) {
+	return _Marketplace.Contract.GetCounter(&_Marketplace.CallOpts, offerer)
 }
 
-// Buy is a paid mutator transaction binding the contract method 0xd96a094a.
+// GetOrderHash is a free data retrieval call binding the contract method 0x8149edc1.
 //
-// Solidity: function buy(uint256 listingId) payable returns()
-func (_Marketplace *MarketplaceTransactor) Buy(opts *bind.TransactOpts, listingId *big.Int) (*types.Transaction, error) {
-	return _Marketplace.contract.Transact(opts, "buy", listingId)
+// Solidity: function getOrderHash((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256,uint256) orderComponents) view returns(bytes32 orderHash)
+func (_Marketplace *MarketplaceCaller) GetOrderHash(opts *bind.CallOpts, orderComponents OrderComponents) ([32]byte, error) {
+	var out []interface{}
+	err := _Marketplace.contract.Call(opts, &out, "getOrderHash", orderComponents)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
 }
 
-// Buy is a paid mutator transaction binding the contract method 0xd96a094a.
+// GetOrderHash is a free data retrieval call binding the contract method 0x8149edc1.
 //
-// Solidity: function buy(uint256 listingId) payable returns()
-func (_Marketplace *MarketplaceSession) Buy(listingId *big.Int) (*types.Transaction, error) {
-	return _Marketplace.Contract.Buy(&_Marketplace.TransactOpts, listingId)
+// Solidity: function getOrderHash((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256,uint256) orderComponents) view returns(bytes32 orderHash)
+func (_Marketplace *MarketplaceSession) GetOrderHash(orderComponents OrderComponents) ([32]byte, error) {
+	return _Marketplace.Contract.GetOrderHash(&_Marketplace.CallOpts, orderComponents)
 }
 
-// Buy is a paid mutator transaction binding the contract method 0xd96a094a.
+// GetOrderHash is a free data retrieval call binding the contract method 0x8149edc1.
 //
-// Solidity: function buy(uint256 listingId) payable returns()
-func (_Marketplace *MarketplaceTransactorSession) Buy(listingId *big.Int) (*types.Transaction, error) {
-	return _Marketplace.Contract.Buy(&_Marketplace.TransactOpts, listingId)
+// Solidity: function getOrderHash((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256,uint256) orderComponents) view returns(bytes32 orderHash)
+func (_Marketplace *MarketplaceCallerSession) GetOrderHash(orderComponents OrderComponents) ([32]byte, error) {
+	return _Marketplace.Contract.GetOrderHash(&_Marketplace.CallOpts, orderComponents)
 }
 
-// CancelListing is a paid mutator transaction binding the contract method 0x305a67a8.
+// GetOrderStatus is a free data retrieval call binding the contract method 0x46423aa7.
 //
-// Solidity: function cancelListing(uint256 listingId) returns()
-func (_Marketplace *MarketplaceTransactor) CancelListing(opts *bind.TransactOpts, listingId *big.Int) (*types.Transaction, error) {
-	return _Marketplace.contract.Transact(opts, "cancelListing", listingId)
+// Solidity: function getOrderStatus(bytes32 orderHash) view returns(bool isValidated, bool isCancelled, bool isFulFilled)
+func (_Marketplace *MarketplaceCaller) GetOrderStatus(opts *bind.CallOpts, orderHash [32]byte) (struct {
+	IsValidated bool
+	IsCancelled bool
+	IsFulFilled bool
+}, error) {
+	var out []interface{}
+	err := _Marketplace.contract.Call(opts, &out, "getOrderStatus", orderHash)
+
+	outstruct := new(struct {
+		IsValidated bool
+		IsCancelled bool
+		IsFulFilled bool
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.IsValidated = *abi.ConvertType(out[0], new(bool)).(*bool)
+	outstruct.IsCancelled = *abi.ConvertType(out[1], new(bool)).(*bool)
+	outstruct.IsFulFilled = *abi.ConvertType(out[2], new(bool)).(*bool)
+
+	return *outstruct, err
+
 }
 
-// CancelListing is a paid mutator transaction binding the contract method 0x305a67a8.
+// GetOrderStatus is a free data retrieval call binding the contract method 0x46423aa7.
 //
-// Solidity: function cancelListing(uint256 listingId) returns()
-func (_Marketplace *MarketplaceSession) CancelListing(listingId *big.Int) (*types.Transaction, error) {
-	return _Marketplace.Contract.CancelListing(&_Marketplace.TransactOpts, listingId)
+// Solidity: function getOrderStatus(bytes32 orderHash) view returns(bool isValidated, bool isCancelled, bool isFulFilled)
+func (_Marketplace *MarketplaceSession) GetOrderStatus(orderHash [32]byte) (struct {
+	IsValidated bool
+	IsCancelled bool
+	IsFulFilled bool
+}, error) {
+	return _Marketplace.Contract.GetOrderStatus(&_Marketplace.CallOpts, orderHash)
 }
 
-// CancelListing is a paid mutator transaction binding the contract method 0x305a67a8.
+// GetOrderStatus is a free data retrieval call binding the contract method 0x46423aa7.
 //
-// Solidity: function cancelListing(uint256 listingId) returns()
-func (_Marketplace *MarketplaceTransactorSession) CancelListing(listingId *big.Int) (*types.Transaction, error) {
-	return _Marketplace.Contract.CancelListing(&_Marketplace.TransactOpts, listingId)
+// Solidity: function getOrderStatus(bytes32 orderHash) view returns(bool isValidated, bool isCancelled, bool isFulFilled)
+func (_Marketplace *MarketplaceCallerSession) GetOrderStatus(orderHash [32]byte) (struct {
+	IsValidated bool
+	IsCancelled bool
+	IsFulFilled bool
+}, error) {
+	return _Marketplace.Contract.GetOrderStatus(&_Marketplace.CallOpts, orderHash)
 }
 
-// OnERC721Received is a paid mutator transaction binding the contract method 0x150b7a02.
+// Information is a free data retrieval call binding the contract method 0xf47b7740.
 //
-// Solidity: function onERC721Received(address , address from, uint256 tokenId, bytes data) returns(bytes4)
-func (_Marketplace *MarketplaceTransactor) OnERC721Received(opts *bind.TransactOpts, arg0 common.Address, from common.Address, tokenId *big.Int, data []byte) (*types.Transaction, error) {
-	return _Marketplace.contract.Transact(opts, "onERC721Received", arg0, from, tokenId, data)
+// Solidity: function information() view returns(string version, bytes32 domainSeparator)
+func (_Marketplace *MarketplaceCaller) Information(opts *bind.CallOpts) (struct {
+	Version         string
+	DomainSeparator [32]byte
+}, error) {
+	var out []interface{}
+	err := _Marketplace.contract.Call(opts, &out, "information")
+
+	outstruct := new(struct {
+		Version         string
+		DomainSeparator [32]byte
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.Version = *abi.ConvertType(out[0], new(string)).(*string)
+	outstruct.DomainSeparator = *abi.ConvertType(out[1], new([32]byte)).(*[32]byte)
+
+	return *outstruct, err
+
 }
 
-// OnERC721Received is a paid mutator transaction binding the contract method 0x150b7a02.
+// Information is a free data retrieval call binding the contract method 0xf47b7740.
 //
-// Solidity: function onERC721Received(address , address from, uint256 tokenId, bytes data) returns(bytes4)
-func (_Marketplace *MarketplaceSession) OnERC721Received(arg0 common.Address, from common.Address, tokenId *big.Int, data []byte) (*types.Transaction, error) {
-	return _Marketplace.Contract.OnERC721Received(&_Marketplace.TransactOpts, arg0, from, tokenId, data)
+// Solidity: function information() view returns(string version, bytes32 domainSeparator)
+func (_Marketplace *MarketplaceSession) Information() (struct {
+	Version         string
+	DomainSeparator [32]byte
+}, error) {
+	return _Marketplace.Contract.Information(&_Marketplace.CallOpts)
 }
 
-// OnERC721Received is a paid mutator transaction binding the contract method 0x150b7a02.
+// Information is a free data retrieval call binding the contract method 0xf47b7740.
 //
-// Solidity: function onERC721Received(address , address from, uint256 tokenId, bytes data) returns(bytes4)
-func (_Marketplace *MarketplaceTransactorSession) OnERC721Received(arg0 common.Address, from common.Address, tokenId *big.Int, data []byte) (*types.Transaction, error) {
-	return _Marketplace.Contract.OnERC721Received(&_Marketplace.TransactOpts, arg0, from, tokenId, data)
+// Solidity: function information() view returns(string version, bytes32 domainSeparator)
+func (_Marketplace *MarketplaceCallerSession) Information() (struct {
+	Version         string
+	DomainSeparator [32]byte
+}, error) {
+	return _Marketplace.Contract.Information(&_Marketplace.CallOpts)
 }
 
-// MarketplaceListingCanceledIterator is returned from FilterListingCanceled and is used to iterate over the raw logs and unpacked data for ListingCanceled events raised by the Marketplace contract.
-type MarketplaceListingCanceledIterator struct {
-	Event *MarketplaceListingCanceled // Event containing the contract specifics and raw log
+// Name is a free data retrieval call binding the contract method 0x06fdde03.
+//
+// Solidity: function name() pure returns(string)
+func (_Marketplace *MarketplaceCaller) Name(opts *bind.CallOpts) (string, error) {
+	var out []interface{}
+	err := _Marketplace.contract.Call(opts, &out, "name")
+
+	if err != nil {
+		return *new(string), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(string)).(*string)
+
+	return out0, err
+
+}
+
+// Name is a free data retrieval call binding the contract method 0x06fdde03.
+//
+// Solidity: function name() pure returns(string)
+func (_Marketplace *MarketplaceSession) Name() (string, error) {
+	return _Marketplace.Contract.Name(&_Marketplace.CallOpts)
+}
+
+// Name is a free data retrieval call binding the contract method 0x06fdde03.
+//
+// Solidity: function name() pure returns(string)
+func (_Marketplace *MarketplaceCallerSession) Name() (string, error) {
+	return _Marketplace.Contract.Name(&_Marketplace.CallOpts)
+}
+
+// Cancel is a paid mutator transaction binding the contract method 0x8ba211f1.
+//
+// Solidity: function cancel((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256,uint256)[] orders) returns(bool cancelled)
+func (_Marketplace *MarketplaceTransactor) Cancel(opts *bind.TransactOpts, orders []OrderComponents) (*types.Transaction, error) {
+	return _Marketplace.contract.Transact(opts, "cancel", orders)
+}
+
+// Cancel is a paid mutator transaction binding the contract method 0x8ba211f1.
+//
+// Solidity: function cancel((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256,uint256)[] orders) returns(bool cancelled)
+func (_Marketplace *MarketplaceSession) Cancel(orders []OrderComponents) (*types.Transaction, error) {
+	return _Marketplace.Contract.Cancel(&_Marketplace.TransactOpts, orders)
+}
+
+// Cancel is a paid mutator transaction binding the contract method 0x8ba211f1.
+//
+// Solidity: function cancel((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256,uint256)[] orders) returns(bool cancelled)
+func (_Marketplace *MarketplaceTransactorSession) Cancel(orders []OrderComponents) (*types.Transaction, error) {
+	return _Marketplace.Contract.Cancel(&_Marketplace.TransactOpts, orders)
+}
+
+// FulfillOrder is a paid mutator transaction binding the contract method 0xbbb4f64c.
+//
+// Solidity: function fulfillOrder(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes) order) payable returns(bool fulfilled)
+func (_Marketplace *MarketplaceTransactor) FulfillOrder(opts *bind.TransactOpts, order Order) (*types.Transaction, error) {
+	return _Marketplace.contract.Transact(opts, "fulfillOrder", order)
+}
+
+// FulfillOrder is a paid mutator transaction binding the contract method 0xbbb4f64c.
+//
+// Solidity: function fulfillOrder(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes) order) payable returns(bool fulfilled)
+func (_Marketplace *MarketplaceSession) FulfillOrder(order Order) (*types.Transaction, error) {
+	return _Marketplace.Contract.FulfillOrder(&_Marketplace.TransactOpts, order)
+}
+
+// FulfillOrder is a paid mutator transaction binding the contract method 0xbbb4f64c.
+//
+// Solidity: function fulfillOrder(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes) order) payable returns(bool fulfilled)
+func (_Marketplace *MarketplaceTransactorSession) FulfillOrder(order Order) (*types.Transaction, error) {
+	return _Marketplace.Contract.FulfillOrder(&_Marketplace.TransactOpts, order)
+}
+
+// FulfillOrderBatch is a paid mutator transaction binding the contract method 0x47bb13a0.
+//
+// Solidity: function fulfillOrderBatch(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes)[] orders) payable returns(bool[] fulfilled)
+func (_Marketplace *MarketplaceTransactor) FulfillOrderBatch(opts *bind.TransactOpts, orders []Order) (*types.Transaction, error) {
+	return _Marketplace.contract.Transact(opts, "fulfillOrderBatch", orders)
+}
+
+// FulfillOrderBatch is a paid mutator transaction binding the contract method 0x47bb13a0.
+//
+// Solidity: function fulfillOrderBatch(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes)[] orders) payable returns(bool[] fulfilled)
+func (_Marketplace *MarketplaceSession) FulfillOrderBatch(orders []Order) (*types.Transaction, error) {
+	return _Marketplace.Contract.FulfillOrderBatch(&_Marketplace.TransactOpts, orders)
+}
+
+// FulfillOrderBatch is a paid mutator transaction binding the contract method 0x47bb13a0.
+//
+// Solidity: function fulfillOrderBatch(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes)[] orders) payable returns(bool[] fulfilled)
+func (_Marketplace *MarketplaceTransactorSession) FulfillOrderBatch(orders []Order) (*types.Transaction, error) {
+	return _Marketplace.Contract.FulfillOrderBatch(&_Marketplace.TransactOpts, orders)
+}
+
+// IncrementCounter is a paid mutator transaction binding the contract method 0x5b34b966.
+//
+// Solidity: function incrementCounter() returns(uint256 newCounter)
+func (_Marketplace *MarketplaceTransactor) IncrementCounter(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Marketplace.contract.Transact(opts, "incrementCounter")
+}
+
+// IncrementCounter is a paid mutator transaction binding the contract method 0x5b34b966.
+//
+// Solidity: function incrementCounter() returns(uint256 newCounter)
+func (_Marketplace *MarketplaceSession) IncrementCounter() (*types.Transaction, error) {
+	return _Marketplace.Contract.IncrementCounter(&_Marketplace.TransactOpts)
+}
+
+// IncrementCounter is a paid mutator transaction binding the contract method 0x5b34b966.
+//
+// Solidity: function incrementCounter() returns(uint256 newCounter)
+func (_Marketplace *MarketplaceTransactorSession) IncrementCounter() (*types.Transaction, error) {
+	return _Marketplace.Contract.IncrementCounter(&_Marketplace.TransactOpts)
+}
+
+// Validate is a paid mutator transaction binding the contract method 0xf9e17bb2.
+//
+// Solidity: function validate(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes)[] order) returns(bool)
+func (_Marketplace *MarketplaceTransactor) Validate(opts *bind.TransactOpts, order []Order) (*types.Transaction, error) {
+	return _Marketplace.contract.Transact(opts, "validate", order)
+}
+
+// Validate is a paid mutator transaction binding the contract method 0xf9e17bb2.
+//
+// Solidity: function validate(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes)[] order) returns(bool)
+func (_Marketplace *MarketplaceSession) Validate(order []Order) (*types.Transaction, error) {
+	return _Marketplace.Contract.Validate(&_Marketplace.TransactOpts, order)
+}
+
+// Validate is a paid mutator transaction binding the contract method 0xf9e17bb2.
+//
+// Solidity: function validate(((address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256),bytes)[] order) returns(bool)
+func (_Marketplace *MarketplaceTransactorSession) Validate(order []Order) (*types.Transaction, error) {
+	return _Marketplace.Contract.Validate(&_Marketplace.TransactOpts, order)
+}
+
+// MarketplaceCounterIncrementedIterator is returned from FilterCounterIncremented and is used to iterate over the raw logs and unpacked data for CounterIncremented events raised by the Marketplace contract.
+type MarketplaceCounterIncrementedIterator struct {
+	Event *MarketplaceCounterIncremented // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -298,7 +552,7 @@ type MarketplaceListingCanceledIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *MarketplaceListingCanceledIterator) Next() bool {
+func (it *MarketplaceCounterIncrementedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -307,7 +561,7 @@ func (it *MarketplaceListingCanceledIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(MarketplaceListingCanceled)
+			it.Event = new(MarketplaceCounterIncremented)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -322,7 +576,7 @@ func (it *MarketplaceListingCanceledIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(MarketplaceListingCanceled)
+		it.Event = new(MarketplaceCounterIncremented)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -338,71 +592,52 @@ func (it *MarketplaceListingCanceledIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *MarketplaceListingCanceledIterator) Error() error {
+func (it *MarketplaceCounterIncrementedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *MarketplaceListingCanceledIterator) Close() error {
+func (it *MarketplaceCounterIncrementedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// MarketplaceListingCanceled represents a ListingCanceled event raised by the Marketplace contract.
-type MarketplaceListingCanceled struct {
-	ListingId  *big.Int
-	Collection common.Address
-	TokenId    *big.Int
-	Seller     common.Address
-	Price      *big.Int
+// MarketplaceCounterIncremented represents a CounterIncremented event raised by the Marketplace contract.
+type MarketplaceCounterIncremented struct {
+	NewCounter *big.Int
+	Offerer    common.Address
 	Raw        types.Log // Blockchain specific contextual infos
 }
 
-// FilterListingCanceled is a free log retrieval operation binding the contract event 0xaa2fa98a651c2f4f7c7aa47829192401acec2b7a1596e54871d9f5acfd93f207.
+// FilterCounterIncremented is a free log retrieval operation binding the contract event 0x721c20121297512b72821b97f5326877ea8ecf4bb9948fea5bfcb6453074d37f.
 //
-// Solidity: event ListingCanceled(uint256 listingId, address indexed collection, uint256 indexed tokenId, address indexed seller, uint256 price)
-func (_Marketplace *MarketplaceFilterer) FilterListingCanceled(opts *bind.FilterOpts, collection []common.Address, tokenId []*big.Int, seller []common.Address) (*MarketplaceListingCanceledIterator, error) {
+// Solidity: event CounterIncremented(uint256 newCounter, address indexed offerer)
+func (_Marketplace *MarketplaceFilterer) FilterCounterIncremented(opts *bind.FilterOpts, offerer []common.Address) (*MarketplaceCounterIncrementedIterator, error) {
 
-	var collectionRule []interface{}
-	for _, collectionItem := range collection {
-		collectionRule = append(collectionRule, collectionItem)
-	}
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
-	}
-	var sellerRule []interface{}
-	for _, sellerItem := range seller {
-		sellerRule = append(sellerRule, sellerItem)
+	var offererRule []interface{}
+	for _, offererItem := range offerer {
+		offererRule = append(offererRule, offererItem)
 	}
 
-	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "ListingCanceled", collectionRule, tokenIdRule, sellerRule)
+	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "CounterIncremented", offererRule)
 	if err != nil {
 		return nil, err
 	}
-	return &MarketplaceListingCanceledIterator{contract: _Marketplace.contract, event: "ListingCanceled", logs: logs, sub: sub}, nil
+	return &MarketplaceCounterIncrementedIterator{contract: _Marketplace.contract, event: "CounterIncremented", logs: logs, sub: sub}, nil
 }
 
-// WatchListingCanceled is a free log subscription operation binding the contract event 0xaa2fa98a651c2f4f7c7aa47829192401acec2b7a1596e54871d9f5acfd93f207.
+// WatchCounterIncremented is a free log subscription operation binding the contract event 0x721c20121297512b72821b97f5326877ea8ecf4bb9948fea5bfcb6453074d37f.
 //
-// Solidity: event ListingCanceled(uint256 listingId, address indexed collection, uint256 indexed tokenId, address indexed seller, uint256 price)
-func (_Marketplace *MarketplaceFilterer) WatchListingCanceled(opts *bind.WatchOpts, sink chan<- *MarketplaceListingCanceled, collection []common.Address, tokenId []*big.Int, seller []common.Address) (event.Subscription, error) {
+// Solidity: event CounterIncremented(uint256 newCounter, address indexed offerer)
+func (_Marketplace *MarketplaceFilterer) WatchCounterIncremented(opts *bind.WatchOpts, sink chan<- *MarketplaceCounterIncremented, offerer []common.Address) (event.Subscription, error) {
 
-	var collectionRule []interface{}
-	for _, collectionItem := range collection {
-		collectionRule = append(collectionRule, collectionItem)
-	}
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
-	}
-	var sellerRule []interface{}
-	for _, sellerItem := range seller {
-		sellerRule = append(sellerRule, sellerItem)
+	var offererRule []interface{}
+	for _, offererItem := range offerer {
+		offererRule = append(offererRule, offererItem)
 	}
 
-	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "ListingCanceled", collectionRule, tokenIdRule, sellerRule)
+	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "CounterIncremented", offererRule)
 	if err != nil {
 		return nil, err
 	}
@@ -412,8 +647,8 @@ func (_Marketplace *MarketplaceFilterer) WatchListingCanceled(opts *bind.WatchOp
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(MarketplaceListingCanceled)
-				if err := _Marketplace.contract.UnpackLog(event, "ListingCanceled", log); err != nil {
+				event := new(MarketplaceCounterIncremented)
+				if err := _Marketplace.contract.UnpackLog(event, "CounterIncremented", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -434,21 +669,21 @@ func (_Marketplace *MarketplaceFilterer) WatchListingCanceled(opts *bind.WatchOp
 	}), nil
 }
 
-// ParseListingCanceled is a log parse operation binding the contract event 0xaa2fa98a651c2f4f7c7aa47829192401acec2b7a1596e54871d9f5acfd93f207.
+// ParseCounterIncremented is a log parse operation binding the contract event 0x721c20121297512b72821b97f5326877ea8ecf4bb9948fea5bfcb6453074d37f.
 //
-// Solidity: event ListingCanceled(uint256 listingId, address indexed collection, uint256 indexed tokenId, address indexed seller, uint256 price)
-func (_Marketplace *MarketplaceFilterer) ParseListingCanceled(log types.Log) (*MarketplaceListingCanceled, error) {
-	event := new(MarketplaceListingCanceled)
-	if err := _Marketplace.contract.UnpackLog(event, "ListingCanceled", log); err != nil {
+// Solidity: event CounterIncremented(uint256 newCounter, address indexed offerer)
+func (_Marketplace *MarketplaceFilterer) ParseCounterIncremented(log types.Log) (*MarketplaceCounterIncremented, error) {
+	event := new(MarketplaceCounterIncremented)
+	if err := _Marketplace.contract.UnpackLog(event, "CounterIncremented", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// MarketplaceListingSaleIterator is returned from FilterListingSale and is used to iterate over the raw logs and unpacked data for ListingSale events raised by the Marketplace contract.
-type MarketplaceListingSaleIterator struct {
-	Event *MarketplaceListingSale // Event containing the contract specifics and raw log
+// MarketplaceOrderCancelledIterator is returned from FilterOrderCancelled and is used to iterate over the raw logs and unpacked data for OrderCancelled events raised by the Marketplace contract.
+type MarketplaceOrderCancelledIterator struct {
+	Event *MarketplaceOrderCancelled // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -462,7 +697,7 @@ type MarketplaceListingSaleIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *MarketplaceListingSaleIterator) Next() bool {
+func (it *MarketplaceOrderCancelledIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -471,7 +706,7 @@ func (it *MarketplaceListingSaleIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(MarketplaceListingSale)
+			it.Event = new(MarketplaceOrderCancelled)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -486,7 +721,7 @@ func (it *MarketplaceListingSaleIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(MarketplaceListingSale)
+		it.Event = new(MarketplaceOrderCancelled)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -502,74 +737,52 @@ func (it *MarketplaceListingSaleIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *MarketplaceListingSaleIterator) Error() error {
+func (it *MarketplaceOrderCancelledIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *MarketplaceListingSaleIterator) Close() error {
+func (it *MarketplaceOrderCancelledIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// MarketplaceListingSale represents a ListingSale event raised by the Marketplace contract.
-type MarketplaceListingSale struct {
-	ListingId  *big.Int
-	Collection common.Address
-	TokenId    *big.Int
-	From       common.Address
-	To         common.Address
-	Price      *big.Int
-	Raw        types.Log // Blockchain specific contextual infos
+// MarketplaceOrderCancelled represents a OrderCancelled event raised by the Marketplace contract.
+type MarketplaceOrderCancelled struct {
+	OrderHash [32]byte
+	Offerer   common.Address
+	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterListingSale is a free log retrieval operation binding the contract event 0x2e074abc18d4bb5b83d782fe1b9d156107564992bf9a5c0292fd937360999620.
+// FilterOrderCancelled is a free log retrieval operation binding the contract event 0xa6eb7cdc219e1518ced964e9a34e61d68a94e4f1569db3e84256ba981ba52753.
 //
-// Solidity: event ListingSale(uint256 listingId, address indexed collection, uint256 indexed tokenId, address from, address indexed to, uint256 price)
-func (_Marketplace *MarketplaceFilterer) FilterListingSale(opts *bind.FilterOpts, collection []common.Address, tokenId []*big.Int, to []common.Address) (*MarketplaceListingSaleIterator, error) {
+// Solidity: event OrderCancelled(bytes32 orderHash, address indexed offerer)
+func (_Marketplace *MarketplaceFilterer) FilterOrderCancelled(opts *bind.FilterOpts, offerer []common.Address) (*MarketplaceOrderCancelledIterator, error) {
 
-	var collectionRule []interface{}
-	for _, collectionItem := range collection {
-		collectionRule = append(collectionRule, collectionItem)
-	}
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
+	var offererRule []interface{}
+	for _, offererItem := range offerer {
+		offererRule = append(offererRule, offererItem)
 	}
 
-	var toRule []interface{}
-	for _, toItem := range to {
-		toRule = append(toRule, toItem)
-	}
-
-	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "ListingSale", collectionRule, tokenIdRule, toRule)
+	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "OrderCancelled", offererRule)
 	if err != nil {
 		return nil, err
 	}
-	return &MarketplaceListingSaleIterator{contract: _Marketplace.contract, event: "ListingSale", logs: logs, sub: sub}, nil
+	return &MarketplaceOrderCancelledIterator{contract: _Marketplace.contract, event: "OrderCancelled", logs: logs, sub: sub}, nil
 }
 
-// WatchListingSale is a free log subscription operation binding the contract event 0x2e074abc18d4bb5b83d782fe1b9d156107564992bf9a5c0292fd937360999620.
+// WatchOrderCancelled is a free log subscription operation binding the contract event 0xa6eb7cdc219e1518ced964e9a34e61d68a94e4f1569db3e84256ba981ba52753.
 //
-// Solidity: event ListingSale(uint256 listingId, address indexed collection, uint256 indexed tokenId, address from, address indexed to, uint256 price)
-func (_Marketplace *MarketplaceFilterer) WatchListingSale(opts *bind.WatchOpts, sink chan<- *MarketplaceListingSale, collection []common.Address, tokenId []*big.Int, to []common.Address) (event.Subscription, error) {
+// Solidity: event OrderCancelled(bytes32 orderHash, address indexed offerer)
+func (_Marketplace *MarketplaceFilterer) WatchOrderCancelled(opts *bind.WatchOpts, sink chan<- *MarketplaceOrderCancelled, offerer []common.Address) (event.Subscription, error) {
 
-	var collectionRule []interface{}
-	for _, collectionItem := range collection {
-		collectionRule = append(collectionRule, collectionItem)
-	}
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
+	var offererRule []interface{}
+	for _, offererItem := range offerer {
+		offererRule = append(offererRule, offererItem)
 	}
 
-	var toRule []interface{}
-	for _, toItem := range to {
-		toRule = append(toRule, toItem)
-	}
-
-	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "ListingSale", collectionRule, tokenIdRule, toRule)
+	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "OrderCancelled", offererRule)
 	if err != nil {
 		return nil, err
 	}
@@ -579,8 +792,8 @@ func (_Marketplace *MarketplaceFilterer) WatchListingSale(opts *bind.WatchOpts, 
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(MarketplaceListingSale)
-				if err := _Marketplace.contract.UnpackLog(event, "ListingSale", log); err != nil {
+				event := new(MarketplaceOrderCancelled)
+				if err := _Marketplace.contract.UnpackLog(event, "OrderCancelled", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -601,21 +814,21 @@ func (_Marketplace *MarketplaceFilterer) WatchListingSale(opts *bind.WatchOpts, 
 	}), nil
 }
 
-// ParseListingSale is a log parse operation binding the contract event 0x2e074abc18d4bb5b83d782fe1b9d156107564992bf9a5c0292fd937360999620.
+// ParseOrderCancelled is a log parse operation binding the contract event 0xa6eb7cdc219e1518ced964e9a34e61d68a94e4f1569db3e84256ba981ba52753.
 //
-// Solidity: event ListingSale(uint256 listingId, address indexed collection, uint256 indexed tokenId, address from, address indexed to, uint256 price)
-func (_Marketplace *MarketplaceFilterer) ParseListingSale(log types.Log) (*MarketplaceListingSale, error) {
-	event := new(MarketplaceListingSale)
-	if err := _Marketplace.contract.UnpackLog(event, "ListingSale", log); err != nil {
+// Solidity: event OrderCancelled(bytes32 orderHash, address indexed offerer)
+func (_Marketplace *MarketplaceFilterer) ParseOrderCancelled(log types.Log) (*MarketplaceOrderCancelled, error) {
+	event := new(MarketplaceOrderCancelled)
+	if err := _Marketplace.contract.UnpackLog(event, "OrderCancelled", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// MarketplaceNewListingIterator is returned from FilterNewListing and is used to iterate over the raw logs and unpacked data for NewListing events raised by the Marketplace contract.
-type MarketplaceNewListingIterator struct {
-	Event *MarketplaceNewListing // Event containing the contract specifics and raw log
+// MarketplaceOrderFulfilledIterator is returned from FilterOrderFulfilled and is used to iterate over the raw logs and unpacked data for OrderFulfilled events raised by the Marketplace contract.
+type MarketplaceOrderFulfilledIterator struct {
+	Event *MarketplaceOrderFulfilled // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -629,7 +842,7 @@ type MarketplaceNewListingIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *MarketplaceNewListingIterator) Next() bool {
+func (it *MarketplaceOrderFulfilledIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -638,7 +851,7 @@ func (it *MarketplaceNewListingIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(MarketplaceNewListing)
+			it.Event = new(MarketplaceOrderFulfilled)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -653,7 +866,7 @@ func (it *MarketplaceNewListingIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(MarketplaceNewListing)
+		it.Event = new(MarketplaceOrderFulfilled)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -669,71 +882,55 @@ func (it *MarketplaceNewListingIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *MarketplaceNewListingIterator) Error() error {
+func (it *MarketplaceOrderFulfilledIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *MarketplaceNewListingIterator) Close() error {
+func (it *MarketplaceOrderFulfilledIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// MarketplaceNewListing represents a NewListing event raised by the Marketplace contract.
-type MarketplaceNewListing struct {
-	ListingId  *big.Int
-	Collection common.Address
-	TokenId    *big.Int
-	Seller     common.Address
-	Price      *big.Int
-	Raw        types.Log // Blockchain specific contextual infos
+// MarketplaceOrderFulfilled represents a OrderFulfilled event raised by the Marketplace contract.
+type MarketplaceOrderFulfilled struct {
+	OrderHash     [32]byte
+	Offerer       common.Address
+	Recipient     common.Address
+	Offer         []SpentItem
+	Consideration []ReceivedItem
+	Raw           types.Log // Blockchain specific contextual infos
 }
 
-// FilterNewListing is a free log retrieval operation binding the contract event 0xfdafb8fa8c155e0358dae0e8eb9f0494d90a3c9c4da9e209663860ee0c08b8a4.
+// FilterOrderFulfilled is a free log retrieval operation binding the contract event 0xf4985a8ee1c01f18407eedc2cff3108d4a3065ddfda1220caac817175639729b.
 //
-// Solidity: event NewListing(uint256 listingId, address indexed collection, uint256 indexed tokenId, address indexed seller, uint256 price)
-func (_Marketplace *MarketplaceFilterer) FilterNewListing(opts *bind.FilterOpts, collection []common.Address, tokenId []*big.Int, seller []common.Address) (*MarketplaceNewListingIterator, error) {
+// Solidity: event OrderFulfilled(bytes32 orderHash, address indexed offerer, address recipient, (uint8,address,uint256,uint256)[] offer, (uint8,address,uint256,uint256,address)[] consideration)
+func (_Marketplace *MarketplaceFilterer) FilterOrderFulfilled(opts *bind.FilterOpts, offerer []common.Address) (*MarketplaceOrderFulfilledIterator, error) {
 
-	var collectionRule []interface{}
-	for _, collectionItem := range collection {
-		collectionRule = append(collectionRule, collectionItem)
-	}
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
-	}
-	var sellerRule []interface{}
-	for _, sellerItem := range seller {
-		sellerRule = append(sellerRule, sellerItem)
+	var offererRule []interface{}
+	for _, offererItem := range offerer {
+		offererRule = append(offererRule, offererItem)
 	}
 
-	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "NewListing", collectionRule, tokenIdRule, sellerRule)
+	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "OrderFulfilled", offererRule)
 	if err != nil {
 		return nil, err
 	}
-	return &MarketplaceNewListingIterator{contract: _Marketplace.contract, event: "NewListing", logs: logs, sub: sub}, nil
+	return &MarketplaceOrderFulfilledIterator{contract: _Marketplace.contract, event: "OrderFulfilled", logs: logs, sub: sub}, nil
 }
 
-// WatchNewListing is a free log subscription operation binding the contract event 0xfdafb8fa8c155e0358dae0e8eb9f0494d90a3c9c4da9e209663860ee0c08b8a4.
+// WatchOrderFulfilled is a free log subscription operation binding the contract event 0xf4985a8ee1c01f18407eedc2cff3108d4a3065ddfda1220caac817175639729b.
 //
-// Solidity: event NewListing(uint256 listingId, address indexed collection, uint256 indexed tokenId, address indexed seller, uint256 price)
-func (_Marketplace *MarketplaceFilterer) WatchNewListing(opts *bind.WatchOpts, sink chan<- *MarketplaceNewListing, collection []common.Address, tokenId []*big.Int, seller []common.Address) (event.Subscription, error) {
+// Solidity: event OrderFulfilled(bytes32 orderHash, address indexed offerer, address recipient, (uint8,address,uint256,uint256)[] offer, (uint8,address,uint256,uint256,address)[] consideration)
+func (_Marketplace *MarketplaceFilterer) WatchOrderFulfilled(opts *bind.WatchOpts, sink chan<- *MarketplaceOrderFulfilled, offerer []common.Address) (event.Subscription, error) {
 
-	var collectionRule []interface{}
-	for _, collectionItem := range collection {
-		collectionRule = append(collectionRule, collectionItem)
-	}
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
-	}
-	var sellerRule []interface{}
-	for _, sellerItem := range seller {
-		sellerRule = append(sellerRule, sellerItem)
+	var offererRule []interface{}
+	for _, offererItem := range offerer {
+		offererRule = append(offererRule, offererItem)
 	}
 
-	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "NewListing", collectionRule, tokenIdRule, sellerRule)
+	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "OrderFulfilled", offererRule)
 	if err != nil {
 		return nil, err
 	}
@@ -743,8 +940,8 @@ func (_Marketplace *MarketplaceFilterer) WatchNewListing(opts *bind.WatchOpts, s
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(MarketplaceNewListing)
-				if err := _Marketplace.contract.UnpackLog(event, "NewListing", log); err != nil {
+				event := new(MarketplaceOrderFulfilled)
+				if err := _Marketplace.contract.UnpackLog(event, "OrderFulfilled", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -765,12 +962,147 @@ func (_Marketplace *MarketplaceFilterer) WatchNewListing(opts *bind.WatchOpts, s
 	}), nil
 }
 
-// ParseNewListing is a log parse operation binding the contract event 0xfdafb8fa8c155e0358dae0e8eb9f0494d90a3c9c4da9e209663860ee0c08b8a4.
+// ParseOrderFulfilled is a log parse operation binding the contract event 0xf4985a8ee1c01f18407eedc2cff3108d4a3065ddfda1220caac817175639729b.
 //
-// Solidity: event NewListing(uint256 listingId, address indexed collection, uint256 indexed tokenId, address indexed seller, uint256 price)
-func (_Marketplace *MarketplaceFilterer) ParseNewListing(log types.Log) (*MarketplaceNewListing, error) {
-	event := new(MarketplaceNewListing)
-	if err := _Marketplace.contract.UnpackLog(event, "NewListing", log); err != nil {
+// Solidity: event OrderFulfilled(bytes32 orderHash, address indexed offerer, address recipient, (uint8,address,uint256,uint256)[] offer, (uint8,address,uint256,uint256,address)[] consideration)
+func (_Marketplace *MarketplaceFilterer) ParseOrderFulfilled(log types.Log) (*MarketplaceOrderFulfilled, error) {
+	event := new(MarketplaceOrderFulfilled)
+	if err := _Marketplace.contract.UnpackLog(event, "OrderFulfilled", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// MarketplaceOrderValidatedIterator is returned from FilterOrderValidated and is used to iterate over the raw logs and unpacked data for OrderValidated events raised by the Marketplace contract.
+type MarketplaceOrderValidatedIterator struct {
+	Event *MarketplaceOrderValidated // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *MarketplaceOrderValidatedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(MarketplaceOrderValidated)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(MarketplaceOrderValidated)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *MarketplaceOrderValidatedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *MarketplaceOrderValidatedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// MarketplaceOrderValidated represents a OrderValidated event raised by the Marketplace contract.
+type MarketplaceOrderValidated struct {
+	OrderHash       [32]byte
+	OrderParameters OrderParameters
+	Raw             types.Log // Blockchain specific contextual infos
+}
+
+// FilterOrderValidated is a free log retrieval operation binding the contract event 0xffbbabb33c4442c50b58ffcb1586157e793120fa26dee658fbdf27bf13c8c391.
+//
+// Solidity: event OrderValidated(bytes32 orderHash, (address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256) orderParameters)
+func (_Marketplace *MarketplaceFilterer) FilterOrderValidated(opts *bind.FilterOpts) (*MarketplaceOrderValidatedIterator, error) {
+
+	logs, sub, err := _Marketplace.contract.FilterLogs(opts, "OrderValidated")
+	if err != nil {
+		return nil, err
+	}
+	return &MarketplaceOrderValidatedIterator{contract: _Marketplace.contract, event: "OrderValidated", logs: logs, sub: sub}, nil
+}
+
+// WatchOrderValidated is a free log subscription operation binding the contract event 0xffbbabb33c4442c50b58ffcb1586157e793120fa26dee658fbdf27bf13c8c391.
+//
+// Solidity: event OrderValidated(bytes32 orderHash, (address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256) orderParameters)
+func (_Marketplace *MarketplaceFilterer) WatchOrderValidated(opts *bind.WatchOpts, sink chan<- *MarketplaceOrderValidated) (event.Subscription, error) {
+
+	logs, sub, err := _Marketplace.contract.WatchLogs(opts, "OrderValidated")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(MarketplaceOrderValidated)
+				if err := _Marketplace.contract.UnpackLog(event, "OrderValidated", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseOrderValidated is a log parse operation binding the contract event 0xffbbabb33c4442c50b58ffcb1586157e793120fa26dee658fbdf27bf13c8c391.
+//
+// Solidity: event OrderValidated(bytes32 orderHash, (address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint256,uint256,uint256) orderParameters)
+func (_Marketplace *MarketplaceFilterer) ParseOrderValidated(log types.Log) (*MarketplaceOrderValidated, error) {
+	event := new(MarketplaceOrderValidated)
+	if err := _Marketplace.contract.UnpackLog(event, "OrderValidated", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
