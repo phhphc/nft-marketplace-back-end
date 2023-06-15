@@ -43,8 +43,8 @@ func (s *httpServer) applyRoutes(
 	userRoute.GET("", controller.GetUsers)
 	userRoute.GET("/:address", controller.GetUser)
 	userRoute.PATCH("/:address/block", controller.UpdateBlockState)
-	userRoute.POST("/role", controller.CreateUserRole)
-	userRoute.DELETE("/role", controller.DeleteUserRole)
+	userRoute.POST("/role", controller.CreateUserRole, middlewares.IsAdmin)
+	userRoute.DELETE("/role", controller.DeleteUserRole, middlewares.IsAdmin)
 
 	settingsRoute := apiV1.Group("/settings")
 	settingsRoute.GET("", controller.GetMarketplaceSettings, middlewares.IsLoggedIn)
