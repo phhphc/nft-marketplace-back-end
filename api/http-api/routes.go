@@ -39,10 +39,10 @@ func (s *httpServer) applyRoutes(
 	authenticationRoute.POST("/login", controller.Login)
 	authenticationRoute.POST("/test", controller.Test, mdw.IsLoggedIn)
 
-	userRoute := apiV1.Group("/user", mdw.IsLoggedIn)
-	userRoute.GET("", controller.GetUsers, mdw.Or(mdw.IsModerator, mdw.IsAdmin))
+	userRoute := apiV1.Group("/user")
+	userRoute.GET("", controller.GetUsers)
 	userRoute.GET("/:address", controller.GetUser)
-	userRoute.PATCH("/:address/block", controller.UpdateBlockState)
+	userRoute.PATCH("/:address/block", controller.UpdateBlockState, mdw.Or(mdw.IsModerator, mdw.IsAdmin))
 	userRoute.POST("/role", controller.CreateUserRole, mdw.IsAdmin)
 	userRoute.DELETE("/role", controller.DeleteUserRole, mdw.IsAdmin)
 
