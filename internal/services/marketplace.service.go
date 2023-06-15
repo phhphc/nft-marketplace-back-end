@@ -216,7 +216,7 @@ func (s *Services) InitMarketplaceSettings(ctx context.Context) error {
 	royalty := cfg.Royalty
 
 	lastSettings, err := s.GetValidMarketplaceSettings(ctx, marketplace)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return err
 	}
 	if lastSettings != nil {
