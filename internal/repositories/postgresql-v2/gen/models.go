@@ -57,6 +57,18 @@ type Marketplace struct {
 	LastSyncBlock int64
 }
 
+type MarketplaceSetting struct {
+	ID          int32
+	Marketplace string
+	Admin       string
+	Signer      string
+	Royalty     string
+	TypedData   pqtype.NullRawMessage
+	Sighash     sql.NullString
+	Signature   sql.NullString
+	CreatedAt   sql.NullString
+}
+
 type Nft struct {
 	Token       string
 	Identifier  string
@@ -107,4 +119,20 @@ type Profile struct {
 	Username  sql.NullString
 	Metadata  pqtype.NullRawMessage
 	Signature string
+}
+
+type Role struct {
+	ID   int32
+	Name string
+}
+
+type User struct {
+	PublicAddress string
+	Nonce         string
+	IsBlock       bool
+}
+
+type UserRole struct {
+	Address string
+	RoleID  int32
 }

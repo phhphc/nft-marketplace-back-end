@@ -58,6 +58,8 @@ func main() {
 		postgresql,
 		postgresql,
 		postgresql,
+		postgresql,
+		postgresql,
 	)
 	defer func() {
 		err := service.Close()

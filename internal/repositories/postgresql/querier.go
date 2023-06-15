@@ -13,10 +13,6 @@ type Querier interface {
 	DeleteUserRole(ctx context.Context, arg DeleteUserRoleParams) error
 	FullTextSearch(ctx context.Context, arg FullTextSearchParams) ([]FullTextSearchRow, error)
 	GetAllRoles(ctx context.Context) ([]Role, error)
-	GetCategoryByName(ctx context.Context, name string) (Category, error)
-	GetCollection(ctx context.Context, arg GetCollectionParams) ([]GetCollectionRow, error)
-	GetCollectionLastSyncBlock(ctx context.Context, token string) (int64, error)
-	GetCollectionWithCategory(ctx context.Context, arg GetCollectionWithCategoryParams) ([]GetCollectionWithCategoryRow, error)
 	GetEvent(ctx context.Context, arg GetEventParams) ([]GetEventRow, error)
 	GetMarketplaceLastSyncBlock(ctx context.Context) (int64, error)
 	GetMarketplaceSettings(ctx context.Context, arg GetMarketplaceSettingsParams) (GetMarketplaceSettingsRow, error)
@@ -26,14 +22,11 @@ type Querier interface {
 	GetUserByAddress(ctx context.Context, publicAddress string) (GetUserByAddressRow, error)
 	GetUsers(ctx context.Context, arg GetUsersParams) ([]GetUsersRow, error)
 	GetValidMarketplaceSettings(ctx context.Context, marketplace string) (GetValidMarketplaceSettingsRow, error)
-	InsertCategory(ctx context.Context, name string) (Category, error)
-	InsertCollection(ctx context.Context, arg InsertCollectionParams) (Collection, error)
 	InsertEvent(ctx context.Context, arg InsertEventParams) (Event, error)
 	InsertMarketplaceSettings(ctx context.Context, arg InsertMarketplaceSettingsParams) (MarketplaceSetting, error)
 	InsertNotification(ctx context.Context, arg InsertNotificationParams) (Notification, error)
 	InsertUser(ctx context.Context, arg InsertUserParams) (User, error)
 	InsertUserRole(ctx context.Context, arg InsertUserRoleParams) (UserRole, error)
-	UpdateCollectionLastSyncBlock(ctx context.Context, arg UpdateCollectionLastSyncBlockParams) error
 	UpdateMarketplaceLastSyncBlock(ctx context.Context, lastSyncBlock int64) error
 	UpdateNonce(ctx context.Context, arg UpdateNonceParams) (User, error)
 	UpdateNotification(ctx context.Context, arg UpdateNotificationParams) (Notification, error)

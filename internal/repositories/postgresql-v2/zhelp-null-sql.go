@@ -81,3 +81,15 @@ func MustMapJsonToNullRawMessage(
 	}
 	return
 }
+
+func StringToNullString(
+	s string,
+) (ns sql.NullString) {
+	if len(s) > 0 {
+		ns = sql.NullString{
+			String: s,
+			Valid:  true,
+		}
+	}
+	return
+}

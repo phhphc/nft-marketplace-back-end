@@ -39,9 +39,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getCollectionLastSyncBlockStmt, err = db.PrepareContext(ctx, getCollectionLastSyncBlock); err != nil {
 		return nil, fmt.Errorf("error preparing query GetCollectionLastSyncBlock: %w", err)
 	}
-	if q.getCollectionWithCategoryStmt, err = db.PrepareContext(ctx, getCollectionWithCategory); err != nil {
-		return nil, fmt.Errorf("error preparing query GetCollectionWithCategory: %w", err)
-	}
 	if q.getEventStmt, err = db.PrepareContext(ctx, getEvent); err != nil {
 		return nil, fmt.Errorf("error preparing query GetEvent: %w", err)
 	}
@@ -142,11 +139,6 @@ func (q *Queries) Close() error {
 	if q.getCollectionLastSyncBlockStmt != nil {
 		if cerr := q.getCollectionLastSyncBlockStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getCollectionLastSyncBlockStmt: %w", cerr)
-		}
-	}
-	if q.getCollectionWithCategoryStmt != nil {
-		if cerr := q.getCollectionWithCategoryStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getCollectionWithCategoryStmt: %w", cerr)
 		}
 	}
 	if q.getEventStmt != nil {
@@ -313,7 +305,6 @@ type Queries struct {
 	getCategoryByNameStmt              *sql.Stmt
 	getCollectionStmt                  *sql.Stmt
 	getCollectionLastSyncBlockStmt     *sql.Stmt
-	getCollectionWithCategoryStmt      *sql.Stmt
 	getEventStmt                       *sql.Stmt
 	getExpiredOrderStmt                *sql.Stmt
 	getMarketplaceLastSyncBlockStmt    *sql.Stmt
@@ -349,7 +340,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getCategoryByNameStmt:              q.getCategoryByNameStmt,
 		getCollectionStmt:                  q.getCollectionStmt,
 		getCollectionLastSyncBlockStmt:     q.getCollectionLastSyncBlockStmt,
-		getCollectionWithCategoryStmt:      q.getCollectionWithCategoryStmt,
 		getEventStmt:                       q.getEventStmt,
 		getExpiredOrderStmt:                q.getExpiredOrderStmt,
 		getMarketplaceLastSyncBlockStmt:    q.getMarketplaceLastSyncBlockStmt,
