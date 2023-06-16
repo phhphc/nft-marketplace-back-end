@@ -46,6 +46,7 @@ func main() {
 	defer postgresql.Close()
 
 	var repositoryV1 postgresqlV1.Querier = postgresqlV1.New(postgreClient.Database)
+
 	var service services.Servicer = services.New(
 		repositoryV1,
 		cfg.RedisUrl,
@@ -57,13 +58,15 @@ func main() {
 		postgresql,
 		postgresql,
 	)
-	var contronller controllers.Controller = controllers.New(service)
+	var controller controllers.Controller = controllers.New(service)
+
+	controller.InitMarketplaceSettings()
+	controller.InitAdmin()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-
-		httpServer := httpApi.NewHttpServer(contronller)
+		httpServer := httpApi.NewHttpServer(controller)
 		address := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 		httpServer.Run(ctx, address)
 	}()

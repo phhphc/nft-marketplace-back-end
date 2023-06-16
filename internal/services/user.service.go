@@ -11,10 +11,10 @@ import (
 type UserService interface {
 	GetUserByAddress(ctx context.Context, address string) (*entities.User, error)
 	GetUsers(ctx context.Context, isBlock bool, role string, offset int32, limit int32) ([]*entities.User, error)
-	InsertUser(ctx context.Context, user *entities.User) (*entities.User, error)
 	UpdateUserBlockState(ctx context.Context, address string, isBlock bool) error
 	InsertUserRole(ctx context.Context, address string, roleId int32) (*entities.Role, error)
 	DeleteUserRole(ctx context.Context, address string, roleID int32) error
+	InitAdmin(ctx context.Context, address string) (*entities.User, error)
 }
 
 func (s *Services) GetUserByAddress(ctx context.Context, address string) (*entities.User, error) {
@@ -106,10 +106,8 @@ func (s *Services) InsertUser(ctx context.Context, user *entities.User) (*entiti
 			if err.Error() == "pq: duplicate key value violates unique constraint \"user_role_pkey\"" {
 				continue
 			}
-			return nil, err
 		}
 	}
-
 	return &entities.User{
 		Address: row.PublicAddress,
 		Nonce:   row.Nonce,
@@ -117,11 +115,22 @@ func (s *Services) InsertUser(ctx context.Context, user *entities.User) (*entiti
 }
 
 func (s *Services) UpdateUserBlockState(ctx context.Context, address string, isBlock bool) error {
+	user, err := s.GetUserByAddress(ctx, address)
+	if err != nil {
+		return err
+	}
+
+	for _, role := range user.Roles {
+		if role.Id == 1 {
+			return fmt.Errorf("can not block admin")
+		}
+	}
+
 	arg := postgresql.UpdateUserBlockStateParams{
 		PublicAddress: address,
 		IsBlock:       isBlock,
 	}
-	_, err := s.repo.UpdateUserBlockState(ctx, arg)
+	_, err = s.repo.UpdateUserBlockState(ctx, arg)
 	if err != nil {
 		return err
 	}
@@ -159,4 +168,65 @@ func (s *Services) DeleteUserRole(ctx context.Context, address string, roleId in
 		return err
 	}
 	return nil
+}
+
+func (s *Services) InitAdmin(ctx context.Context, address string) (*entities.User, error) {
+	res, err := s.repo.GetUsers(ctx, postgresql.GetUsersParams{
+		IsBlock: sql.NullBool{Bool: false, Valid: true},
+		Role:    sql.NullString{String: "admin", Valid: true},
+		Offset:  0,
+		Limit:   1,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(res) > 0 {
+		return nil, fmt.Errorf("admin role already exists")
+	}
+
+	var roles []entities.Role
+	roles = append(roles, entities.Role{
+		Id: 1,
+	}, entities.Role{
+		Id: 2,
+	}, entities.Role{
+		Id: 3,
+	})
+
+	user, err := s.InsertUser(ctx, &entities.User{
+		Address: address,
+		Nonce:   s.generateNonce(),
+		Roles:   roles,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (s *Services) TransferAdminRole(ctx context.Context, maker string, taker string) (*entities.Role, error) {
+	arg1 := postgresql.InsertUserRoleParams{
+		Address: taker,
+		RoleID:  1,
+	}
+	role, err := s.repo.InsertUserRole(ctx, arg1)
+	if err != nil {
+		return nil, err
+	}
+
+	arg2 := postgresql.DeleteUserRoleParams{
+		Address: maker,
+		RoleID:  1,
+	}
+	err = s.repo.DeleteUserRole(ctx, arg2)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entities.Role{
+		Id: int(role.RoleID),
+	}, nil
 }

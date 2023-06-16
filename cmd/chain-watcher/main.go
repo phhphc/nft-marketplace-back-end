@@ -73,7 +73,7 @@ func main() {
 		defer wg.Done()
 
 		lg.Info().Caller().Msg("Start chain watcher")
-		chainListener, err := chainListener.NewChainListener(service, ethClient, cfg.MarkeplaceAddr)
+		chainListener, err := chainListener.NewChainListener(service, ethClient, cfg.MarketplaceAddr)
 		if err != nil {
 			lg.Fatal().Err(err).Caller().Msg("error create chain listener")
 		}

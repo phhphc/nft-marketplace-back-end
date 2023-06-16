@@ -22,6 +22,7 @@ type Servicer interface {
 	SearchService
 	AuthenticationService
 	UserService
+	RoleService
 
 	EmitTask(ctx context.Context, event models.EnumTask, value []byte) error
 	SubcribeTask(ctx context.Context, event models.EnumTask, handler asynq.HandlerFunc) error

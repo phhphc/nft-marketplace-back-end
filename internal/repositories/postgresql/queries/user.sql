@@ -1,5 +1,5 @@
 -- name: GetUserByAddress :one
-SELECT public_address, nonce
+SELECT public_address, nonce, is_block
 FROM "users"
 WHERE public_address ILIKE sqlc.arg('public_address');
 
