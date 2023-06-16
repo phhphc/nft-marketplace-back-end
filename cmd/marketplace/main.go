@@ -49,9 +49,6 @@ func main() {
 	var service services.Servicer = services.New(repositoryV1, cfg.RedisUrl, cfg.RedisPass, postgresql, postgresql)
 	var controller controllers.Controller = controllers.New(service)
 
-	controller.InitMarketplaceSettings()
-	controller.InitAdmin()
-
 	wg.Add(1)
 	go func() {
 		defer wg.Done()

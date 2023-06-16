@@ -50,8 +50,8 @@ func (s *httpServer) applyRoutes(
 	roleRoute.GET("", controller.GetRoles)
 
 	settingsRoute := apiV1.Group("/settings")
-	settingsRoute.GET("", controller.GetMarketplaceSettings, mdw.IsLoggedIn)
-	settingsRoute.POST("", controller.CreateMarketplaceSettings, mdw.IsLoggedIn, mdw.IsAdmin)
+	settingsRoute.GET("", controller.GetMarketplaceSettings)
+	settingsRoute.POST("", controller.UpdateMarketplaceSettings)
 
 	searchRoute := apiV1.Group("/search")
 	searchRoute.GET("", controller.SearchNFTs)
