@@ -130,6 +130,7 @@ func (s *Services) UpdateUserBlockState(ctx context.Context, address string, isB
 		PublicAddress: address,
 		IsBlock:       isBlock,
 	}
+
 	_, err = s.repo.UpdateUserBlockState(ctx, arg)
 	if err != nil {
 		return err

@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/phhphc/nft-marketplace-back-end/internal/controllers/dto"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
+	"strconv"
 )
 
 type UserController interface {
@@ -17,7 +18,7 @@ type UserController interface {
 type GetUsersReq struct {
 	Offset  int32  `query:"offset" validate:"gte=0"`
 	Limit   int32  `query:"limit" validate:"gte=0,lte=100"`
-	IsBlock bool   `query:"is_block"`
+	IsBlock string `query:"is_block"`
 	Role    string `query:"role"`
 }
 
@@ -36,8 +37,8 @@ type GetUserRes struct {
 }
 
 type UpdateBlockStateReq struct {
-	Address string `param:"address" validate:"required,eth_addr"`
-	IsBlock bool   `json:"is_block"`
+	Address string `json:"address" validate:"required,eth_addr"`
+	IsBlock *bool  `json:"is_block"`
 }
 
 type UpdateBlockStateRes struct {
@@ -71,7 +72,12 @@ func (ctl *Controls) GetUsers(c echo.Context) error {
 		return dto.NewHTTPError(400, err)
 	}
 
-	users, err := ctl.service.GetUsers(c.Request().Context(), req.IsBlock, req.Role, req.Offset, req.Limit)
+	isBlock, err := strconv.ParseBool(req.IsBlock)
+	if err != nil {
+		return dto.NewHTTPError(400, err)
+	}
+
+	users, err := ctl.service.GetUsers(c.Request().Context(), isBlock, req.Role, req.Offset, req.Limit)
 	if err != nil {
 		return dto.NewHTTPError(400, err)
 	}
@@ -108,14 +114,12 @@ func (ctl *Controls) GetUser(c echo.Context) error {
 
 func (ctl *Controls) UpdateBlockState(c echo.Context) error {
 	var req UpdateBlockStateReq
-	if err := c.Bind(&req); err != nil {
-		return dto.NewHTTPError(400, err)
-	}
-	if err := c.Validate(&req); err != nil {
+	err := (&echo.DefaultBinder{}).BindBody(c, &req)
+	if err != nil {
 		return dto.NewHTTPError(400, err)
 	}
 
-	err := ctl.service.UpdateUserBlockState(c.Request().Context(), req.Address, req.IsBlock)
+	err = ctl.service.UpdateUserBlockState(c.Request().Context(), req.Address, *req.IsBlock)
 	if err != nil {
 		return dto.NewHTTPError(400, err)
 	}

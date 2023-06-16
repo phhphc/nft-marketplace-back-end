@@ -42,7 +42,7 @@ func (s *httpServer) applyRoutes(
 	userRoute := apiV1.Group("/user")
 	userRoute.GET("", controller.GetUsers)
 	userRoute.GET("/:address", controller.GetUser)
-	userRoute.PATCH("/:address/block", controller.UpdateBlockState, mdw.IsLoggedIn, mdw.Or(mdw.IsModerator, mdw.IsAdmin))
+	userRoute.PATCH("/block", controller.UpdateBlockState, mdw.IsLoggedIn, mdw.Or(mdw.IsModerator, mdw.IsAdmin))
 	userRoute.POST("/role", controller.CreateUserRole, mdw.IsLoggedIn, mdw.IsAdmin)
 	userRoute.DELETE("/role", controller.DeleteUserRole, mdw.IsLoggedIn, mdw.IsAdmin)
 
@@ -51,7 +51,7 @@ func (s *httpServer) applyRoutes(
 
 	settingsRoute := apiV1.Group("/settings")
 	settingsRoute.GET("", controller.GetMarketplaceSettings)
-	settingsRoute.POST("", controller.UpdateMarketplaceSettings)
+	settingsRoute.POST("", controller.UpdateMarketplaceSettings, mdw.IsLoggedIn, mdw.IsAdmin)
 
 	searchRoute := apiV1.Group("/search")
 	searchRoute.GET("", controller.SearchNFTs)
