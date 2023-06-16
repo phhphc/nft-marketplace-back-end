@@ -23,6 +23,12 @@ func New(
 
 	eventReader infrastructure.EventReader,
 	eventWriter infrastructure.EventWriter,
+
+	notificationReader infrastructure.NotificationReader,
+	notificationWriter infrastructure.NotificationWriter,
+
+	marketplaceReader infrastructure.MarketplaceReader,
+	marketplaceWriter infrastructure.MarketplaceWriter,
 ) *Services {
 	return &Services{
 		lg:    *log.GetLogger(),
@@ -40,6 +46,12 @@ func New(
 
 		eventReader: eventReader,
 		eventWriter: eventWriter,
+
+		notificationReader: notificationReader,
+		notificationWriter: notificationWriter,
+
+		marketplaceReader: marketplaceReader,
+		marketplaceWriter: marketplaceWriter,
 	}
 }
 
@@ -63,4 +75,12 @@ type Services struct {
 
 	eventReader infrastructure.EventReader
 	eventWriter infrastructure.EventWriter
+
+	notificationReader infrastructure.NotificationReader
+	notificationWriter infrastructure.NotificationWriter
+
+	marketplaceReader infrastructure.MarketplaceReader
+	marketplaceWriter infrastructure.MarketplaceWriter
+
+	searcher infrastructure.Searcher
 }

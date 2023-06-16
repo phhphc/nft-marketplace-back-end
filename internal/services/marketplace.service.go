@@ -6,6 +6,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"strconv"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
@@ -14,8 +17,6 @@ import (
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 	"github.com/phhphc/nft-marketplace-back-end/internal/util"
 	"github.com/tabbed/pqtype"
-	"math/big"
-	"strconv"
 )
 
 type MarketplaceService interface {
@@ -27,7 +28,7 @@ type MarketplaceService interface {
 }
 
 func (s *Services) UpdateMarketplaceLastSyncBlock(ctx context.Context, block uint64) error {
-	err := s.repo.UpdateMarketplaceLastSyncBlock(ctx, int64(block))
+	err := s.marketplaceWriter.UpdateMarketplaceLastSyncBlock(ctx, block)
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("error update block")
 	}
@@ -35,11 +36,11 @@ func (s *Services) UpdateMarketplaceLastSyncBlock(ctx context.Context, block uin
 }
 
 func (s *Services) GetMarketplaceLastSyncBlock(ctx context.Context) (uint64, error) {
-	lastSyncBlock, err := s.repo.GetMarketplaceLastSyncBlock(ctx)
+	lastSyncBlock, err := s.marketplaceReader.GetMarketplaceLastSyncBlock(ctx)
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("error get last block")
 	}
-	return uint64(lastSyncBlock), err
+	return lastSyncBlock, err
 }
 
 func (s *Services) GetValidMarketplaceSettings(ctx context.Context, marketplaceAddress common.Address) (*entities.MarketplaceSettings, error) {
