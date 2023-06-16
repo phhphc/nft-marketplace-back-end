@@ -20,6 +20,9 @@ func New(
 
 	collectionReader infrastructure.CollectionReader,
 	collectionWriter infrastructure.CollectionWriter,
+
+	eventReader infrastructure.EventReader,
+	eventWriter infrastructure.EventWriter,
 ) *Services {
 	return &Services{
 		lg:    *log.GetLogger(),
@@ -34,6 +37,9 @@ func New(
 
 		collectionReader: collectionReader,
 		collectionWriter: collectionWriter,
+
+		eventReader: eventReader,
+		eventWriter: eventWriter,
 	}
 }
 
@@ -54,4 +60,7 @@ type Services struct {
 
 	collectionReader infrastructure.CollectionReader
 	collectionWriter infrastructure.CollectionWriter
+
+	eventReader infrastructure.EventReader
+	eventWriter infrastructure.EventWriter
 }

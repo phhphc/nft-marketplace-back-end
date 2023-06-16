@@ -57,6 +57,8 @@ func main() {
 		postgresql,
 		postgresql,
 		postgresql,
+		postgresql,
+		postgresql,
 	)
 	var controller controllers.Controller = controllers.New(service)
 

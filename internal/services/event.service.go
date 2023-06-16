@@ -2,12 +2,9 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 	"github.com/phhphc/nft-marketplace-back-end/internal/services/infrastructure"
 	"github.com/phhphc/nft-marketplace-back-end/internal/util"
 )
@@ -21,86 +18,10 @@ type EventService interface {
 
 // Add event to database
 func (s *Services) CreateEvent(ctx context.Context, event entities.Event) (ee entities.Event, err error) {
-	s.lg.Info().Caller().
-		Str("name", event.Name).
-		Str("token", event.Token.Hex()).
-		Str("token_id", event.TokenId.String()).
-		Str("event_type", event.Type).
-		Str("from", event.From.Hex()).
-		Str("to", event.To.Hex()).
-		Str("order_hash", event.OrderHash.Hex()).
-		Msg("create event")
-	dbEvent, err := s.repo.InsertEvent(ctx, postgresql.InsertEventParams{
-		Name:    event.Name,
-		Token:   event.Token.Hex(),
-		TokenID: event.TokenId.String(),
-		Quantity: sql.NullInt32{
-			Valid: true,
-			Int32: event.Quantity,
-		},
-		Type: sql.NullString{
-			Valid:  true,
-			String: event.Type,
-		},
-		Price: sql.NullString{
-			Valid:  true,
-			String: event.Price.String(),
-		},
-		From: event.From.Hex(),
-		To: sql.NullString{
-			Valid:  true,
-			String: event.To.Hex(),
-		},
-		TxHash: sql.NullString{
-			Valid:  true,
-			String: event.TxHash,
-		},
-		OrderHash: sql.NullString{
-			Valid:  true,
-			String: event.OrderHash.Hex(),
-		},
-	})
-	if err != nil {
-		s.lg.Error().Caller().Err(err).Msg("cannot create event")
-		return
-	}
-
-	ee.Name = dbEvent.Name
-	ee.Token = common.HexToAddress(dbEvent.Token)
-	// token_id
-	tokenId, ok := big.NewInt(0).SetString(dbEvent.TokenID, 10)
-	if ok {
-		ee.TokenId = tokenId
-	}
-	// quantity
-	if dbEvent.Quantity.Valid {
-		ee.Quantity = dbEvent.Quantity.Int32
-	}
-	// is_bundle
-	if dbEvent.Type.Valid {
-		ee.Type = dbEvent.Type.String
-	}
-	// price
-	price, ok := big.NewInt(0).SetString(dbEvent.Price.String, 10)
-	if dbEvent.Price.Valid && ok {
-		ee.Price = price
-	}
-	// from
-	ee.From = common.HexToAddress(dbEvent.From)
-	// to
-	if dbEvent.To.Valid {
-		ee.To = common.HexToAddress(dbEvent.To.String)
-	}
-	// date
-	ee.Date = dbEvent.Date.Time
-	//link
-	ee.TxHash = dbEvent.TxHash.String
-	//order hash
-	if dbEvent.OrderHash.Valid {
-		ee.OrderHash = common.HexToHash(dbEvent.OrderHash.String)
-	}
-
-	return
+	return s.eventWriter.InsertEvent(
+		ctx,
+		event,
+	)
 }
 
 // Add event listing or offer to database
@@ -307,101 +228,8 @@ func (s *Services) CreateEventsByFulfilledOrder(ctx context.Context, order entit
 }
 
 func (s *Services) GetListEvent(ctx context.Context, query entities.EventRead) (events []entities.Event, err error) {
-	params := postgresql.GetEventParams{}
-	if len(query.Type) > 0 {
-		params.Type = sql.NullString{
-			Valid:  true,
-			String: query.Type,
-		}
-	}
-
-	if len(query.Name) > 0 {
-		params.Name = sql.NullString{
-			String: query.Name,
-			Valid:  true,
-		}
-	}
-	if query.Token != (common.Address{}) {
-		params.Token = sql.NullString{
-			String: query.Token.Hex(),
-			Valid:  true,
-		}
-	}
-	if query.TokenId != nil {
-		params.TokenID = sql.NullString{
-			String: query.TokenId.String(),
-			Valid:  true,
-		}
-	}
-	if query.Address != (common.Address{}) {
-		params.Address = sql.NullString{
-			String: query.Address.Hex(),
-			Valid:  true,
-		}
-	}
-	if query.Month != nil {
-		params.Month = sql.NullInt32{
-			Valid: true,
-			Int32: int32(*query.Month),
-		}
-	}
-	if query.Year != nil {
-		params.Year = sql.NullInt32{
-			Valid: true,
-			Int32: int32(*query.Year),
-		}
-	}
-
-	eventList, err := s.repo.GetEvent(ctx, params)
-	if err != nil {
-		s.lg.Error().Caller().Err(err).Msg("cannot get list event")
-		return
-	}
-
-	for _, event := range eventList {
-		newEvent := entities.Event{
-			Name:      event.Name,
-			Token:     common.HexToAddress(event.Token),
-			TokenId:   ToBigInt(event.TokenID),
-			From:      common.HexToAddress(event.From),
-			Date:      event.Date.Time,
-			TxHash:    event.TxHash.String,
-			NftImage:  event.NftImage,
-			NftName:   event.NftName,
-			OrderHash: common.HexToHash(event.OrderHash.String),
-		}
-
-		if event.Quantity.Valid {
-			newEvent.Quantity = event.Quantity.Int32
-		}
-
-		price, ok := big.NewInt(0).SetString(event.Price.String, 10)
-		if event.Price.Valid && ok {
-
-			newEvent.Price = price
-		}
-
-		if event.To.Valid {
-			newEvent.To = common.HexToAddress(event.To.String)
-		}
-
-		if event.Type.Valid {
-			newEvent.Type = event.Type.String
-		}
-
-		if event.EndTime.Valid {
-			newEvent.EndTime = ToBigInt(event.EndTime.String)
-		}
-
-		if event.IsCancelled.Valid {
-			newEvent.IsCancelled = event.IsCancelled.Bool
-		}
-
-		if event.IsFulfilled.Valid {
-			newEvent.IsFulfilled = event.IsFulfilled.Bool
-		}
-
-		events = append(events, newEvent)
-	}
-	return
+	return s.eventReader.FindEvent(
+		ctx,
+		query,
+	)
 }

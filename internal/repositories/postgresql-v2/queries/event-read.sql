@@ -1,8 +1,3 @@
--- name: InsertEvent :one
-INSERT INTO "events" ("name", "token", "token_id", "quantity", "type", "price", "from", "to", "tx_hash", "order_hash")
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-RETURNING *;
-
 -- name: GetEvent :many
 SELECT e.name, e.token, e.token_id, e.quantity, e.type, e.price, e.from, e.to, e.date, e.tx_hash,
     CAST(n.metadata ->> 'image' AS VARCHAR) AS nft_image,
