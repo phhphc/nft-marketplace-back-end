@@ -14,7 +14,7 @@ type UserService interface {
 	UpdateUserBlockState(ctx context.Context, address string, isBlock bool) error
 	InsertUserRole(ctx context.Context, address string, roleId int32) (*entities.Role, error)
 	DeleteUserRole(ctx context.Context, address string, roleID int32) error
-	InitAdmin(ctx context.Context, address string) (*entities.User, error)
+	//InitAdmin(ctx context.Context, address string) (*entities.User, error)
 }
 
 func (s *Services) GetUserByAddress(ctx context.Context, address string) (*entities.User, error) {
@@ -103,7 +103,7 @@ func (s *Services) InsertUser(ctx context.Context, user *entities.User) (*entiti
 		}
 		_, err := s.repo.InsertUserRole(ctx, arg)
 		if err != nil {
-			if err.Error() == "pq: duplicate key value violates unique constraint \"user_role_pkey\"" {
+			if err.Error() == "pq: duplicate key value violates unique constraint \"user_roles_pkey\"" {
 				continue
 			}
 		}
@@ -138,27 +138,24 @@ func (s *Services) UpdateUserBlockState(ctx context.Context, address string, isB
 }
 
 func (s *Services) InsertUserRole(ctx context.Context, address string, roleId int32) (*entities.Role, error) {
-	if roleId == 1 {
-		return nil, fmt.Errorf("can not insert role admin")
-	}
 	arg := postgresql.InsertUserRoleParams{
 		Address: address,
 		RoleID:  roleId,
 	}
 	role, err := s.repo.InsertUserRole(ctx, arg)
 	if err != nil {
+		if err.Error() == "pq: duplicate key value violates unique constraint \"user_roles_pkey\"" {
+			return nil, fmt.Errorf("user already have role id %d", role.RoleID)
+		}
 		return nil, err
 	}
+
 	return &entities.Role{
 		Id: int(role.RoleID),
 	}, nil
 }
 
 func (s *Services) DeleteUserRole(ctx context.Context, address string, roleId int32) error {
-	if roleId == 1 {
-		return fmt.Errorf("can not delete role admin")
-	}
-
 	arg := postgresql.DeleteUserRoleParams{
 		Address: address,
 		RoleID:  roleId,
@@ -168,43 +165,6 @@ func (s *Services) DeleteUserRole(ctx context.Context, address string, roleId in
 		return err
 	}
 	return nil
-}
-
-func (s *Services) InitAdmin(ctx context.Context, address string) (*entities.User, error) {
-	res, err := s.repo.GetUsers(ctx, postgresql.GetUsersParams{
-		IsBlock: sql.NullBool{Bool: false, Valid: true},
-		Role:    sql.NullString{String: "admin", Valid: true},
-		Offset:  0,
-		Limit:   1,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	if len(res) > 0 {
-		return nil, fmt.Errorf("admin role already exists")
-	}
-
-	var roles []entities.Role
-	roles = append(roles, entities.Role{
-		Id: 1,
-	}, entities.Role{
-		Id: 2,
-	}, entities.Role{
-		Id: 3,
-	})
-
-	user, err := s.InsertUser(ctx, &entities.User{
-		Address: address,
-		Nonce:   s.generateNonce(),
-		Roles:   roles,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
 }
 
 func (s *Services) TransferAdminRole(ctx context.Context, maker string, taker string) (*entities.Role, error) {
