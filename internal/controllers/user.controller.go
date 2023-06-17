@@ -37,7 +37,7 @@ type GetUserRes struct {
 
 type UpdateBlockStateReq struct {
 	Address string `json:"address" validate:"required,eth_addr"`
-	IsBlock *bool  `json:"is_block"`
+	IsBlock *bool  `json:"is_block" validate:"required"`
 }
 
 type UpdateBlockStateRes struct {

@@ -45,6 +45,7 @@ func (s *Services) GetUserNonce(ctx context.Context, address string) (string, er
 	// Check if the user is in the database
 	etherAddress := common.HexToAddress(address)
 	res, err := s.userReader.FindOneUser(ctx, etherAddress.Hex())
+	s.lg.Debug().Caller().Interface("res", res).Err(err).Msg("res")
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) && s.isValidAddress(etherAddress.Hex()) {
 			nonce := s.generateNonce()

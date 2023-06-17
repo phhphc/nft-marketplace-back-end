@@ -12,33 +12,33 @@ func (r *PostgresqlRepository) FindOneUser(
 	ctx context.Context,
 	address string,
 ) (*entities.User, error) {
-	// Holy query roles
-	arg := gen.GetUsersParams{
-		PublicAddress: sql.NullString{String: address, Valid: true},
-		Offset:        0,
-		Limit:         1,
-	}
-
-	rows, err := r.queries.GetUsers(ctx, arg)
+	res, err := r.queries.GetUserByAddress(ctx, address)
+	r.lg.Debug().Err(err).Msg("error")
 	if err != nil {
 		return nil, err
 	}
 
-	var user *entities.User
-	// combines the roles of user
-	for _, row := range rows {
-		if user == nil {
-			user = &entities.User{
-				Address: row.PublicAddress,
-				Nonce:   row.Nonce,
-				Roles:   []entities.Role{{Id: int(row.RoleID.Int32), Name: row.Role.String}},
-				IsBlock: row.IsBlock,
-			}
-		} else {
-			role := entities.Role{Id: int(row.RoleID.Int32), Name: row.Role.String}
-			user.Roles = append(user.Roles, role)
+	dbr, err := r.queries.GetUserRoles(
+		ctx,
+		address,
+	)
+
+	roles := make([]entities.Role, len(dbr))
+	for i, r := range dbr {
+		roles[i] = entities.Role{
+			Id:   int(r.ID),
+			Name: r.Name,
 		}
 	}
+
+	user := &entities.User{
+		Address: res.PublicAddress,
+		Nonce:   res.Nonce,
+		Roles:   roles,
+		IsBlock: res.IsBlock,
+	}
+
+	r.lg.Debug().Caller().Err(err).Interface("user", user).Interface("dbr", dbr).Msg("error")
 
 	return user, nil
 }

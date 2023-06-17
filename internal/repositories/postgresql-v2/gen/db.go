@@ -75,6 +75,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserByAddressStmt, err = db.PrepareContext(ctx, getUserByAddress); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByAddress: %w", err)
 	}
+	if q.getUserRolesStmt, err = db.PrepareContext(ctx, getUserRoles); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserRoles: %w", err)
+	}
 	if q.getUsersStmt, err = db.PrepareContext(ctx, getUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUsers: %w", err)
 	}
@@ -229,6 +232,11 @@ func (q *Queries) Close() error {
 	if q.getUserByAddressStmt != nil {
 		if cerr := q.getUserByAddressStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByAddressStmt: %w", cerr)
+		}
+	}
+	if q.getUserRolesStmt != nil {
+		if cerr := q.getUserRolesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserRolesStmt: %w", cerr)
 		}
 	}
 	if q.getUsersStmt != nil {
@@ -397,6 +405,7 @@ type Queries struct {
 	getOrderStmt                       *sql.Stmt
 	getProfileStmt                     *sql.Stmt
 	getUserByAddressStmt               *sql.Stmt
+	getUserRolesStmt                   *sql.Stmt
 	getUsersStmt                       *sql.Stmt
 	insertCategoryStmt                 *sql.Stmt
 	insertCollectionStmt               *sql.Stmt
@@ -442,6 +451,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getOrderStmt:                       q.getOrderStmt,
 		getProfileStmt:                     q.getProfileStmt,
 		getUserByAddressStmt:               q.getUserByAddressStmt,
+		getUserRolesStmt:                   q.getUserRolesStmt,
 		getUsersStmt:                       q.getUsersStmt,
 		insertCategoryStmt:                 q.insertCategoryStmt,
 		insertCollectionStmt:               q.insertCollectionStmt,

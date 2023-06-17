@@ -50,6 +50,48 @@ func (q *Queries) GetUserByAddress(ctx context.Context, publicAddress string) (U
 	return i, err
 }
 
+const getUserRoles = `-- name: GetUserRoles :many
+SELECT id, name, address, role_id
+FROM "roles" r
+JOIN "user_roles" ur ON ur.role_id = r.id
+WHERE ur.address = $1
+`
+
+type GetUserRolesRow struct {
+	ID      int32
+	Name    string
+	Address string
+	RoleID  int32
+}
+
+func (q *Queries) GetUserRoles(ctx context.Context, address string) ([]GetUserRolesRow, error) {
+	rows, err := q.query(ctx, q.getUserRolesStmt, getUserRoles, address)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetUserRolesRow{}
+	for rows.Next() {
+		var i GetUserRolesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Address,
+			&i.RoleID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUsers = `-- name: GetUsers :many
 SELECT fu.public_address, fu.nonce, r.id as role_id, r.name as role, fu.is_block
 FROM (

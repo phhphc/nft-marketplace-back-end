@@ -17,5 +17,11 @@ LEFT JOIN "user_roles" ur on fu.public_address = ur.address
 LEFT JOIN "roles" r on r.id = ur.role_id
 WHERE (r.name = sqlc.narg('role') OR sqlc.narg('role') IS NULL);
 
+-- name: GetUserRoles :many
+SELECT *
+FROM "roles" r
+JOIN "user_roles" ur ON ur.role_id = r.id
+WHERE ur.address = $1;
+
 -- name: GetAllRoles :many
 SELECT * FROM "roles";
