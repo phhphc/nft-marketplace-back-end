@@ -78,9 +78,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUsersStmt, err = db.PrepareContext(ctx, getUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUsers: %w", err)
 	}
-	if q.getValidMarketplaceSettingsStmt, err = db.PrepareContext(ctx, getValidMarketplaceSettings); err != nil {
-		return nil, fmt.Errorf("error preparing query GetValidMarketplaceSettings: %w", err)
-	}
 	if q.insertCategoryStmt, err = db.PrepareContext(ctx, insertCategory); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertCategory: %w", err)
 	}
@@ -89,9 +86,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.insertEventStmt, err = db.PrepareContext(ctx, insertEvent); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertEvent: %w", err)
-	}
-	if q.insertMarketplaceSettingsStmt, err = db.PrepareContext(ctx, insertMarketplaceSettings); err != nil {
-		return nil, fmt.Errorf("error preparing query InsertMarketplaceSettings: %w", err)
 	}
 	if q.insertNotificationStmt, err = db.PrepareContext(ctx, insertNotification); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertNotification: %w", err)
@@ -119,6 +113,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updateMarketplaceLastSyncBlockStmt, err = db.PrepareContext(ctx, updateMarketplaceLastSyncBlock); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateMarketplaceLastSyncBlock: %w", err)
+	}
+	if q.updateMarketplaceSettingsStmt, err = db.PrepareContext(ctx, updateMarketplaceSettings); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateMarketplaceSettings: %w", err)
 	}
 	if q.updateNftStmt, err = db.PrepareContext(ctx, updateNft); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateNft: %w", err)
@@ -239,11 +236,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getUsersStmt: %w", cerr)
 		}
 	}
-	if q.getValidMarketplaceSettingsStmt != nil {
-		if cerr := q.getValidMarketplaceSettingsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getValidMarketplaceSettingsStmt: %w", cerr)
-		}
-	}
 	if q.insertCategoryStmt != nil {
 		if cerr := q.insertCategoryStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertCategoryStmt: %w", cerr)
@@ -257,11 +249,6 @@ func (q *Queries) Close() error {
 	if q.insertEventStmt != nil {
 		if cerr := q.insertEventStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertEventStmt: %w", cerr)
-		}
-	}
-	if q.insertMarketplaceSettingsStmt != nil {
-		if cerr := q.insertMarketplaceSettingsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing insertMarketplaceSettingsStmt: %w", cerr)
 		}
 	}
 	if q.insertNotificationStmt != nil {
@@ -307,6 +294,11 @@ func (q *Queries) Close() error {
 	if q.updateMarketplaceLastSyncBlockStmt != nil {
 		if cerr := q.updateMarketplaceLastSyncBlockStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateMarketplaceLastSyncBlockStmt: %w", cerr)
+		}
+	}
+	if q.updateMarketplaceSettingsStmt != nil {
+		if cerr := q.updateMarketplaceSettingsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateMarketplaceSettingsStmt: %w", cerr)
 		}
 	}
 	if q.updateNftStmt != nil {
@@ -406,11 +398,9 @@ type Queries struct {
 	getProfileStmt                     *sql.Stmt
 	getUserByAddressStmt               *sql.Stmt
 	getUsersStmt                       *sql.Stmt
-	getValidMarketplaceSettingsStmt    *sql.Stmt
 	insertCategoryStmt                 *sql.Stmt
 	insertCollectionStmt               *sql.Stmt
 	insertEventStmt                    *sql.Stmt
-	insertMarketplaceSettingsStmt      *sql.Stmt
 	insertNotificationStmt             *sql.Stmt
 	insertOrderStmt                    *sql.Stmt
 	insertOrderConsiderationItemStmt   *sql.Stmt
@@ -420,6 +410,7 @@ type Queries struct {
 	listNftWithListingStmt             *sql.Stmt
 	updateCollectionLastSyncBlockStmt  *sql.Stmt
 	updateMarketplaceLastSyncBlockStmt *sql.Stmt
+	updateMarketplaceSettingsStmt      *sql.Stmt
 	updateNftStmt                      *sql.Stmt
 	updateNonceStmt                    *sql.Stmt
 	updateNotificationStmt             *sql.Stmt
@@ -452,11 +443,9 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getProfileStmt:                     q.getProfileStmt,
 		getUserByAddressStmt:               q.getUserByAddressStmt,
 		getUsersStmt:                       q.getUsersStmt,
-		getValidMarketplaceSettingsStmt:    q.getValidMarketplaceSettingsStmt,
 		insertCategoryStmt:                 q.insertCategoryStmt,
 		insertCollectionStmt:               q.insertCollectionStmt,
 		insertEventStmt:                    q.insertEventStmt,
-		insertMarketplaceSettingsStmt:      q.insertMarketplaceSettingsStmt,
 		insertNotificationStmt:             q.insertNotificationStmt,
 		insertOrderStmt:                    q.insertOrderStmt,
 		insertOrderConsiderationItemStmt:   q.insertOrderConsiderationItemStmt,
@@ -466,6 +455,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listNftWithListingStmt:             q.listNftWithListingStmt,
 		updateCollectionLastSyncBlockStmt:  q.updateCollectionLastSyncBlockStmt,
 		updateMarketplaceLastSyncBlockStmt: q.updateMarketplaceLastSyncBlockStmt,
+		updateMarketplaceSettingsStmt:      q.updateMarketplaceSettingsStmt,
 		updateNftStmt:                      q.updateNftStmt,
 		updateNonceStmt:                    q.updateNonceStmt,
 		updateNotificationStmt:             q.updateNotificationStmt,

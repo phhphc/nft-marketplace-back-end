@@ -45,16 +45,20 @@ func (r *PostgresqlRepository) FindOneUser(
 
 func (r *PostgresqlRepository) FindUser(
 	ctx context.Context,
-	isBlock bool,
+	isBlock *bool,
 	role string,
 	offset int32,
 	limit int32,
 ) ([]*entities.User, error) {
+
 	arg := gen.GetUsersParams{
-		IsBlock: sql.NullBool{Bool: isBlock, Valid: true},
-		Role:    sql.NullString{String: role, Valid: role != ""},
-		Offset:  offset,
-		Limit:   limit,
+		Role:   sql.NullString{String: role, Valid: role != ""},
+		Offset: offset,
+		Limit:  limit,
+	}
+
+	if isBlock != nil {
+		arg.IsBlock = sql.NullBool{Bool: *isBlock, Valid: true}
 	}
 
 	rows, err := r.queries.GetUsers(ctx, arg)

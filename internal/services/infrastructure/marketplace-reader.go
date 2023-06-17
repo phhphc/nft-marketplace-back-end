@@ -12,7 +12,7 @@ type MarketplaceReader interface {
 		ctx context.Context,
 	) (uint64, error)
 
-	GetValidMarketplaceSettings(
+	GetMarketplaceSettings(
 		ctx context.Context,
 		marketplaceAddress common.Address,
 	) (*entities.MarketplaceSettings, error)

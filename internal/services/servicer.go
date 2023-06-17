@@ -19,7 +19,6 @@ type Servicer interface {
 	EventService
 	SearchService
 	NotificationService
-	SearchService
 	AuthenticationService
 	UserService
 	RoleService

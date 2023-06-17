@@ -8,10 +8,11 @@ import (
 
 type UserService interface {
 	GetUserByAddress(ctx context.Context, address string) (*entities.User, error)
-	GetUsers(ctx context.Context, isBlock bool, role string, offset int32, limit int32) ([]*entities.User, error)
+	GetUsers(ctx context.Context, isBlock *bool, role string, offset int32, limit int32) ([]*entities.User, error)
 	UpdateUserBlockState(ctx context.Context, address string, isBlock bool) error
 	InsertUserRole(ctx context.Context, address string, roleId int32) (*entities.Role, error)
 	DeleteUserRole(ctx context.Context, address string, roleID int32) error
+	//InitAdmin(ctx context.Context, address string) (*entities.User, error)
 }
 
 func (s *Services) GetUserByAddress(ctx context.Context, address string) (*entities.User, error) {
@@ -21,7 +22,7 @@ func (s *Services) GetUserByAddress(ctx context.Context, address string) (*entit
 	)
 }
 
-func (s *Services) GetUsers(ctx context.Context, isBlock bool, role string, offset int32, limit int32) ([]*entities.User, error) {
+func (s *Services) GetUsers(ctx context.Context, isBlock *bool, role string, offset int32, limit int32) ([]*entities.User, error) {
 	return s.userReader.FindUser(
 		ctx,
 		isBlock,

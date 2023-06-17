@@ -14,7 +14,7 @@ type UserReader interface {
 
 	FindUser(
 		ctx context.Context,
-		isBlock bool,
+		isBlock *bool,
 		role string,
 		offset int32,
 		limit int32,

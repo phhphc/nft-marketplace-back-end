@@ -8,49 +8,37 @@ package gen
 import (
 	"context"
 	"database/sql"
-
-	"github.com/tabbed/pqtype"
 )
 
-const insertMarketplaceSettings = `-- name: InsertMarketplaceSettings :one
-INSERT INTO "marketplace_settings" ("marketplace", "admin", "signer", "royalty", "typed_data", "sighash", "signature", "created_at")
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, marketplace, admin, signer, royalty, typed_data, sighash, signature, created_at
+const updateMarketplaceSettings = `-- name: UpdateMarketplaceSettings :one
+UPDATE "marketplace_settings"
+SET "marketplace" = coalesce($1, "marketplace"),
+    "beneficiary" = coalesce($2, "beneficiary"),
+    "royalty" = coalesce($3, "royalty")
+WHERE "marketplace" = $4
+RETURNING id, marketplace, beneficiary, royalty
 `
 
-type InsertMarketplaceSettingsParams struct {
-	Marketplace string
-	Admin       string
-	Signer      string
-	Royalty     string
-	TypedData   pqtype.NullRawMessage
-	Sighash     sql.NullString
-	Signature   sql.NullString
-	CreatedAt   sql.NullString
+type UpdateMarketplaceSettingsParams struct {
+	NMarketplace sql.NullString
+	NBeneficiary sql.NullString
+	NRoyalty     sql.NullString
+	Marketplace  string
 }
 
-func (q *Queries) InsertMarketplaceSettings(ctx context.Context, arg InsertMarketplaceSettingsParams) (MarketplaceSetting, error) {
-	row := q.queryRow(ctx, q.insertMarketplaceSettingsStmt, insertMarketplaceSettings,
+func (q *Queries) UpdateMarketplaceSettings(ctx context.Context, arg UpdateMarketplaceSettingsParams) (MarketplaceSetting, error) {
+	row := q.queryRow(ctx, q.updateMarketplaceSettingsStmt, updateMarketplaceSettings,
+		arg.NMarketplace,
+		arg.NBeneficiary,
+		arg.NRoyalty,
 		arg.Marketplace,
-		arg.Admin,
-		arg.Signer,
-		arg.Royalty,
-		arg.TypedData,
-		arg.Sighash,
-		arg.Signature,
-		arg.CreatedAt,
 	)
 	var i MarketplaceSetting
 	err := row.Scan(
 		&i.ID,
 		&i.Marketplace,
-		&i.Admin,
-		&i.Signer,
+		&i.Beneficiary,
 		&i.Royalty,
-		&i.TypedData,
-		&i.Sighash,
-		&i.Signature,
-		&i.CreatedAt,
 	)
 	return i, err
 }

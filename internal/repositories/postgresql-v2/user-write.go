@@ -29,7 +29,7 @@ func (r *PostgresqlRepository) InsertUser(
 		}
 		_, err := r.queries.InsertUserRole(ctx, arg)
 		if err != nil {
-			if err.Error() == "pq: duplicate key value violates unique constraint \"user_role_pkey\"" {
+			if err.Error() == "pq: duplicate key value violates unique constraint \"user_roles_pkey\"" {
 				continue
 			}
 		}
@@ -60,6 +60,7 @@ func (r *PostgresqlRepository) UpdateUserBlockState(
 		PublicAddress: address,
 		IsBlock:       isBlock,
 	}
+
 	_, err = r.queries.UpdateUserBlockState(ctx, arg)
 	if err != nil {
 		return err
@@ -69,18 +70,21 @@ func (r *PostgresqlRepository) UpdateUserBlockState(
 
 func (r *PostgresqlRepository) InsertUserRole(
 	ctx context.Context,
-	address string, roleId int32) (*entities.Role, error) {
-	if roleId == 1 {
-		return nil, fmt.Errorf("can not insert role admin")
-	}
+	address string,
+	roleId int32,
+) (*entities.Role, error) {
 	arg := gen.InsertUserRoleParams{
 		Address: address,
 		RoleID:  roleId,
 	}
 	role, err := r.queries.InsertUserRole(ctx, arg)
 	if err != nil {
+		if err.Error() == "pq: duplicate key value violates unique constraint \"user_roles_pkey\"" {
+			return nil, fmt.Errorf("user already have role id %d", role.RoleID)
+		}
 		return nil, err
 	}
+
 	return &entities.Role{
 		Id: int(role.RoleID),
 	}, nil
@@ -88,11 +92,9 @@ func (r *PostgresqlRepository) InsertUserRole(
 
 func (r *PostgresqlRepository) DeleteUserRole(
 	ctx context.Context,
-	address string, roleId int32) error {
-	if roleId == 1 {
-		return fmt.Errorf("can not delete role admin")
-	}
-
+	address string,
+	roleId int32,
+) error {
 	arg := gen.DeleteUserRoleParams{
 		Address: address,
 		RoleID:  roleId,

@@ -60,13 +60,8 @@ type Marketplace struct {
 type MarketplaceSetting struct {
 	ID          int32
 	Marketplace string
-	Admin       string
-	Signer      string
+	Beneficiary string
 	Royalty     string
-	TypedData   pqtype.NullRawMessage
-	Sighash     sql.NullString
-	Signature   sql.NullString
-	CreatedAt   sql.NullString
 }
 
 type Nft struct {
