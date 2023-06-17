@@ -10,7 +10,7 @@ import (
 
 type UserService interface {
 	GetUserByAddress(ctx context.Context, address string) (*entities.User, error)
-	GetUsers(ctx context.Context, isBlock bool, role string, offset int32, limit int32) ([]*entities.User, error)
+	GetUsers(ctx context.Context, isBlock *bool, role string, offset int32, limit int32) ([]*entities.User, error)
 	UpdateUserBlockState(ctx context.Context, address string, isBlock bool) error
 	InsertUserRole(ctx context.Context, address string, roleId int32) (*entities.Role, error)
 	DeleteUserRole(ctx context.Context, address string, roleID int32) error
@@ -49,12 +49,16 @@ func (s *Services) GetUserByAddress(ctx context.Context, address string) (*entit
 	return user, nil
 }
 
-func (s *Services) GetUsers(ctx context.Context, isBlock bool, role string, offset int32, limit int32) ([]*entities.User, error) {
+func (s *Services) GetUsers(ctx context.Context, isBlock *bool, role string, offset int32, limit int32) ([]*entities.User, error) {
+
 	arg := postgresql.GetUsersParams{
-		IsBlock: sql.NullBool{Bool: isBlock, Valid: true},
-		Role:    sql.NullString{String: role, Valid: role != ""},
-		Offset:  offset,
-		Limit:   limit,
+		Role:   sql.NullString{String: role, Valid: role != ""},
+		Offset: offset,
+		Limit:  limit,
+	}
+
+	if isBlock != nil {
+		arg.IsBlock = sql.NullBool{Bool: *isBlock, Valid: true}
 	}
 
 	rows, err := s.repo.GetUsers(ctx, arg)

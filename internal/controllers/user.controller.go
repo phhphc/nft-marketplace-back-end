@@ -71,7 +71,7 @@ func (ctl *Controls) GetUsers(c echo.Context) error {
 		return dto.NewHTTPError(400, err)
 	}
 
-	users, err := ctl.service.GetUsers(c.Request().Context(), *req.IsBlock, req.Role, req.Offset, req.Limit)
+	users, err := ctl.service.GetUsers(c.Request().Context(), req.IsBlock, req.Role, req.Offset, req.Limit)
 	if err != nil {
 		return dto.NewHTTPError(400, err)
 	}
