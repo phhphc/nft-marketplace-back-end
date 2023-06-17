@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/phhphc/nft-marketplace-back-end/configs"
-	postgresqlV1 "github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql-v2"
 	"github.com/phhphc/nft-marketplace-back-end/internal/services"
 	dataPuller "github.com/phhphc/nft-marketplace-back-end/internal/worker/data-puller"
@@ -49,11 +48,18 @@ func main() {
 		lg.Panic().Caller().Err(err).Msg("error")
 	}
 	defer postgresql.Close()
-	repo := postgresqlV1.New(postgreClient.Database)
 	service := services.New(
-		repo,
 		cfg.RedisUrl,
 		cfg.RedisPass,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
 		postgresql,
 		postgresql,
 		postgresql,

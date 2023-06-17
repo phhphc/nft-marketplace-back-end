@@ -6,6 +6,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"math/big"
+	"regexp"
+	"strconv"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -13,12 +18,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/phhphc/nft-marketplace-back-end/configs"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 	"github.com/spruceid/siwe-go"
-	"math/big"
-	"regexp"
-	"strconv"
-	"time"
 )
 
 type AuthenticationService interface {
@@ -44,22 +44,26 @@ func (s *Services) isValidAddress(address string) bool {
 func (s *Services) GetUserNonce(ctx context.Context, address string) (string, error) {
 	// Check if the user is in the database
 	etherAddress := common.HexToAddress(address)
-	res, err := s.repo.GetUserByAddress(ctx, etherAddress.Hex())
+	res, err := s.userReader.FindOneUser(ctx, etherAddress.Hex())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) && s.isValidAddress(etherAddress.Hex()) {
 			nonce := s.generateNonce()
-			user, err := s.repo.InsertUser(ctx, postgresql.InsertUserParams{
-				Nonce:         nonce,
-				PublicAddress: etherAddress.Hex(),
-			})
+			user, err := s.userWriter.InsertUser(
+				ctx,
+				&entities.User{
+					Nonce:   nonce,
+					Address: etherAddress.Hex(),
+				},
+			)
 			if err != nil {
 				return "", err
 			}
 
-			_, err = s.repo.InsertUserRole(ctx, postgresql.InsertUserRoleParams{
-				RoleID:  USER_ROLE_ID,
-				Address: etherAddress.Hex(),
-			})
+			_, err = s.userWriter.InsertUserRole(
+				ctx,
+				etherAddress.Hex(),
+				USER_ROLE_ID,
+			)
 
 			if err != nil {
 				return "", err
@@ -86,20 +90,11 @@ func (s *Services) verifySignature(from string, sigHex string, message []byte) (
 }
 
 func (s *Services) updateUserNonce(ctx context.Context, address string, nonce string) (*entities.User, error) {
-	// Check if the user is in the database
-	arg := postgresql.UpdateNonceParams{
-		Nonce:         nonce,
-		PublicAddress: address,
-	}
-	res, err := s.repo.UpdateNonce(ctx, arg)
-	if err != nil {
-		return nil, err
-	}
-	user := entities.User{
-		Address: res.PublicAddress,
-		Nonce:   res.Nonce,
-	}
-	return &user, nil
+	return s.userWriter.UpdateUserNonce(
+		ctx,
+		address,
+		nonce,
+	)
 }
 
 func (s *Services) generateNonce() string {
@@ -118,7 +113,7 @@ func (s *Services) Login(ctx context.Context, address string, messageStr string,
 	// Check if the user is in the database
 	etherAddress := common.HexToAddress(address)
 
-	res, err := s.repo.GetUserByAddress(ctx, etherAddress.Hex())
+	res, err := s.userReader.FindOneUser(ctx, etherAddress.Hex())
 	if err != nil {
 		return "", time.Time{}, err
 	}

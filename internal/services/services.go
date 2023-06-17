@@ -1,14 +1,12 @@
 package services
 
 import (
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 	"github.com/phhphc/nft-marketplace-back-end/internal/services/infrastructure"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/asyncQueue"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 )
 
 func New(
-	repo postgresql.Querier,
 	redisUrl string,
 	redisPass string,
 
@@ -29,10 +27,17 @@ func New(
 
 	marketplaceReader infrastructure.MarketplaceReader,
 	marketplaceWriter infrastructure.MarketplaceWriter,
+
+	searcher infrastructure.Searcher,
+
+	profileReader infrastructure.ProfileReader,
+	profileWriter infrastructure.ProfileWriter,
+
+	userReader infrastructure.UserReader,
+	userWriter infrastructure.UserWriter,
 ) *Services {
 	return &Services{
 		lg:    *log.GetLogger(),
-		repo:  repo,
 		asynq: asyncQueue.New(redisUrl, redisPass),
 
 		nftReader: nftReader,
@@ -52,6 +57,14 @@ func New(
 
 		marketplaceReader: marketplaceReader,
 		marketplaceWriter: marketplaceWriter,
+
+		searcher: searcher,
+
+		profileReader: profileReader,
+		profileWriter: profileWriter,
+
+		userReader: userReader,
+		userWriter: userWriter,
 	}
 }
 
@@ -61,7 +74,6 @@ func (s *Services) Close() error {
 
 type Services struct {
 	lg    log.Logger
-	repo  postgresql.Querier
 	asynq asyncQueue.AsyncQueue
 
 	nftReader infrastructure.NftReader
@@ -83,4 +95,10 @@ type Services struct {
 	marketplaceWriter infrastructure.MarketplaceWriter
 
 	searcher infrastructure.Searcher
+
+	profileReader infrastructure.ProfileReader
+	profileWriter infrastructure.ProfileWriter
+
+	userReader infrastructure.UserReader
+	userWriter infrastructure.UserWriter
 }

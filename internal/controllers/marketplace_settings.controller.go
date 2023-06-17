@@ -1,21 +1,20 @@
 package controllers
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
+	"strconv"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 	"github.com/labstack/echo/v4"
 	"github.com/phhphc/nft-marketplace-back-end/internal/controllers/dto"
-	"strconv"
 )
 
 type MarketplaceSettingsController interface {
 	GetMarketplaceSettings(c echo.Context) error
 	CreateMarketplaceSettings(c echo.Context) error
-	InitMarketplaceSettings() error
 }
 
 type GetMarketplaceSettingsReq struct {
@@ -132,13 +131,4 @@ func (ctl *Controls) CreateMarketplaceSettings(c echo.Context) error {
 		},
 		IsSuccess: true,
 	})
-}
-
-func (ctl *Controls) InitMarketplaceSettings() error {
-	err := ctl.service.InitMarketplaceSettings(context.Background())
-	if err != nil {
-		ctl.lg.Error().Caller().Err(err).Msg("controller cannot init marketplace settings: ")
-		return err
-	}
-	return nil
 }

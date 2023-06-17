@@ -27,8 +27,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteProfileStmt, err = db.PrepareContext(ctx, deleteProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteProfile: %w", err)
 	}
+	if q.deleteUserRoleStmt, err = db.PrepareContext(ctx, deleteUserRole); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteUserRole: %w", err)
+	}
 	if q.fullTextSearchStmt, err = db.PrepareContext(ctx, fullTextSearch); err != nil {
 		return nil, fmt.Errorf("error preparing query FullTextSearch: %w", err)
+	}
+	if q.getAllRolesStmt, err = db.PrepareContext(ctx, getAllRoles); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAllRoles: %w", err)
 	}
 	if q.getCategoryByNameStmt, err = db.PrepareContext(ctx, getCategoryByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetCategoryByName: %w", err)
@@ -48,6 +54,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getMarketplaceLastSyncBlockStmt, err = db.PrepareContext(ctx, getMarketplaceLastSyncBlock); err != nil {
 		return nil, fmt.Errorf("error preparing query GetMarketplaceLastSyncBlock: %w", err)
 	}
+	if q.getMarketplaceSettingsStmt, err = db.PrepareContext(ctx, getMarketplaceSettings); err != nil {
+		return nil, fmt.Errorf("error preparing query GetMarketplaceSettings: %w", err)
+	}
 	if q.getNftStmt, err = db.PrepareContext(ctx, getNft); err != nil {
 		return nil, fmt.Errorf("error preparing query GetNft: %w", err)
 	}
@@ -63,6 +72,15 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getProfileStmt, err = db.PrepareContext(ctx, getProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProfile: %w", err)
 	}
+	if q.getUserByAddressStmt, err = db.PrepareContext(ctx, getUserByAddress); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserByAddress: %w", err)
+	}
+	if q.getUsersStmt, err = db.PrepareContext(ctx, getUsers); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUsers: %w", err)
+	}
+	if q.getValidMarketplaceSettingsStmt, err = db.PrepareContext(ctx, getValidMarketplaceSettings); err != nil {
+		return nil, fmt.Errorf("error preparing query GetValidMarketplaceSettings: %w", err)
+	}
 	if q.insertCategoryStmt, err = db.PrepareContext(ctx, insertCategory); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertCategory: %w", err)
 	}
@@ -71,6 +89,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.insertEventStmt, err = db.PrepareContext(ctx, insertEvent); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertEvent: %w", err)
+	}
+	if q.insertMarketplaceSettingsStmt, err = db.PrepareContext(ctx, insertMarketplaceSettings); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertMarketplaceSettings: %w", err)
 	}
 	if q.insertNotificationStmt, err = db.PrepareContext(ctx, insertNotification); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertNotification: %w", err)
@@ -84,6 +105,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.insertOrderOfferItemStmt, err = db.PrepareContext(ctx, insertOrderOfferItem); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertOrderOfferItem: %w", err)
 	}
+	if q.insertUserStmt, err = db.PrepareContext(ctx, insertUser); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertUser: %w", err)
+	}
+	if q.insertUserRoleStmt, err = db.PrepareContext(ctx, insertUserRole); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertUserRole: %w", err)
+	}
 	if q.listNftWithListingStmt, err = db.PrepareContext(ctx, listNftWithListing); err != nil {
 		return nil, fmt.Errorf("error preparing query ListNftWithListing: %w", err)
 	}
@@ -96,6 +123,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateNftStmt, err = db.PrepareContext(ctx, updateNft); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateNft: %w", err)
 	}
+	if q.updateNonceStmt, err = db.PrepareContext(ctx, updateNonce); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateNonce: %w", err)
+	}
 	if q.updateNotificationStmt, err = db.PrepareContext(ctx, updateNotification); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateNotification: %w", err)
 	}
@@ -104,6 +134,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updateOrderStatusByOfferStmt, err = db.PrepareContext(ctx, updateOrderStatusByOffer); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateOrderStatusByOffer: %w", err)
+	}
+	if q.updateUserBlockStateStmt, err = db.PrepareContext(ctx, updateUserBlockState); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUserBlockState: %w", err)
 	}
 	if q.upsertNftLatestStmt, err = db.PrepareContext(ctx, upsertNftLatest); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertNftLatest: %w", err)
@@ -121,9 +154,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteProfileStmt: %w", cerr)
 		}
 	}
+	if q.deleteUserRoleStmt != nil {
+		if cerr := q.deleteUserRoleStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteUserRoleStmt: %w", cerr)
+		}
+	}
 	if q.fullTextSearchStmt != nil {
 		if cerr := q.fullTextSearchStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing fullTextSearchStmt: %w", cerr)
+		}
+	}
+	if q.getAllRolesStmt != nil {
+		if cerr := q.getAllRolesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAllRolesStmt: %w", cerr)
 		}
 	}
 	if q.getCategoryByNameStmt != nil {
@@ -156,6 +199,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getMarketplaceLastSyncBlockStmt: %w", cerr)
 		}
 	}
+	if q.getMarketplaceSettingsStmt != nil {
+		if cerr := q.getMarketplaceSettingsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getMarketplaceSettingsStmt: %w", cerr)
+		}
+	}
 	if q.getNftStmt != nil {
 		if cerr := q.getNftStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getNftStmt: %w", cerr)
@@ -181,6 +229,21 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getProfileStmt: %w", cerr)
 		}
 	}
+	if q.getUserByAddressStmt != nil {
+		if cerr := q.getUserByAddressStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserByAddressStmt: %w", cerr)
+		}
+	}
+	if q.getUsersStmt != nil {
+		if cerr := q.getUsersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUsersStmt: %w", cerr)
+		}
+	}
+	if q.getValidMarketplaceSettingsStmt != nil {
+		if cerr := q.getValidMarketplaceSettingsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getValidMarketplaceSettingsStmt: %w", cerr)
+		}
+	}
 	if q.insertCategoryStmt != nil {
 		if cerr := q.insertCategoryStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertCategoryStmt: %w", cerr)
@@ -194,6 +257,11 @@ func (q *Queries) Close() error {
 	if q.insertEventStmt != nil {
 		if cerr := q.insertEventStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertEventStmt: %w", cerr)
+		}
+	}
+	if q.insertMarketplaceSettingsStmt != nil {
+		if cerr := q.insertMarketplaceSettingsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertMarketplaceSettingsStmt: %w", cerr)
 		}
 	}
 	if q.insertNotificationStmt != nil {
@@ -216,6 +284,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing insertOrderOfferItemStmt: %w", cerr)
 		}
 	}
+	if q.insertUserStmt != nil {
+		if cerr := q.insertUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertUserStmt: %w", cerr)
+		}
+	}
+	if q.insertUserRoleStmt != nil {
+		if cerr := q.insertUserRoleStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertUserRoleStmt: %w", cerr)
+		}
+	}
 	if q.listNftWithListingStmt != nil {
 		if cerr := q.listNftWithListingStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listNftWithListingStmt: %w", cerr)
@@ -236,6 +314,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateNftStmt: %w", cerr)
 		}
 	}
+	if q.updateNonceStmt != nil {
+		if cerr := q.updateNonceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateNonceStmt: %w", cerr)
+		}
+	}
 	if q.updateNotificationStmt != nil {
 		if cerr := q.updateNotificationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateNotificationStmt: %w", cerr)
@@ -249,6 +332,11 @@ func (q *Queries) Close() error {
 	if q.updateOrderStatusByOfferStmt != nil {
 		if cerr := q.updateOrderStatusByOfferStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateOrderStatusByOfferStmt: %w", cerr)
+		}
+	}
+	if q.updateUserBlockStateStmt != nil {
+		if cerr := q.updateUserBlockStateStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUserBlockStateStmt: %w", cerr)
 		}
 	}
 	if q.upsertNftLatestStmt != nil {
@@ -301,32 +389,43 @@ type Queries struct {
 	db                                 DBTX
 	tx                                 *sql.Tx
 	deleteProfileStmt                  *sql.Stmt
+	deleteUserRoleStmt                 *sql.Stmt
 	fullTextSearchStmt                 *sql.Stmt
+	getAllRolesStmt                    *sql.Stmt
 	getCategoryByNameStmt              *sql.Stmt
 	getCollectionStmt                  *sql.Stmt
 	getCollectionLastSyncBlockStmt     *sql.Stmt
 	getEventStmt                       *sql.Stmt
 	getExpiredOrderStmt                *sql.Stmt
 	getMarketplaceLastSyncBlockStmt    *sql.Stmt
+	getMarketplaceSettingsStmt         *sql.Stmt
 	getNftStmt                         *sql.Stmt
 	getNotificationStmt                *sql.Stmt
 	getOfferStmt                       *sql.Stmt
 	getOrderStmt                       *sql.Stmt
 	getProfileStmt                     *sql.Stmt
+	getUserByAddressStmt               *sql.Stmt
+	getUsersStmt                       *sql.Stmt
+	getValidMarketplaceSettingsStmt    *sql.Stmt
 	insertCategoryStmt                 *sql.Stmt
 	insertCollectionStmt               *sql.Stmt
 	insertEventStmt                    *sql.Stmt
+	insertMarketplaceSettingsStmt      *sql.Stmt
 	insertNotificationStmt             *sql.Stmt
 	insertOrderStmt                    *sql.Stmt
 	insertOrderConsiderationItemStmt   *sql.Stmt
 	insertOrderOfferItemStmt           *sql.Stmt
+	insertUserStmt                     *sql.Stmt
+	insertUserRoleStmt                 *sql.Stmt
 	listNftWithListingStmt             *sql.Stmt
 	updateCollectionLastSyncBlockStmt  *sql.Stmt
 	updateMarketplaceLastSyncBlockStmt *sql.Stmt
 	updateNftStmt                      *sql.Stmt
+	updateNonceStmt                    *sql.Stmt
 	updateNotificationStmt             *sql.Stmt
 	updateOrderStatusStmt              *sql.Stmt
 	updateOrderStatusByOfferStmt       *sql.Stmt
+	updateUserBlockStateStmt           *sql.Stmt
 	upsertNftLatestStmt                *sql.Stmt
 	upsertProfileStmt                  *sql.Stmt
 }
@@ -336,32 +435,43 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		db:                                 tx,
 		tx:                                 tx,
 		deleteProfileStmt:                  q.deleteProfileStmt,
+		deleteUserRoleStmt:                 q.deleteUserRoleStmt,
 		fullTextSearchStmt:                 q.fullTextSearchStmt,
+		getAllRolesStmt:                    q.getAllRolesStmt,
 		getCategoryByNameStmt:              q.getCategoryByNameStmt,
 		getCollectionStmt:                  q.getCollectionStmt,
 		getCollectionLastSyncBlockStmt:     q.getCollectionLastSyncBlockStmt,
 		getEventStmt:                       q.getEventStmt,
 		getExpiredOrderStmt:                q.getExpiredOrderStmt,
 		getMarketplaceLastSyncBlockStmt:    q.getMarketplaceLastSyncBlockStmt,
+		getMarketplaceSettingsStmt:         q.getMarketplaceSettingsStmt,
 		getNftStmt:                         q.getNftStmt,
 		getNotificationStmt:                q.getNotificationStmt,
 		getOfferStmt:                       q.getOfferStmt,
 		getOrderStmt:                       q.getOrderStmt,
 		getProfileStmt:                     q.getProfileStmt,
+		getUserByAddressStmt:               q.getUserByAddressStmt,
+		getUsersStmt:                       q.getUsersStmt,
+		getValidMarketplaceSettingsStmt:    q.getValidMarketplaceSettingsStmt,
 		insertCategoryStmt:                 q.insertCategoryStmt,
 		insertCollectionStmt:               q.insertCollectionStmt,
 		insertEventStmt:                    q.insertEventStmt,
+		insertMarketplaceSettingsStmt:      q.insertMarketplaceSettingsStmt,
 		insertNotificationStmt:             q.insertNotificationStmt,
 		insertOrderStmt:                    q.insertOrderStmt,
 		insertOrderConsiderationItemStmt:   q.insertOrderConsiderationItemStmt,
 		insertOrderOfferItemStmt:           q.insertOrderOfferItemStmt,
+		insertUserStmt:                     q.insertUserStmt,
+		insertUserRoleStmt:                 q.insertUserRoleStmt,
 		listNftWithListingStmt:             q.listNftWithListingStmt,
 		updateCollectionLastSyncBlockStmt:  q.updateCollectionLastSyncBlockStmt,
 		updateMarketplaceLastSyncBlockStmt: q.updateMarketplaceLastSyncBlockStmt,
 		updateNftStmt:                      q.updateNftStmt,
+		updateNonceStmt:                    q.updateNonceStmt,
 		updateNotificationStmt:             q.updateNotificationStmt,
 		updateOrderStatusStmt:              q.updateOrderStatusStmt,
 		updateOrderStatusByOfferStmt:       q.updateOrderStatusByOfferStmt,
+		updateUserBlockStateStmt:           q.updateUserBlockStateStmt,
 		upsertNftLatestStmt:                q.upsertNftLatestStmt,
 		upsertProfileStmt:                  q.upsertProfileStmt,
 	}
