@@ -27,6 +27,9 @@ func (r *PostgresqlRepository) InsertEvent(
 	dbEvent, err := r.queries.InsertEvent(
 		ctx,
 		gen.InsertEventParams{
+			Name:    event.Name,
+			Token:   event.Token.Hex(),
+			TokenID: event.TokenId.String(),
 			Quantity: sql.NullInt32{
 				Valid: true,
 				Int32: event.Quantity,
