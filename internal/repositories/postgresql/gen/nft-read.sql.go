@@ -45,6 +45,7 @@ SELECT json_build_object(
                'token', n.token,
                'identifier', n.identifier::VARCHAR,
                'owner', n.owner,
+               'token_uri', n.token_uri,
                'metadata', n.metadata,
                'is_hidden', n.is_hidden,
                'listing',

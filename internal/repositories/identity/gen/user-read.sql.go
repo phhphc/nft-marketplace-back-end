@@ -8,10 +8,12 @@ package gen
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 )
 
 const getAllRoles = `-- name: GetAllRoles :many
-SELECT id, name FROM "roles"
+SELECT id, name
+FROM "roles"
 `
 
 func (q *Queries) GetAllRoles(ctx context.Context) ([]Role, error) {
@@ -53,7 +55,7 @@ func (q *Queries) GetUserByAddress(ctx context.Context, publicAddress string) (U
 const getUserRoles = `-- name: GetUserRoles :many
 SELECT id, name, address, role_id
 FROM "roles" r
-JOIN "user_roles" ur ON ur.role_id = r.id
+         JOIN "user_roles" ur ON ur.role_id = r.id
 WHERE ur.address = $1
 `
 
@@ -93,61 +95,61 @@ func (q *Queries) GetUserRoles(ctx context.Context, address string) ([]GetUserRo
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT fu.public_address, fu.nonce, r.id as role_id, r.name as role, fu.is_block
-FROM (
-    SELECT public_address, nonce, is_block FROM "users" u
-    WHERE (u.public_address ILIKE $1 OR $1 IS NULL)
-    AND (u.is_block = $2 OR $2 IS NULL)
-    ORDER BY public_address ASC
-    LIMIT $4
-    OFFSET $3
-     ) fu
-LEFT JOIN "user_roles" ur on fu.public_address = ur.address
-LEFT JOIN "roles" r on r.id = ur.role_id
-WHERE (r.name = $5 OR $5 IS NULL)
+SELECT json_build_object(
+               'address', u."public_address",
+               'nonce', u."nonce",
+               'is_block', u."is_block",
+               'roles', (SELECT json_agg(
+                                        json_build_object(
+                                                'role_id', uwr.id,
+                                                'role', uwr.name
+                                            )
+                                    )
+                         FROM (SELECT r.id, r.name
+                               FROM "user_roles" ur
+                                        JOIN "roles" r ON r.id = ur.role_id
+                               WHERE ur.address = u.public_address
+                               ORDER BY r.id ASC) uwr)
+           )
+FROM "users" u
+WHERE u.public_address ILIKE COALESCE($1, u.public_address)
+  AND u.is_block = COALESCE($2, u.is_block)
+  AND u.public_address IN (SELECT DISTINCT us.public_address
+                           FROM "users" us
+                                    LEFT JOIN "user_roles" ur on us.public_address = ur.address
+                                    LEFT JOIN "roles" r on r.id = ur.role_id
+                           WHERE r.name ILIKE COALESCE($3, r.name))
+ORDER BY public_address ASC
+LIMIT $5 OFFSET $4
 `
 
 type GetUsersParams struct {
 	PublicAddress sql.NullString
 	IsBlock       sql.NullBool
+	Role          sql.NullString
 	Offset        int32
 	Limit         int32
-	Role          sql.NullString
 }
 
-type GetUsersRow struct {
-	PublicAddress string
-	Nonce         string
-	RoleID        sql.NullInt32
-	Role          sql.NullString
-	IsBlock       bool
-}
-
-func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]GetUsersRow, error) {
+func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]json.RawMessage, error) {
 	rows, err := q.query(ctx, q.getUsersStmt, getUsers,
 		arg.PublicAddress,
 		arg.IsBlock,
+		arg.Role,
 		arg.Offset,
 		arg.Limit,
-		arg.Role,
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetUsersRow{}
+	items := []json.RawMessage{}
 	for rows.Next() {
-		var i GetUsersRow
-		if err := rows.Scan(
-			&i.PublicAddress,
-			&i.Nonce,
-			&i.RoleID,
-			&i.Role,
-			&i.IsBlock,
-		); err != nil {
+		var json_build_object json.RawMessage
+		if err := rows.Scan(&json_build_object); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, json_build_object)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

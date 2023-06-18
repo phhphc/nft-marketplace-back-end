@@ -3,6 +3,7 @@ package identity
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/identity/gen"
@@ -43,6 +44,18 @@ func (r *IdentityRepository) FindOneUser(
 	return user, nil
 }
 
+type roleDb struct {
+	Role   string `json:"role"`
+	RoleId int    `json:"role_id"`
+}
+
+type userDb struct {
+	Address string   `json:"address"`
+	Nonce   string   `json:"nonce"`
+	Roles   []roleDb `json:"roles"`
+	IsBlock bool     `json:"is_block"`
+}
+
 func (r *IdentityRepository) FindUser(
 	ctx context.Context,
 	isBlock *bool,
@@ -61,29 +74,35 @@ func (r *IdentityRepository) FindUser(
 		arg.IsBlock = sql.NullBool{Bool: *isBlock, Valid: true}
 	}
 
-	rows, err := r.queries.GetUsers(ctx, arg)
+	res, err := r.queries.GetUsers(ctx, arg)
 	if err != nil {
 		return nil, err
 	}
 
-	var user2Address = make(map[string]*entities.User)
-	for _, row := range rows {
-		if user2Address[row.PublicAddress] == nil {
-			user2Address[row.PublicAddress] = &entities.User{
-				Address: row.PublicAddress,
-				Nonce:   row.Nonce,
-				Roles:   []entities.Role{{Id: int(row.RoleID.Int32), Name: row.Role.String}},
-				IsBlock: row.IsBlock,
-			}
-		} else {
-			role := entities.Role{Id: int(row.RoleID.Int32), Name: row.Role.String}
-			user2Address[row.PublicAddress].Roles = append(user2Address[row.PublicAddress].Roles, role)
+	users := make([]*entities.User, len(res))
+	for i, row := range res {
+		var udb userDb
+		err = json.Unmarshal(row, &udb)
+		if err != nil {
+			r.lg.Error().Caller().Err(err).Msg("error unmarshal")
+			return nil, err
 		}
-	}
 
-	var users []*entities.User
-	for _, user := range user2Address {
-		users = append(users, user)
+		rdb := udb.Roles
+		roles := make([]entities.Role, len(rdb))
+		for i, r := range rdb {
+			roles[i] = entities.Role{
+				Id:   r.RoleId,
+				Name: r.Role,
+			}
+		}
+
+		users[i] = &entities.User{
+			Address: udb.Address,
+			Nonce:   udb.Nonce,
+			IsBlock: udb.IsBlock,
+			Roles:   roles,
+		}
 	}
 
 	return users, nil
