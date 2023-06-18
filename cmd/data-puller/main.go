@@ -34,11 +34,6 @@ func main() {
 	defer postgreClient.Disconnect()
 
 	lg.Info().Caller().Str("chain url", cfg.ChainUrl).Msg("Create new eth client")
-	ethClient, err := clients.NewEthClient(cfg.ChainUrl)
-	if err != nil {
-		lg.Fatal().Err(err).Caller().Msg("error create eth client")
-	}
-	defer ethClient.Disconnect()
 
 	wg := sync.WaitGroup{}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -88,7 +83,7 @@ func main() {
 		defer wg.Done()
 
 		lg.Info().Caller().Msg("Start data puller")
-		dataPuller, err := dataPuller.NewDataPuller(service, ethClient)
+		dataPuller, err := dataPuller.NewDataPuller(service)
 		if err != nil {
 			lg.Fatal().Err(err).Caller().Msg("error create data puller")
 		}

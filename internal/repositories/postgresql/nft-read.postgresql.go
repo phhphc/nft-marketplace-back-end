@@ -29,6 +29,7 @@ type dbNft struct {
 	Token      string         `json:"token"`
 	Identifier string         `json:"identifier"`
 	Owner      string         `json:"owner"`
+	TokenUri   string         `json:"token_uri"`
 	Metadata   map[string]any `json:"metadata"`
 	IsHidden   bool           `json:"is_hidden"`
 	Listing    []dbNftListing `json:"listing"`
@@ -83,6 +84,7 @@ func (r *PostgresqlRepository) FindNftsWithListings(
 				Token:      common.HexToAddress(dbn.Token),
 				Identifier: util.MustStringToBigInt(dbn.Identifier),
 				Owner:      common.HexToAddress(dbn.Owner),
+				TokenUri:   dbn.TokenUri,
 				Metadata:   dbn.Metadata,
 				IsHidden:   dbn.IsHidden,
 			},
@@ -131,6 +133,7 @@ func (r *PostgresqlRepository) FindOneNft(
 		Owner:      common.HexToAddress(res.Owner),
 		IsBurned:   res.IsBurned,
 		IsHidden:   res.IsHidden,
+		TokenUri:   res.TokenUri.String,
 		Metadata:   util.MustBytesToMapJson(res.Metadata.RawMessage),
 	}
 	return n, nil

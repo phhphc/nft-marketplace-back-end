@@ -8,28 +8,42 @@ package gen
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
+
+	"github.com/tabbed/pqtype"
 )
 
-const getNft = `-- name: GetNft :one
-SELECT token, identifier, owner, metadata, is_burned, is_hidden, block_number, tx_index
-FROM "nfts"
-WHERE "token" = $1
-  AND "identifier" = $2
+const updateNft = `-- name: UpdateNft :one
+UPDATE "nfts"
+    SET "is_hidden" = COALESCE($1, "is_hidden"),
+        "is_burned" = COALESCE($2, "is_burned"),
+        "metadata" = COALESCE($3, "metadata")
+WHERE "token" = $4
+  AND "identifier" = $5
+RETURNING token, identifier, owner, token_uri, metadata, is_burned, is_hidden, block_number, tx_index
 `
 
-type GetNftParams struct {
+type UpdateNftParams struct {
+	IsHidden   sql.NullBool
+	IsBurned   sql.NullBool
+	Metadata   pqtype.NullRawMessage
 	Token      string
 	Identifier string
 }
 
-func (q *Queries) GetNft(ctx context.Context, arg GetNftParams) (Nft, error) {
-	row := q.queryRow(ctx, q.getNftStmt, getNft, arg.Token, arg.Identifier)
+func (q *Queries) UpdateNft(ctx context.Context, arg UpdateNftParams) (Nft, error) {
+	row := q.queryRow(ctx, q.updateNftStmt, updateNft,
+		arg.IsHidden,
+		arg.IsBurned,
+		arg.Metadata,
+		arg.Token,
+		arg.Identifier,
+	)
 	var i Nft
 	err := row.Scan(
 		&i.Token,
 		&i.Identifier,
 		&i.Owner,
+		&i.TokenUri,
 		&i.Metadata,
 		&i.IsBurned,
 		&i.IsHidden,
@@ -39,99 +53,50 @@ func (q *Queries) GetNft(ctx context.Context, arg GetNftParams) (Nft, error) {
 	return i, err
 }
 
-const listNftWithListing = `-- name: ListNftWithListing :many
-SELECT json_build_object(
-               'token', n.token,
-               'identifier', n.identifier::VARCHAR,
-               'owner', n.owner,
-               'metadata', n.metadata,
-               'is_hidden', n.is_hidden,
-               'listing',
-               (SELECT json_agg(
-                               json_build_object(
-                                       'order_hash', l.order_hash,
-                                       'item_type', l.item_type,
-                                       'start_time', l.start_time::VARCHAR,
-                                       'end_time', l.end_time::VARCHAR,
-                                       'start_price', l.start_price::VARCHAR,
-                                       'end_price', l.end_price::VARCHAR
-                                   )
-                           )
-                FROM (SELECT o.order_hash,
-                             ci.item_type,
-                             o.start_time         AS start_time,
-                             o.end_time           AS end_time,
-                             SUM(ci.start_amount) AS start_price,
-                             SUM(ci.end_amount)   AS end_price
-                      FROM orders o
-                               JOIN offer_items oi on o.order_hash = oi.order_hash
-                               JOIN consideration_items ci on o.order_hash = ci.order_hash
-                      WHERE o.order_hash NOT IN (SELECT DISTINCT c.order_hash
-                                                 FROM consideration_items c
-                                                 WHERE c.item_type != $1)
-                        AND o.is_fulfilled = FALSE
-                        AND o.is_cancelled = FALSE
-                        AND o.is_invalid = FALSE
-                        AND o.start_time <= $2
-                        AND o.end_time > $2
-                        AND oi.token ILIKE n.token
-                        AND oi.identifier = n.identifier
-                      GROUP BY o.order_hash,
-                               ci.item_type,
-                               o.start_time,
-                               o.end_time
-                      LIMIT $3) as l)
-           )
-FROM nfts n
-WHERE n."is_burned" = FALSE
-  AND n."is_hidden" = COALESCE($4, n."is_hidden")
-  AND n."owner" ILIKE COALESCE($5, n."owner")
-  AND n."token" ILIKE COALESCE($6, n."token")
-  AND n."identifier" = COALESCE($7, n."identifier")
-LIMIT $9 OFFSET $8
+const upsertNftLatest = `-- name: UpsertNftLatest :one
+INSERT INTO "nfts" ("token", "identifier", "owner", "is_burned", "block_number", "tx_index", "token_uri")
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+ON CONFLICT ("token", "identifier") DO UPDATE
+    SET "owner"=$3,
+        "is_burned"=$4,
+        "block_number"=$5,
+        "tx_index"=$6
+WHERE $5 > nfts."block_number"
+   OR ($5 = nfts."block_number" AND $6 > nfts."tx_index")
+RETURNING token, identifier, owner, token_uri, metadata, is_burned, is_hidden, block_number, tx_index
 `
 
-type ListNftWithListingParams struct {
-	ItemType     int32
-	Now          sql.NullString
-	LimitListing int32
-	IsHidden     sql.NullBool
-	Owner        sql.NullString
-	Token        sql.NullString
-	Identifier   sql.NullString
-	OffsetNft    int32
-	LimitNft     int32
+type UpsertNftLatestParams struct {
+	Token       string
+	Identifier  string
+	Owner       string
+	IsBurned    bool
+	BlockNumber string
+	TxIndex     int64
+	TokenUri    sql.NullString
 }
 
-func (q *Queries) ListNftWithListing(ctx context.Context, arg ListNftWithListingParams) ([]json.RawMessage, error) {
-	rows, err := q.query(ctx, q.listNftWithListingStmt, listNftWithListing,
-		arg.ItemType,
-		arg.Now,
-		arg.LimitListing,
-		arg.IsHidden,
-		arg.Owner,
+func (q *Queries) UpsertNftLatest(ctx context.Context, arg UpsertNftLatestParams) (Nft, error) {
+	row := q.queryRow(ctx, q.upsertNftLatestStmt, upsertNftLatest,
 		arg.Token,
 		arg.Identifier,
-		arg.OffsetNft,
-		arg.LimitNft,
+		arg.Owner,
+		arg.IsBurned,
+		arg.BlockNumber,
+		arg.TxIndex,
+		arg.TokenUri,
 	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []json.RawMessage{}
-	for rows.Next() {
-		var json_build_object json.RawMessage
-		if err := rows.Scan(&json_build_object); err != nil {
-			return nil, err
-		}
-		items = append(items, json_build_object)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+	var i Nft
+	err := row.Scan(
+		&i.Token,
+		&i.Identifier,
+		&i.Owner,
+		&i.TokenUri,
+		&i.Metadata,
+		&i.IsBurned,
+		&i.IsHidden,
+		&i.BlockNumber,
+		&i.TxIndex,
+	)
+	return i, err
 }

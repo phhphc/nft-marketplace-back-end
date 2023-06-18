@@ -11,6 +11,44 @@ import (
 	"github.com/phhphc/nft-marketplace-back-end/internal/util"
 )
 
+func (s *Services) MintedNft(
+	ctx context.Context,
+	token common.Address,
+	identifier *big.Int,
+	to common.Address,
+	token_uri string,
+	blockNumber uint64,
+	txIndex uint,
+) error {
+	s.lg.Debug().Caller().Str("id", identifier.String()).Str("uri", token_uri).Msg("token uri")
+
+	_, err := s.nftWriter.UpsertNftLatest(
+		ctx,
+		token,
+		identifier,
+		to,
+		false,
+		blockNumber,
+		txIndex,
+		token_uri,
+	)
+	if err != nil {
+		s.lg.Error().Caller().Err(err).Msg("upsert nft fail")
+		return err
+	}
+
+	value, err := json.Marshal(models.NewErc721Task{
+		Token:      token,
+		Identifier: identifier,
+	})
+	if err != nil {
+		s.lg.Panic().Caller().Err(err).Msg("cannot marshal")
+		return err
+	}
+	s.EmitTask(context.TODO(), models.TaskNewErc721, value)
+	return nil
+}
+
 func (s *Services) TransferNft(
 	ctx context.Context,
 	transfer models.NftTransfer,
@@ -25,22 +63,11 @@ func (s *Services) TransferNft(
 		transfer.To == util.ZeroAddress,
 		blockNumber,
 		txIndex,
+		"",
 	)
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("upsert nft fail")
 		return err
-	}
-
-	value, err := json.Marshal(models.NewErc721Task{
-		Token:      transfer.Token,
-		Identifier: transfer.Identifier,
-	})
-	if err != nil {
-		s.lg.Panic().Caller().Err(err).Msg("cannot marshal")
-		return err
-	}
-	if (transfer.From == common.Address{}) {
-		s.EmitTask(context.TODO(), models.TaskNewErc721, value)
 	}
 
 	err = s.RemoveInvalidOrder(ctx, transfer.From, transfer.Token, transfer.Identifier)

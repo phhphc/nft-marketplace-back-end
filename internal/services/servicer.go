@@ -26,6 +26,15 @@ type Servicer interface {
 	EmitTask(ctx context.Context, event models.EnumTask, value []byte) error
 	SubcribeTask(ctx context.Context, event models.EnumTask, handler asynq.HandlerFunc) error
 
+	MintedNft(
+		ctx context.Context,
+		token common.Address,
+		identifier *big.Int,
+		to common.Address,
+		token_uri string,
+		blockNumber uint64,
+		txIndex uint,
+	) error
 	TransferNft(ctx context.Context, transfer models.NftTransfer, blockNumber uint64, txIndex uint) error
 	UpdateNftMetadata(ctx context.Context, token common.Address, identifier *big.Int, metadata map[string]any) (err error)
 

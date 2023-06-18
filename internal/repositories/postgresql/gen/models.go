@@ -68,6 +68,7 @@ type Nft struct {
 	Token       string
 	Identifier  string
 	Owner       string
+	TokenUri    sql.NullString
 	Metadata    pqtype.NullRawMessage
 	IsBurned    bool
 	IsHidden    bool

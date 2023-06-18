@@ -21,6 +21,7 @@ func (r *PostgresqlRepository) UpsertNftLatest(
 	isBurned bool,
 	blockNumber uint64,
 	txIndex uint,
+	token_uri string,
 ) (entities.Nft, error) {
 	res, err := r.queries.UpsertNftLatest(
 		ctx,
@@ -31,6 +32,7 @@ func (r *PostgresqlRepository) UpsertNftLatest(
 			IsBurned:    isBurned,
 			BlockNumber: strconv.FormatUint(blockNumber, 10),
 			TxIndex:     int64(txIndex),
+			TokenUri:    helpsql.StringToNullString(token_uri),
 		},
 	)
 	if err != nil {

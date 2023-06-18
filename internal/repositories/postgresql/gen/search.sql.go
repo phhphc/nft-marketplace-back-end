@@ -25,7 +25,7 @@ SELECT paged_nfts.block_number,
        ci.end_amount                        AS end_price,
        o.start_time                         AS start_time,
        o.end_time                           AS end_time
-FROM (SELECT token, identifier, owner, metadata, is_burned, is_hidden, block_number, tx_index
+FROM (SELECT token, identifier, owner, token_uri, metadata, is_burned, is_hidden, block_number, tx_index
       FROM nfts, plainto_tsquery('simple', $1) AS q
       WHERE nfts.is_burned = FALSE
         AND nfts."is_hidden" = COALESCE($2, "nfts"."is_hidden")

@@ -9,8 +9,10 @@ import (
 	"sync"
 
 	"github.com/hibiken/asynq"
+	"github.com/phhphc/nft-marketplace-back-end/internal/contracts"
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 	"github.com/phhphc/nft-marketplace-back-end/internal/models"
+	"github.com/phhphc/nft-marketplace-back-end/internal/util"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -146,12 +148,35 @@ func (w *worker) handleErc721Event(vLog types.Log) {
 			Str("from", transfer.From.Hex()).
 			Str("to", transfer.To.Hex()).
 			Msg("transfer")
-		w.Service.TransferNft(context.TODO(), models.NftTransfer{
-			Token:      vLog.Address,
-			Identifier: transfer.TokenId,
-			From:       transfer.From,
-			To:         transfer.To,
-		}, vLog.BlockNumber, vLog.TxIndex)
+
+		if transfer.From == util.ZeroAddress {
+			contract, err := contracts.NewERC721Caller(vLog.Address, w.ethClient)
+			if err != nil {
+				w.lg.Panic().Caller().Err(err).Msg("error create new contract caller")
+			}
+
+			tokenURI, err := contract.TokenURI(nil, transfer.TokenId)
+			if err != nil {
+				w.lg.Debug().Caller().Err(err).Msg("error fetch tokenURI")
+			}
+
+			w.Service.MintedNft(
+				context.TODO(),
+				vLog.Address,
+				transfer.TokenId,
+				transfer.To,
+				tokenURI,
+				vLog.BlockNumber,
+				vLog.Index,
+			)
+		} else {
+			w.Service.TransferNft(context.TODO(), models.NftTransfer{
+				Token:      vLog.Address,
+				Identifier: transfer.TokenId,
+				From:       transfer.From,
+				To:         transfer.To,
+			}, vLog.BlockNumber, vLog.TxIndex)
+		}
 
 		w.Service.CreateEvent(context.TODO(), entities.Event{
 			Name:     "transfer",
@@ -160,8 +185,8 @@ func (w *worker) handleErc721Event(vLog types.Log) {
 			Quantity: 1,
 			Type:     "single",
 			// Price
-			From: transfer.From,
-			To:   transfer.To,
+			From:   transfer.From,
+			To:     transfer.To,
 			TxHash: vLog.TxHash.Hex(),
 		})
 	case "Approval":
