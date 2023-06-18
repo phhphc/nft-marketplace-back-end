@@ -17,10 +17,4 @@ type ProfileWriter interface {
 		ctx context.Context,
 		address common.Address,
 	) error
-
-	GetOffer(
-		ctx context.Context,
-		owner common.Address,
-		from common.Address,
-	) (offers []entities.Event, err error)
 }

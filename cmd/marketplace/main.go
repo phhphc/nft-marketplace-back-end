@@ -10,7 +10,8 @@ import (
 	httpApi "github.com/phhphc/nft-marketplace-back-end/api/http-api"
 	"github.com/phhphc/nft-marketplace-back-end/configs"
 	"github.com/phhphc/nft-marketplace-back-end/internal/controllers"
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql-v2"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/identity"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 	"github.com/phhphc/nft-marketplace-back-end/internal/services"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/clients"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
@@ -44,6 +45,12 @@ func main() {
 	}
 	defer postgresql.Close()
 
+	identity, err := identity.NewIdentityRepository(ctx, cfg.PostgreIdentityUri)
+	if err != nil {
+		lg.Panic().Caller().Err(err).Msg("error")
+	}
+	defer postgresql.Close()
+
 	var service services.Servicer = services.New(
 		cfg.RedisUrl,
 		cfg.RedisPass,
@@ -60,10 +67,10 @@ func main() {
 		postgresql,
 		postgresql,
 		postgresql,
-		postgresql,
-		postgresql,
-		postgresql,
-		postgresql,
+		identity,
+		identity,
+		identity,
+		identity,
 	)
 	var controller controllers.Controller = controllers.New(service)
 

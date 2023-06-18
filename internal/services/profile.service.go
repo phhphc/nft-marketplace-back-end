@@ -36,7 +36,7 @@ func (s *Services) DeleteProfile(ctx context.Context, address common.Address) er
 }
 
 func (s *Services) GetOffer(ctx context.Context, owner common.Address, from common.Address) (offers []entities.Event, err error) {
-	return s.profileReader.GetOffer(
+	return s.eventReader.GetOffer(
 		ctx,
 		owner,
 		from,
