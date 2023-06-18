@@ -22,6 +22,7 @@ func (w *worker) pullErc721Metadata(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (w *worker) handleNewErc721Metadata(ctx context.Context, task *asynq.Task) error {
+	w.lg.Debug().Caller().Interface("task", task).Msg("handle pull")
 	var value models.NewErc721Task
 	err := json.Unmarshal(task.Payload(), &value)
 	if err != nil {
