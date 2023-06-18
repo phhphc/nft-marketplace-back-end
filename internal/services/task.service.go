@@ -8,6 +8,7 @@ import (
 )
 
 func (s *Services) EmitTask(ctx context.Context, event models.EnumTask, value []byte) error {
+	s.lg.Debug().Caller().Str("event", string(event)).Bytes("value", value).Msg("emit task")
 	err := s.asynq.DistributeTask(string(event), value)
 	if err != nil {
 		s.lg.Error().Caller().Err(err).Msg("err emit task")
