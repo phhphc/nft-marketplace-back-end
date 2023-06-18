@@ -1,7 +1,7 @@
 -- name: GetEvent :many
 SELECT e.name, e.token, e.token_id, e.quantity, e.type, e.price, e.from, e.to, e.date, e.tx_hash,
-    CAST(n.metadata ->> 'image' AS VARCHAR) AS nft_image,
-	CAST(n.metadata ->> 'name' AS VARCHAR) AS nft_name,
+  COALESCE(n.metadata ->> 'image', '')::VARCHAR AS nft_image,
+	COALESCE(n.metadata ->> 'name', '')::VARCHAR AS nft_name,
     o.end_time, o.is_cancelled, o.is_fulfilled, o.order_hash
 FROM "events" e 
 JOIN "nfts" n ON e.token = n.token AND e.token_id = CAST(n.identifier AS varchar(78))
@@ -20,8 +20,8 @@ SELECT e.name,
  e.token, 
  e.token_id,
   e.quantity,
-  CAST(n.metadata ->> 'image' AS VARCHAR) AS nft_image, 
-  CAST(n.metadata ->> 'name' AS VARCHAR) AS nft_name,
+  COALESCE(n.metadata ->> 'image', '')::VARCHAR AS nft_image, 
+  COALESCE(n.metadata ->> 'name', '')::VARCHAR AS nft_name,
 	e.type,
   o.order_hash,
   e.price,
