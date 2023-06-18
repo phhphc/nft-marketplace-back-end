@@ -34,12 +34,12 @@ func NewPostgresqlRepository(
 		return nil, err
 	}
 
-	// queries, err := gen.Prepare(ctx, db)
-	// if err != nil {
-	// 	lg.Error().Err(err).Caller().Msg("error prepared")
-	// 	return nil, err
-	// }
-	queries := gen.New(db)
+	queries, err := gen.Prepare(ctx, db)
+	if err != nil {
+		lg.Error().Err(err).Caller().Msg("error prepared")
+		return nil, err
+	}
+	// queries := gen.New(db)
 
 	r := PostgresqlRepository{
 		db:      db,

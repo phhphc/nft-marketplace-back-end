@@ -34,12 +34,13 @@ func NewIdentityRepository(
 		return nil, err
 	}
 
-	// queries, err := gen.Prepare(ctx, db)
-	// if err != nil {
-	// 	lg.Error().Err(err).Caller().Msg("error prepared")
-	// 	return nil, err
-	// }
-	queries := gen.New(db)
+	lg.Debug().Caller().Interface("db", db).Str("source", dataSourceName).Msg("debug")
+	queries, err := gen.Prepare(ctx, db)
+	if err != nil {
+		lg.Error().Err(err).Caller().Msg("error prepared")
+		return nil, err
+	}
+	// queries := gen.New(db)
 
 	r := IdentityRepository{
 		db:      db,
