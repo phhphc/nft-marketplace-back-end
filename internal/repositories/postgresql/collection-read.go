@@ -42,6 +42,7 @@ func (r *PostgresqlRepository) FindCollection(
 			Description: c.Description,
 			Metadata:    util.MustBytesToMapJson(c.Metadata.RawMessage),
 			Category:    c.Category,
+			CreatedAt:   c.CreatedAt.Time,
 		}
 	}
 	return cs, nil
