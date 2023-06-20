@@ -21,7 +21,7 @@ func (r *PostgresqlRepository) FindEvent(
 		ctx,
 		gen.GetEventParams{
 			Name:    helpsql.StringToNullString(query.Name),
-			Token:   helpsql.AddressToNullString(query.Address),
+			Token:   helpsql.AddressToNullString(query.Token),
 			TokenID: helpsql.PointerBigIntToNullString(query.TokenId),
 			Address: helpsql.AddressToNullString(query.Address),
 			Type:    helpsql.StringToNullString(query.Type),
