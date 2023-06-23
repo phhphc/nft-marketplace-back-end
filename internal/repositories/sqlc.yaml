@@ -1,0 +1,20 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "./postgresql/queries"
+    schema: "./postgresql/migrations"
+    gen:
+      go:
+        package: "gen"
+        out: "./postgresql/gen"
+        emit_empty_slices: true
+        emit_prepared_queries: true
+  - engine: "postgresql"
+    queries: "./identity/queries"
+    schema: "./identity/migrations"
+    gen:
+      go:
+        package: "gen"
+        out: "./identity/gen"
+        emit_empty_slices: true
+        emit_prepared_queries: true

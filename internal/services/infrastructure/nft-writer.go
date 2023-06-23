@@ -23,6 +23,7 @@ type NftWriter interface {
 		isBurned bool,
 		blockNumber uint64,
 		txIndex uint,
+		token_uri string,
 	) (entities.Nft, error)
 	UpdateNft(
 		ctx context.Context,

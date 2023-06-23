@@ -50,7 +50,7 @@ func MustMapJsonToBytes(
 func MustHexToBytes(
 	s string,
 ) (bs []byte) {
-	bs, err := hex.DecodeString(strings.TrimLeft(s, "0x"))
+	bs, err := hex.DecodeString(strings.TrimPrefix(s, "0x"))
 	if err != nil {
 		panic(err)
 	}

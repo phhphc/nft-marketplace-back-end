@@ -1,14 +1,12 @@
 package services
 
 import (
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 	"github.com/phhphc/nft-marketplace-back-end/internal/services/infrastructure"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/asyncQueue"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 )
 
 func New(
-	repo postgresql.Querier,
 	redisUrl string,
 	redisPass string,
 
@@ -17,10 +15,29 @@ func New(
 
 	orderReader infrastructure.OrderReader,
 	orderWriter infrastructure.OrderWritter,
+
+	collectionReader infrastructure.CollectionReader,
+	collectionWriter infrastructure.CollectionWriter,
+
+	eventReader infrastructure.EventReader,
+	eventWriter infrastructure.EventWriter,
+
+	notificationReader infrastructure.NotificationReader,
+	notificationWriter infrastructure.NotificationWriter,
+
+	marketplaceReader infrastructure.MarketplaceReader,
+	marketplaceWriter infrastructure.MarketplaceWriter,
+
+	searcher infrastructure.Searcher,
+
+	profileReader infrastructure.ProfileReader,
+	profileWriter infrastructure.ProfileWriter,
+
+	userReader infrastructure.UserReader,
+	userWriter infrastructure.UserWriter,
 ) *Services {
 	return &Services{
 		lg:    *log.GetLogger(),
-		repo:  repo,
 		asynq: asyncQueue.New(redisUrl, redisPass),
 
 		nftReader: nftReader,
@@ -28,6 +45,26 @@ func New(
 
 		orderReader: orderReader,
 		orderWriter: orderWriter,
+
+		collectionReader: collectionReader,
+		collectionWriter: collectionWriter,
+
+		eventReader: eventReader,
+		eventWriter: eventWriter,
+
+		notificationReader: notificationReader,
+		notificationWriter: notificationWriter,
+
+		marketplaceReader: marketplaceReader,
+		marketplaceWriter: marketplaceWriter,
+
+		searcher: searcher,
+
+		profileReader: profileReader,
+		profileWriter: profileWriter,
+
+		userReader: userReader,
+		userWriter: userWriter,
 	}
 }
 
@@ -37,7 +74,6 @@ func (s *Services) Close() error {
 
 type Services struct {
 	lg    log.Logger
-	repo  postgresql.Querier
 	asynq asyncQueue.AsyncQueue
 
 	nftReader infrastructure.NftReader
@@ -45,4 +81,24 @@ type Services struct {
 
 	orderReader infrastructure.OrderReader
 	orderWriter infrastructure.OrderWritter
+
+	collectionReader infrastructure.CollectionReader
+	collectionWriter infrastructure.CollectionWriter
+
+	eventReader infrastructure.EventReader
+	eventWriter infrastructure.EventWriter
+
+	notificationReader infrastructure.NotificationReader
+	notificationWriter infrastructure.NotificationWriter
+
+	marketplaceReader infrastructure.MarketplaceReader
+	marketplaceWriter infrastructure.MarketplaceWriter
+
+	searcher infrastructure.Searcher
+
+	profileReader infrastructure.ProfileReader
+	profileWriter infrastructure.ProfileWriter
+
+	userReader infrastructure.UserReader
+	userWriter infrastructure.UserWriter
 }

@@ -5,6 +5,7 @@ CREATE TABLE "nfts"
 
     "owner"        CHAR(42)       NOT NULL,
     
+    "token_uri"    VARCHAR,
     "metadata"     jsonb,
 
     "is_burned"    BOOLEAN        NOT NULL,

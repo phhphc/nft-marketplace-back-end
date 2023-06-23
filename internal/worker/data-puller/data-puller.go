@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/phhphc/nft-marketplace-back-end/internal/services"
-	"github.com/phhphc/nft-marketplace-back-end/pkg/clients"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
 )
 
@@ -14,17 +13,15 @@ type DataPuller interface {
 }
 
 type worker struct {
-	lg        *log.Logger
-	Service   services.Servicer
-	ethClient *clients.EthClient
+	lg      *log.Logger
+	Service services.Servicer
 }
 
-func NewDataPuller(service services.Servicer, ethClient *clients.EthClient) (DataPuller, error) {
+func NewDataPuller(service services.Servicer) (DataPuller, error) {
 	return &worker{
 		lg: log.GetLogger(),
 
-		Service:   service,
-		ethClient: ethClient,
+		Service: service,
 	}, nil
 }
 

@@ -10,8 +10,8 @@ import (
 	httpApi "github.com/phhphc/nft-marketplace-back-end/api/http-api"
 	"github.com/phhphc/nft-marketplace-back-end/configs"
 	"github.com/phhphc/nft-marketplace-back-end/internal/controllers"
-	postgresqlV1 "github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql-v2"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/identity"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 	"github.com/phhphc/nft-marketplace-back-end/internal/services"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/clients"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/log"
@@ -45,23 +45,39 @@ func main() {
 	}
 	defer postgresql.Close()
 
-	var repositoryV1 postgresqlV1.Querier = postgresqlV1.New(postgreClient.Database)
+	identity, err := identity.NewIdentityRepository(ctx, cfg.PostgreIdentityUri)
+	if err != nil {
+		lg.Panic().Caller().Err(err).Msg("error")
+	}
+	defer postgresql.Close()
+
 	var service services.Servicer = services.New(
-		repositoryV1,
 		cfg.RedisUrl,
 		cfg.RedisPass,
 		postgresql,
 		postgresql,
 		postgresql,
 		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		identity,
+		identity,
+		identity,
+		identity,
 	)
-	var contronller controllers.Controller = controllers.New(service)
+	var controller controllers.Controller = controllers.New(service)
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-
-		httpServer := httpApi.NewHttpServer(contronller)
+		httpServer := httpApi.NewHttpServer(controller)
 		address := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 		httpServer.Run(ctx, address)
 	}()

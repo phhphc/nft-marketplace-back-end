@@ -7,8 +7,8 @@ import (
 	"sync"
 
 	"github.com/phhphc/nft-marketplace-back-end/configs"
-	postgresqlV1 "github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql-v2"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/identity"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 	"github.com/phhphc/nft-marketplace-back-end/internal/services"
 	chainListener "github.com/phhphc/nft-marketplace-back-end/internal/worker/chain-listener"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/clients"
@@ -49,15 +49,33 @@ func main() {
 		lg.Panic().Caller().Err(err).Msg("error")
 	}
 	defer postgresql.Close()
-	repo := postgresqlV1.New(postgreClient.Database)
+
+	identity, err := identity.NewIdentityRepository(ctx, cfg.PostgreIdentityUri)
+	if err != nil {
+		lg.Panic().Caller().Err(err).Msg("error")
+	}
+	defer postgresql.Close()
+
 	service := services.New(
-		repo,
 		cfg.RedisUrl,
 		cfg.RedisPass,
 		postgresql,
 		postgresql,
 		postgresql,
 		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		identity,
+		identity,
+		identity,
+		identity,
 	)
 	defer func() {
 		err := service.Close()
@@ -71,7 +89,7 @@ func main() {
 		defer wg.Done()
 
 		lg.Info().Caller().Msg("Start chain watcher")
-		chainListener, err := chainListener.NewChainListener(service, ethClient, cfg.MarkeplaceAddr)
+		chainListener, err := chainListener.NewChainListener(service, ethClient, cfg.MarketplaceAddr)
 		if err != nil {
 			lg.Fatal().Err(err).Caller().Msg("error create chain listener")
 		}

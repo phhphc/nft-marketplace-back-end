@@ -7,8 +7,8 @@ import (
 	"sync"
 
 	"github.com/phhphc/nft-marketplace-back-end/configs"
-	postgresqlV1 "github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
-	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql-v2"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/identity"
+	"github.com/phhphc/nft-marketplace-back-end/internal/repositories/postgresql"
 	"github.com/phhphc/nft-marketplace-back-end/internal/services"
 	dataPuller "github.com/phhphc/nft-marketplace-back-end/internal/worker/data-puller"
 	"github.com/phhphc/nft-marketplace-back-end/pkg/clients"
@@ -34,11 +34,6 @@ func main() {
 	defer postgreClient.Disconnect()
 
 	lg.Info().Caller().Str("chain url", cfg.ChainUrl).Msg("Create new eth client")
-	ethClient, err := clients.NewEthClient(cfg.ChainUrl)
-	if err != nil {
-		lg.Fatal().Err(err).Caller().Msg("error create eth client")
-	}
-	defer ethClient.Disconnect()
 
 	wg := sync.WaitGroup{}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -49,15 +44,32 @@ func main() {
 		lg.Panic().Caller().Err(err).Msg("error")
 	}
 	defer postgresql.Close()
-	repo := postgresqlV1.New(postgreClient.Database)
+
+	identity, err := identity.NewIdentityRepository(ctx, cfg.PostgreIdentityUri)
+	if err != nil {
+		lg.Panic().Caller().Err(err).Msg("error")
+	}
+	defer postgresql.Close()
 	service := services.New(
-		repo,
 		cfg.RedisUrl,
 		cfg.RedisPass,
 		postgresql,
 		postgresql,
 		postgresql,
 		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		postgresql,
+		identity,
+		identity,
+		identity,
+		identity,
 	)
 	defer func() {
 		err := service.Close()
@@ -71,7 +83,7 @@ func main() {
 		defer wg.Done()
 
 		lg.Info().Caller().Msg("Start data puller")
-		dataPuller, err := dataPuller.NewDataPuller(service, ethClient)
+		dataPuller, err := dataPuller.NewDataPuller(service)
 		if err != nil {
 			lg.Fatal().Err(err).Caller().Msg("error create data puller")
 		}

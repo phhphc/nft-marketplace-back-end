@@ -74,7 +74,7 @@ func (ctl *Controls) Login(c echo.Context) error {
 		return dto.NewHTTPError(400, err)
 	}
 
-	token, err := ctl.service.Login(c.Request().Context(), req.Address, req.Message, req.Signature)
+	token, _, err := ctl.service.Login(c.Request().Context(), req.Address, req.Message, req.Signature)
 	if err != nil {
 		ctl.lg.Error().Caller().Err(err).Msg("cannot authenticate")
 		return dto.NewHTTPError(400, err)
@@ -84,7 +84,6 @@ func (ctl *Controls) Login(c echo.Context) error {
 		Data: AuthenticateRes{
 			IsAuthenticated: true,
 			Address:         req.Address,
-			Nonce:           req.Message,
 			AuthToken:       token,
 		},
 		IsSuccess: true,

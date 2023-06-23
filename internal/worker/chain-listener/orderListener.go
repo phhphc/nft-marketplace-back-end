@@ -2,14 +2,17 @@ package chainListener
 
 import (
 	"context"
-	"time"
 	"sync"
+	"time"
 
 	"github.com/phhphc/nft-marketplace-back-end/internal/entities"
 )
 
 func (w *worker) listenOrderExpired(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
+
+	tiker := time.NewTicker(30 * time.Second)
+	defer tiker.Stop()
 
 	for {
 		expiredOrderList, err := w.Service.GetExpiredOrder(ctx)
@@ -21,13 +24,18 @@ func (w *worker) listenOrderExpired(ctx context.Context, wg *sync.WaitGroup) {
 			// Must be either listing_expired or offer_expired
 			info := expiredOrder.EventName + "_expired"
 			w.Service.CreateNotification(ctx, entities.NotificationPost{
-				Info: info,
+				Info:      info,
 				EventName: expiredOrder.EventName,
 				OrderHash: expiredOrder.OrderHash,
-				Address: expiredOrder.Offerer,
+				Address:   expiredOrder.Offerer,
 			})
 		}
 
-		time.Sleep(time.Second * 30)
+		select {
+		case <-ctx.Done():
+			return
+		case <-tiker.C:
+			continue
+		}
 	}
 }

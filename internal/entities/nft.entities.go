@@ -11,7 +11,8 @@ type Nft struct {
 	Identifier *big.Int
 	Owner      common.Address
 	TokenUri   string
-	Metadata   map[string]any
+
+	Metadata map[string]any
 
 	IsBurned bool
 	IsHidden bool
