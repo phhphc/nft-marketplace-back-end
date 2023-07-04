@@ -1,9 +1,10 @@
 package entities
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 type Event struct {
@@ -33,6 +34,6 @@ type EventRead struct {
 	TokenId *big.Int
 	Type    string
 	Address common.Address
-	Month	*int
-	Year	*int
+	StartDate string
+	EndDate string
 }

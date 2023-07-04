@@ -25,8 +25,8 @@ func (r *PostgresqlRepository) FindEvent(
 			TokenID: helpsql.PointerBigIntToNullString(query.TokenId),
 			Address: helpsql.AddressToNullString(query.Address),
 			Type:    helpsql.StringToNullString(query.Type),
-			Month:   helpsql.PointerIntToNullInt32(query.Month),
-			Year:    helpsql.PointerIntToNullInt32(query.Year),
+			StartDate: helpsql.StringToNullString(query.StartDate),
+			EndDate: helpsql.StringToNullString(query.EndDate),
 		},
 	)
 	if err != nil {
